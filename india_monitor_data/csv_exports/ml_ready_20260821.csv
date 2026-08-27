@@ -1,0 +1,62 @@
+incident_title,city,date,severity,strike_type,is_high_severity,is_national,weather_avg_temp,weather_max_temp,weather_humidity,weather_total_rain,weather_has_rain,weather_has_storm,weather_condition,sla_priority,sla_found,sla_relevant_text,kedb_id,kedb_match_found,kedb_workaround,past_resolution_found,past_resolution_time_hr,past_resolution_summary,sop_found,sop_steps,processed_at
+"'Bandi Singh' protesters call shutdown in Punjab; transport, markets to be hit - India Today",National/Unknown,2026-08-21,LOW,general,0,1,,,,0,0,0,unknown,P3,1,": Auto strike, Cab strike, District bandh
+P4 - LOW
+Definition: Minor disruption, single route or area
+OR Protest without complete shutdown
+Response Time: 4 hours
+Resolution Time: 48 hours
+Escalation: Standard escalation after 8 hours
+Notification: Daily report
+Examples: Single route blockade, Partia",KEDB-005,1,"KNOWN ERROR DATABASE (KEDB)
+INDIA TRANSPORT MONITORING SYSTEM
+Last Updated: January 2024
+═══════════════════════════════════════════════════════
+KEDB-001 | Bus Strike - Maharashtra
+═══════════════════════════════════════════════════════
+Error ID        : KEDB-001
+Category        : Bus Strike
+Affecte",1,10,"PAST RESOLUTION LOGS
+INDIA TRANSPORT MONITORING SYSTEM
+Period: January 2023 - December 2023
+════════════════════════════════════════════════════════
+LOG-2023-001 | Mumbai Bus Strike
+════════════════════════════════════════════════════════
+Incident ID    : INC-2023-001
+Date           : March 15, 2023",1,"STANDARD OPERATING PROCEDURE
+TRANSPORT STRIKE RESPONSE
+Version 1. 3 | India Transport Monitoring System
+SOP-001: IMMEDIATE RESPONSE TO TRANSPORT STRIKE
+TRIGGER: Strike news detected OR strike confirmed
+STEP 1: VERIFY (0-15 minutes)
+□ Check official union/government sources
+□ Cross-verify with 2+ new",2026-08-21T04:59:57.461360
+"Punjab bandh: Shops shut, security tightened over demand for release of Sikh prisoners - The Economic Times",National/Unknown,2026-08-21,LOW,bandh,0,1,,,,0,0,0,unknown,P3,1,": Auto strike, Cab strike, District bandh
+P4 - LOW
+Definition: Minor disruption, single route or area
+OR Protest without complete shutdown
+Response Time: 4 hours
+Resolution Time: 48 hours
+Escalation: Standard escalation after 8 hours
+Notification: Daily report
+Examples: Single route blockade, Partia",KEDB-005,1,"KNOWN ERROR DATABASE (KEDB)
+INDIA TRANSPORT MONITORING SYSTEM
+Last Updated: January 2024
+═══════════════════════════════════════════════════════
+KEDB-001 | Bus Strike - Maharashtra
+═══════════════════════════════════════════════════════
+Error ID        : KEDB-001
+Category        : Bus Strike
+Affecte",1,10,"- Coordination with Ola/Uber for surge pricing cap
+14:00 - Union leaders met transport commissioner
+17:00 - Strike called off after meter revision promise
+Resolution Time: 10 hours
+SLA Compliance: YES (P3 = 24hr target, resolved in 10hr)
+Root Cause: Demand for 30% meter rate revision
+Resolution: 15%",1,"STANDARD OPERATING PROCEDURE
+TRANSPORT STRIKE RESPONSE
+Version 1. 3 | India Transport Monitoring System
+SOP-001: IMMEDIATE RESPONSE TO TRANSPORT STRIKE
+TRIGGER: Strike news detected OR strike confirmed
+STEP 1: VERIFY (0-15 minutes)
+□ Check official union/government sources
+□ Cross-verify with 2+ new",2026-08-21T04:59:57.554624

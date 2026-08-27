@@ -1,0 +1,407 @@
+{
+  "timestamp": "20260825_162114",
+  "total_queries": 34,
+  "avg_confidence": 0.5324201443292376,
+  "categories": {
+    "Weather": {
+      "count": 4,
+      "avg_confidence": 0.5467664394885371
+    },
+    "Strike": {
+      "count": 10,
+      "avg_confidence": 0.552710436932389
+    },
+    "SLA": {
+      "count": 8,
+      "avg_confidence": 0.5300920105963209
+    },
+    "Packaging": {
+      "count": 5,
+      "avg_confidence": 0.5010698584364921
+    },
+    "History": {
+      "count": 3,
+      "avg_confidence": 0.5059068374356416
+    },
+    "Vendor": {
+      "count": 4,
+      "avg_confidence": 0.5310772226640222
+    }
+  },
+  "detailed_results": [
+    {
+      "category": "Weather",
+      "query": "What weather conditions affect Hyderabad deliveries?",
+      "answer": "Based on Hyderabad_Weather_Protocol.docx [Weather_Policies]:\n\nHyderabad Severe Weather Protocol\nGenerated: 2026-08-25 11:39:21\nTotal Alerts Analyzed: 1\n\nExecutive Summary\nThis document outlines severe weather protocols for Hyderabad based on historical weather alert patterns. It provides guidance for the O2C Delivery Risk Copilot on when to apply Force Majeure clauses, reroute shipments, and notify stakeholders.\nSevere Weather Thresholds\nThe following conditions trigger automatic Copilot alerts:\n\ud83c\udf21\ufe0f  Extreme Heat: Temperature > 40\u00b0C\n\ud83d\udca8 High Wind: Wind Speed ...\n\nTop sources:\n- Weather_Policies/Hyderabad_Weather_Protocol.docx (weather_policies) | similarity: 0.57\n- Weather_Policies/Hyderabad_Weather_Protocol.docx (weather_policies) | similarity: 0.56\n- Weather_Policies/Master_Weather_Protocol.docx (weather_policies) | similarity: 0.53",
+      "confidence": 0.5720794648621328,
+      "top_sources": [
+        "Hyderabad_Weather_Protocol.docx",
+        "Hyderabad_Weather_Protocol.docx",
+        "Master_Weather_Protocol.docx"
+      ]
+    },
+    {
+      "category": "Weather",
+      "query": "What is the weather protocol for extreme conditions?",
+      "answer": "Based on Master_Weather_Protocol.docx [Weather_Policies]:\n\nMaster Severe Weather Protocol\nPurpose\nThis master protocol provides cross-regional guidance for the O2C Delivery Risk Copilot when severe weather threatens delivery operations across India.\nNational Weather Impact Summary\nCities Monitored: 1\nTotal Weather Events Analyzed: 1\nForce Majeure Eligibility Criteria\nWeather events qualify for Force Majeure protection under Carrier Master Vendor Agreements when:\nTemperature exceeds 42\u00b0C (Level 5 Heat Alert)\nWind speed exceeds 20 m/s (Level 4+ Storm)\nRai...\n\nTop sources:\n- Weather_Policies/Master_Weather_Protocol.docx (weather_policies) | similarity: 0.57\n- Weather_Policies/Hyderabad_Weather_Protocol.docx (weather_policies) | similarity: 0.55\n- Weather_Policies/Hyderabad_Weather_Protocol.docx (weather_policies) | similarity: 0.52",
+      "confidence": 0.570405692383086,
+      "top_sources": [
+        "Master_Weather_Protocol.docx",
+        "Hyderabad_Weather_Protocol.docx",
+        "Hyderabad_Weather_Protocol.docx"
+      ]
+    },
+    {
+      "category": "Weather",
+      "query": "How should delivery be handled during heavy rain?",
+      "answer": "Based on Packaging policy Doc 12.docx [Packaging Policy Docs]:\n\nroof of Delivery (ePOD) portal explicitly citing \"Torn Bags,\" \"Forklift Damage,\" or \"Product Spilling.\"\n\n4. MANDATORY QA HOLD & MITIGATION PROTOCOL\nUpon the AI Copilot registering an Emergency Cross-Dock event, the following operational mandates take immediate effect:\nSystemic Embargo: The AI Copilot shall autonomously apply a Delivery Block to the associated delivery header (LIKP), preventing standard commercial receiving and invoicing.\nHeightened Intake Directive: The Copilot shall transmit an...\n\nTop sources:\n- Packaging Policy Docs/Packaging policy Doc 12.docx (packaging_policy_docs) | similarity: 0.48\n- Clinic SLA's/12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx (clinic_slas) | similarity: 0.47\n- History Resolution Logs/Ticket 10.docx (history_resolution_logs) | similarity: 0.47",
+      "confidence": 0.47606534743469714,
+      "top_sources": [
+        "Packaging policy Doc 12.docx",
+        "12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx",
+        "Ticket 10.docx"
+      ]
+    },
+    {
+      "category": "Weather",
+      "query": "What weather alerts should trigger delivery delays?",
+      "answer": "Based on Hyderabad_Weather_Protocol.docx [Weather_Policies]:\n\ncarrier location with weather alert zone\n2. Calculates delay probability and revised ETA\n3. Retrieves applicable Force Majeure clauses from vendor contracts\n4. Assesses QA inspection requirements based on cargo type and delay duration\n5. Notifies logistics planners via MS Teams with recommended mitigation\n6. Updates SAP delivery date (VDATU) if delay confirmed...\n\nTop sources:\n- Weather_Policies/Hyderabad_Weather_Protocol.docx (weather_policies) | similarity: 0.57\n- Clinic SLA's/Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx (clinic_slas) | similarity: 0.52\n- History Resolution Logs/Ticket 14.docx (history_resolution_logs) | similarity: 0.52",
+      "confidence": 0.5685152532742322,
+      "top_sources": [
+        "Hyderabad_Weather_Protocol.docx",
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx",
+        "Ticket 14.docx"
+      ]
+    },
+    {
+      "category": "Strike",
+      "query": "What transportation disruptions affect Delhi?",
+      "answer": "Based on Delhi_Strike_Intelligence.docx [Strike_Intelligence]:\n\nDelhi Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal Incidents Analyzed: 54\nCopilot Automated Response\nWhen Delhi disruption is detected, Copilot:\n1. Identifies all active shipments routing through affected city\n2. Calculates delay probability based on disruption scale\n3. Retrieves alternative routing from regional logistics matrix\n4. Assesses SLA impact for affected deliveries\n5. Notifies planners with rerouting recommendations...\n\nTop sources:\n- Strike_Intelligence/Delhi_Strike_Intelligence.docx (strike_intelligence) | similarity: 0.65\n- Strike_Intelligence/Truck_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.61\n- Clinic SLA's/Carrier-At-Fault Delay & Liability Passthrough Protocol.docx (clinic_slas) | similarity: 0.58",
+      "confidence": 0.6500352464356233,
+      "top_sources": [
+        "Delhi_Strike_Intelligence.docx",
+        "Truck_Pattern_Analysis.docx",
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx"
+      ]
+    },
+    {
+      "category": "Strike",
+      "query": "Are there any strike risks in Mumbai?",
+      "answer": "Based on General_Pattern_Analysis.docx [Strike_Intelligence]:\n\nGeneral Disruption Pattern Analysis\nTotal General Incidents: 105\nMost Affected Cities\nNational/Unknown: 37 incidents\nDelhi: 16 incidents\nMumbai: 6 incidents\nLucknow: 4 incidents\nPune: 2 incidents\nHyderabad: 1 incidents\nAhmedabad: 1 incidents...\n\nTop sources:\n- Strike_Intelligence/General_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.49\n- Strike_Intelligence/Railway_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.47\n- Strike_Intelligence/Mumbai_Strike_Intelligence.docx (strike_intelligence) | similarity: 0.47",
+      "confidence": 0.49102900935228905,
+      "top_sources": [
+        "General_Pattern_Analysis.docx",
+        "Railway_Pattern_Analysis.docx",
+        "Mumbai_Strike_Intelligence.docx"
+      ]
+    },
+    {
+      "category": "Strike",
+      "query": "What disruption patterns exist for railway transport?",
+      "answer": "Based on Railway_Pattern_Analysis.docx [Strike_Intelligence]:\n\nRailway Disruption Pattern Analysis\nTotal Railway Incidents: 33\nMost Affected Cities\nNational/Unknown: 10 incidents\nMumbai: 4 incidents\nPune: 2 incidents\nLucknow: 2 incidents...\n\nTop sources:\n- Strike_Intelligence/Railway_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.62\n- Clinic SLA's/Carrier-At-Fault Delay & Liability Passthrough Protocol.docx (clinic_slas) | similarity: 0.57\n- Strike_Intelligence/National-Unknown_Strike_Intelligence.docx (strike_intelligence) | similarity: 0.53",
+      "confidence": 0.6207708196700081,
+      "top_sources": [
+        "Railway_Pattern_Analysis.docx",
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx",
+        "National-Unknown_Strike_Intelligence.docx"
+      ]
+    },
+    {
+      "category": "Strike",
+      "query": "What are the bus strike patterns in India?",
+      "answer": "Based on Bus_Pattern_Analysis.docx [Strike_Intelligence]:\n\nBus Disruption Pattern Analysis\nTotal Bus Incidents: 75\nMost Affected Cities\nNational/Unknown: 30 incidents\nMumbai: 11 incidents\nChennai: 3 incidents\nDelhi: 3 incidents\nHyderabad: 2 incidents\nBhubaneswar: 1 incidents\nBangalore: 1 incidents\nKolkata: 1 incidents...\n\nTop sources:\n- Strike_Intelligence/Bus_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.60\n- Strike_Intelligence/Railway_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.50\n- Strike_Intelligence/General_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.50",
+      "confidence": 0.5951335959639416,
+      "top_sources": [
+        "Bus_Pattern_Analysis.docx",
+        "Railway_Pattern_Analysis.docx",
+        "General_Pattern_Analysis.docx"
+      ]
+    },
+    {
+      "category": "Strike",
+      "query": "What bandh disruptions should we anticipate?",
+      "answer": "Based on Bandh_Pattern_Analysis.docx [Strike_Intelligence]:\n\nBandh Disruption Pattern Analysis\nTotal Bandh Incidents: 58\nMost Affected Cities\nNational/Unknown: 17 incidents...\n\nTop sources:\n- Strike_Intelligence/Bandh_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.57\n- Clinic SLA's/Carrier-At-Fault Delay & Liability Passthrough Protocol.docx (clinic_slas) | similarity: 0.50\n- Strike_Intelligence/Bhubaneswar_Strike_Intelligence.docx (strike_intelligence) | similarity: 0.44",
+      "confidence": 0.572560270091259,
+      "top_sources": [
+        "Bandh_Pattern_Analysis.docx",
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx",
+        "Bhubaneswar_Strike_Intelligence.docx"
+      ]
+    },
+    {
+      "category": "Strike",
+      "query": "What strike intelligence exists for Chennai?",
+      "answer": "Based on Chennai_Strike_Intelligence.docx [Strike_Intelligence]:\n\nChennai Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal Incidents Analyzed: 4\nCopilot Automated Response\nWhen Chennai disruption is detected, Copilot:\n1. Identifies all active shipments routing through affected city\n2. Calculates delay probability based on disruption scale\n3. Retrieves alternative routing from regional logistics matrix\n4. Assesses SLA impact for affected deliveries\n5. Notifies planners with rerouting recommendations...\n\nTop sources:\n- Strike_Intelligence/Chennai_Strike_Intelligence.docx (strike_intelligence) | similarity: 0.51\n- Strike_Intelligence/Auto_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.47\n- Strike_Intelligence/Bus_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.46",
+      "confidence": 0.5124433523266131,
+      "top_sources": [
+        "Chennai_Strike_Intelligence.docx",
+        "Auto_Pattern_Analysis.docx",
+        "Bus_Pattern_Analysis.docx"
+      ]
+    },
+    {
+      "category": "Strike",
+      "query": "What auto rickshaw strike patterns exist?",
+      "answer": "Based on Auto_Pattern_Analysis.docx [Strike_Intelligence]:\n\nAuto Disruption Pattern Analysis\nTotal Auto Incidents: 24\nMost Affected Cities\nDelhi: 16 incidents\nMumbai: 5 incidents\nChennai: 1 incidents...\n\nTop sources:\n- Strike_Intelligence/Auto_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.45\n- Strike_Intelligence/Truck_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.43\n- Strike_Intelligence/Taxi_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.43",
+      "confidence": 0.4546634531061756,
+      "top_sources": [
+        "Auto_Pattern_Analysis.docx",
+        "Truck_Pattern_Analysis.docx",
+        "Taxi_Pattern_Analysis.docx"
+      ]
+    },
+    {
+      "category": "Strike",
+      "query": "What taxi disruption patterns are documented?",
+      "answer": "Based on Taxi_Pattern_Analysis.docx [Strike_Intelligence]:\n\nTaxi Disruption Pattern Analysis\nTotal Taxi Incidents: 27\nMost Affected Cities\nDelhi: 9 incidents\nNational/Unknown: 6 incidents\nBhubaneswar: 2 incidents\nKolkata: 2 incidents...\n\nTop sources:\n- Strike_Intelligence/Taxi_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.64\n- Strike_Intelligence/Lucknow_Strike_Intelligence.docx (strike_intelligence) | similarity: 0.54\n- Strike_Intelligence/Truck_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.53",
+      "confidence": 0.641146949241053,
+      "top_sources": [
+        "Taxi_Pattern_Analysis.docx",
+        "Lucknow_Strike_Intelligence.docx",
+        "Truck_Pattern_Analysis.docx"
+      ]
+    },
+    {
+      "category": "Strike",
+      "query": "What truck strike risks should we monitor?",
+      "answer": "Based on Truck_Pattern_Analysis.docx [Strike_Intelligence]:\n\nTruck Disruption Pattern Analysis\nTotal Truck Incidents: 25\nMost Affected Cities\nDelhi: 10 incidents\nNational/Unknown: 9 incidents...\n\nTop sources:\n- Strike_Intelligence/Truck_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.51\n- Vendor Contract Docs/CATASTROPHIC BREAKDOWN & EMERGENCY CROSS-DOCKING MANDATE.docx (vendor_contract_docs) | similarity: 0.49\n- History Resolution Logs/Ticket 4.docx (history_resolution_logs) | similarity: 0.48",
+      "confidence": 0.5118435946681698,
+      "top_sources": [
+        "Truck_Pattern_Analysis.docx",
+        "CATASTROPHIC BREAKDOWN & EMERGENCY CROSS-DOCKING MANDATE.docx",
+        "Ticket 4.docx"
+      ]
+    },
+    {
+      "category": "Strike",
+      "query": "What general strike patterns affect logistics?",
+      "answer": "Based on National-Unknown_Strike_Intelligence.docx [Strike_Intelligence]:\n\nNational/Unknown Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal Incidents Analyzed: 109\nCopilot Automated Response\nWhen National/Unknown disruption is detected, Copilot:\n1. Identifies all active shipments routing through affected city\n2. Calculates delay probability based on disruption scale\n3. Retrieves alternative routing from regional logistics matrix\n4. Assesses SLA impact for affected deliveries\n5. Notifies planners with rerouting recommendations...\n\nTop sources:\n- Strike_Intelligence/National-Unknown_Strike_Intelligence.docx (strike_intelligence) | similarity: 0.48\n- Strike_Intelligence/Bhubaneswar_Strike_Intelligence.docx (strike_intelligence) | similarity: 0.47\n- Clinic SLA's/Platinum Tier Delivery & Delay Penalty Framework.docx (clinic_slas) | similarity: 0.47",
+      "confidence": 0.4774780784687566,
+      "top_sources": [
+        "National-Unknown_Strike_Intelligence.docx",
+        "Bhubaneswar_Strike_Intelligence.docx",
+        "Platinum Tier Delivery & Delay Penalty Framework.docx"
+      ]
+    },
+    {
+      "category": "SLA",
+      "query": "What is the penalty for late delivery to a Platinum clinic?",
+      "answer": "Based on Platinum Tier Delivery & Delay Penalty Framework.docx [Clinic SLA's]:\n\nxpiration.\n5. Financial Matrices & Penalties\n5.1. Platinum Delay Penalty: In the event that a shipment arrives at a Platinum Tier Clinic after the expiration of the 24-hour Grace Period, a strict financial penalty of $500.00 USD per calendar day (or fraction thereof) shall be assessed against the Carrier.\n5.2. Deduction Mechanism: The penalty is absolute and shall be autonomously classified as a freight chargeback. The accumulated penalty amount will be automatically deducted from the Carrier\u2019s ...\n\nTop sources:\n- Clinic SLA's/Platinum Tier Delivery & Delay Penalty Framework.docx (clinic_slas) | similarity: 0.64\n- Clinic SLA's/Executive Escalation & Manual Financial Override Protocol.docx (clinic_slas) | similarity: 0.61\n- Clinic SLA's/Carrier-At-Fault Delay & Liability Passthrough Protocol.docx (clinic_slas) | similarity: 0.60",
+      "confidence": 0.643178747258657,
+      "top_sources": [
+        "Platinum Tier Delivery & Delay Penalty Framework.docx",
+        "Executive Escalation & Manual Financial Override Protocol.docx",
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx"
+      ]
+    },
+    {
+      "category": "SLA",
+      "query": "What is the protocol for extreme delay cancellation?",
+      "answer": "Based on Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx [Clinic SLA's]:\n\nr and the Carrier's executive dispatch team, warning of impending Extreme Delay Cancellation.\n6.3. Autonomous Order Reversal: At precisely 00:01 local time on the eighth day post-PDD (constituting the Extreme Delay Event), the Copilot\u2019s LLM engine will automatically interface with SAP to flag the outbound delivery (LIKP) as failed, cancel the customer billing block, and autonomously generate an RMA return order.\n6.4. Intercept & Return Directives: Simultaneously, the Copilot will transmit an aut...\n\nTop sources:\n- Clinic SLA's/Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx (clinic_slas) | similarity: 0.51\n- Clinic SLA's/Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx (clinic_slas) | similarity: 0.49\n- Clinic SLA's/Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx (clinic_slas) | similarity: 0.49",
+      "confidence": 0.5145634739472816,
+      "top_sources": [
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx",
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx",
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx"
+      ]
+    },
+    {
+      "category": "SLA",
+      "query": "What are the shelf-life compliance requirements?",
+      "answer": "Based on SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx [Vendor Contract Docs]:\n\nelf Life Requirement: The absolute minimum remaining viability period required for destination clinic acceptance, explicitly defined by the SHELF_LIFE_MOS (Shelf Life in Months) field in the SAP MARA (Material Master) table.\nShort-Dated Rejection: A delivery that is legally and rightfully refused by the destination veterinary clinic (KNA1) because an extended transit delay caused the product\u2019s remaining shelf life to fall below the SHELF_LIFE_MOS threshold at the time of physical arrival.\nBio-Se...\n\nTop sources:\n- Vendor Contract Docs/SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx (vendor_contract_docs) | similarity: 0.56\n- Clinic SLA's/Minimum Shelf-Life (MHDRZ) Compliance & Short-Dated Destruction.docx (clinic_slas) | similarity: 0.56\n- Clinic SLA's/Minimum Shelf-Life (MHDRZ) Compliance & Short-Dated Destruction.docx (clinic_slas) | similarity: 0.53",
+      "confidence": 0.5601226518269405,
+      "top_sources": [
+        "SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx",
+        "Minimum Shelf-Life (MHDRZ) Compliance & Short-Dated Destruction.docx",
+        "Minimum Shelf-Life (MHDRZ) Compliance & Short-Dated Destruction.docx"
+      ]
+    },
+    {
+      "category": "SLA",
+      "query": "What is the force majeure exemption protocol?",
+      "answer": "Based on 12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx [Clinic SLA's]:\n\nperational requirement that must be fulfilled (successful notification) before a right or exemption (Force Majeure penalty waiver) can be claimed.\nVerified Clinic Contact: The authorized procurement officer or lead veterinarian's electronic contact information maintained within the SAP Customer Master data (KNVV).\nForce Majeure Nullification: The immediate revocation of weather-related penalty exemptions due to a failure in communication, resulting in the reinstatement of all standard delay liab...\n\nTop sources:\n- Clinic SLA's/12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx (clinic_slas) | similarity: 0.51\n- Vendor Contract Docs/STANDARD TRANSIT DELAY & CARRIER PERFORMANCE POLICY1.docx (vendor_contract_docs) | similarity: 0.51\n- Clinic SLA's/Severe Meteorological Exemption & Act of God Penalty Waiver Protocol.docx (clinic_slas) | similarity: 0.50",
+      "confidence": 0.5069190216881924,
+      "top_sources": [
+        "12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx",
+        "STANDARD TRANSIT DELAY & CARRIER PERFORMANCE POLICY1.docx",
+        "Severe Meteorological Exemption & Act of God Penalty Waiver Protocol.docx"
+      ]
+    },
+    {
+      "category": "SLA",
+      "query": "What are the Gold tier delivery requirements?",
+      "answer": "Based on Gold Independent Tier Delivery & Variable Penalty Framework.docx [Clinic SLA's]:\n\nSERVICE LEVEL AGREEMENT (SLA) & STANDARD OPERATING PROCEDURE\n1. Document Header\nDocument Title: Gold/Independent Tier Delivery & Variable Penalty Framework\nDocument ID: SLA-LOG-VNS-0015\nEffective Date: August 11, 2026\nControlling Department: Global Supply Chain & Legal Compliance\nReview Cycle: Annual\n2. Preamble/Purpose\nThis Service Level Agreement (\"SLA\" or \"Agreement\") dictates the performance parameters and variable penalty structures for Third-Party Logistics (\"3PL\") carriers transporting me...\n\nTop sources:\n- Clinic SLA's/Gold Independent Tier Delivery & Variable Penalty Framework.docx (clinic_slas) | similarity: 0.52\n- Clinic SLA's/Severe Meteorological Exemption & Act of God Penalty Waiver Protocol.docx (clinic_slas) | similarity: 0.49\n- Clinic SLA's/Platinum Tier Delivery & Delay Penalty Framework.docx (clinic_slas) | similarity: 0.49",
+      "confidence": 0.5201672835454358,
+      "top_sources": [
+        "Gold Independent Tier Delivery & Variable Penalty Framework.docx",
+        "Severe Meteorological Exemption & Act of God Penalty Waiver Protocol.docx",
+        "Platinum Tier Delivery & Delay Penalty Framework.docx"
+      ]
+    },
+    {
+      "category": "SLA",
+      "query": "What is the rush order failure protocol?",
+      "answer": "Based on Expedited\u00a0Rush Order Failure & Zero Tolerance Protocol.docx [Clinic SLA's]:\n\niture by the Third-Party Logistics (\"3PL\") Carrier and mandating automated financial restitution to the impacted veterinary clinic to preserve enterprise goodwill and patient care continuity.\n3. Key Definitions\nRush Order: A sales document classified with a specific expedited order type (e.g., ZRSH) within the SAP ERP system (VBAK table), legally mandating specialized priority handling and routing.\n48-Hour Transit Window: The absolute, non-negotiable maximum allowable transit time, calculated fr...\n\nTop sources:\n- Clinic SLA's/Expedited\u00a0Rush Order Failure & Zero Tolerance Protocol.docx (clinic_slas) | similarity: 0.56\n- History Resolution Logs/Ticket 1.docx (history_resolution_logs) | similarity: 0.55\n- Clinic SLA's/Expedited\u00a0Rush Order Failure & Zero Tolerance Protocol.docx (clinic_slas) | similarity: 0.52",
+      "confidence": 0.5565230498317731,
+      "top_sources": [
+        "Expedited\u00a0Rush Order Failure & Zero Tolerance Protocol.docx",
+        "Ticket 1.docx",
+        "Expedited\u00a0Rush Order Failure & Zero Tolerance Protocol.docx"
+      ]
+    },
+    {
+      "category": "SLA",
+      "query": "What are the temperature integrity preservation rules?",
+      "answer": "Based on Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx [Clinic SLA's]:\n\no a rescue truck\u2014shall be borne 100% by the Carrier.\n4.4. Chain of Custody & QA Logging: The Carrier must provide continuous temperature logs (via portable dataloggers or facility readouts) for the duration of the cross-docking and storage period to prove the Thermal Tolerance Parameters were never breached.\n5. Financial Matrices & Penalties\n5.1. 100% Spoilage Liability: Failure to execute the Emergency Cross-Docking within the 24-hour window, resulting in the thermal degradation or spoilage of ...\n\nTop sources:\n- Clinic SLA's/Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx (clinic_slas) | similarity: 0.48\n- Packaging Policy Docs/Packaging Policy Doc1.docx (packaging_policy_docs) | similarity: 0.48\n- Packaging Policy Docs/Packaging Policy Doc 14.docx (packaging_policy_docs) | similarity: 0.47",
+      "confidence": 0.48462932818651305,
+      "top_sources": [
+        "Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx",
+        "Packaging Policy Doc1.docx",
+        "Packaging Policy Doc 14.docx"
+      ]
+    },
+    {
+      "category": "SLA",
+      "query": "What is the receiving window violation protocol?",
+      "answer": "Based on Executive Escalation & Manual Financial Override Protocol.docx [Clinic SLA's]:\n\nMajeure / Exceptions\n7.1. System Outage Fallback: The Two-Hour Action Window SLA is suspended exclusively in the event of a documented, enterprise-wide Microsoft Teams or Azure cloud outage that prevents the delivery of the Actionable Approval Card.\n7.2. Algorithmic Fail-Safe Protocol: If the AI Logistics Copilot detects a sustained MS Teams API failure (exceeding 15 minutes), it will automatically bypass the primary communication channel and route an emergency fallback email (via SMTP) containi...\n\nTop sources:\n- Clinic SLA's/Executive Escalation & Manual Financial Override Protocol.docx (clinic_slas) | similarity: 0.45\n- Packaging Policy Docs/Packaging Policy Doc 13.docx (packaging_policy_docs) | similarity: 0.45\n- History Resolution Logs/Ticket 13.docx (history_resolution_logs) | similarity: 0.45",
+      "confidence": 0.45463252848577423,
+      "top_sources": [
+        "Executive Escalation & Manual Financial Override Protocol.docx",
+        "Packaging Policy Doc 13.docx",
+        "Ticket 13.docx"
+      ]
+    },
+    {
+      "category": "Packaging",
+      "query": "When is moisture inspection required?",
+      "answer": "Based on Packaging policy Doc9.docx [Packaging Policy Docs]:\n\ngh tactile inspection of the bottom-tier bags for dampness, mud, pest tracks, or UV-bleached packaging.\n\n5. CONDEMNATION & BIO-SECURE DISPOSAL RULES\nAbsolute biological integrity cannot be guaranteed once packaging has made contact with unsecured ground environments. The following strict condemnation protocols apply:\nAutomatic Baseline Condemnation (Bottom Layer): Regardless of visual appearance, the entire bottom layer of bags (those resting directly on the wooden pallet or exposed to the groun...\n\nTop sources:\n- Packaging Policy Docs/Packaging policy Doc9.docx (packaging_policy_docs) | similarity: 0.48\n- Packaging Policy Docs/Packaging Policy Doc 8.docx (packaging_policy_docs) | similarity: 0.48\n- Clinic SLA's/Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx (clinic_slas) | similarity: 0.48",
+      "confidence": 0.48453157833328137,
+      "top_sources": [
+        "Packaging policy Doc9.docx",
+        "Packaging Policy Doc 8.docx",
+        "Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx"
+      ]
+    },
+    {
+      "category": "Packaging",
+      "query": "What are the packaging requirements for temperature-sensitive items?",
+      "answer": "Based on Packaging Policy Doc2.docx [Packaging Policy Docs]:\n\nLogistics Copilot is strictly authorized to autonomously intercept and embargo any shipment suspected of cryogenic exposure to ensure absolute patient safety.\n\n2. SCOPE & HAZARD DEFINITIONS\nFor the purposes of this QA-SOP, the following scientific and operational definitions apply:\nCryogenic Expansion (Freezing Hazard): The physical phase-change and subsequent volume expansion of liquid components within sealed tinplate, aluminum cans, or retort pouches caused by sub-freezing ambient temperature...\n\nTop sources:\n- Packaging Policy Docs/Packaging Policy Doc2.docx (packaging_policy_docs) | similarity: 0.47\n- Clinic SLA's/Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx (clinic_slas) | similarity: 0.47\n- Packaging Policy Docs/Packaging Policy Doc2.docx (packaging_policy_docs) | similarity: 0.47",
+      "confidence": 0.46688865089757126,
+      "top_sources": [
+        "Packaging Policy Doc2.docx",
+        "Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx",
+        "Packaging Policy Doc2.docx"
+      ]
+    },
+    {
+      "category": "Packaging",
+      "query": "What packaging standards must be followed?",
+      "answer": "Based on TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx [Vendor Contract Docs]:\n\nbsolute. The Carrier must ensure the trailer remains hermetically sealed and securely staged.\n3.3 Mandatory QA Interception: If a shipment arrives at the destination clinic (KNA1) following a severe delay, or if the clinic reports visible water/pest damage upon breaking the trailer seal, the delivery will be immediately refused and placed on a strict QA Hold. The freight must be evaluated by a certified Enterprise QA Inspector.\n3.4 Condemnation Designation: If the QA Inspector discovers evidence...\n\nTop sources:\n- Vendor Contract Docs/TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx (vendor_contract_docs) | similarity: 0.49\n- Clinic SLA's/Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx (clinic_slas) | similarity: 0.49\n- Clinic SLA's/Platinum Tier Delivery & Delay Penalty Framework.docx (clinic_slas) | similarity: 0.47",
+      "confidence": 0.4867620530446303,
+      "top_sources": [
+        "TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx",
+        "Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx",
+        "Platinum Tier Delivery & Delay Penalty Framework.docx"
+      ]
+    },
+    {
+      "category": "Packaging",
+      "query": "What are the pest control requirements for packaging?",
+      "answer": "Based on Packaging Policy Doc 5.docx [Packaging Policy Docs]:\n\ning physical compromise via gnawing. The Enterprise AI Logistics Copilot is strictly authorized to autonomously intercept and embargo any shipment dwelling excessively at LTL facilities to mandate rigorous bio-security testing.\n\n2. SCOPE & HAZARD DEFINITIONS\nFor the purposes of this QA-SOP, the following scientific and operational definitions apply:\nPest Intrusion: The physical breach of primary or secondary packaging by biological pests, or the surface contamination of packaging by pest excreta...\n\nTop sources:\n- Packaging Policy Docs/Packaging Policy Doc 5.docx (packaging_policy_docs) | similarity: 0.52\n- Clinic SLA's/Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx (clinic_slas) | similarity: 0.51\n- Packaging Policy Docs/Packaging Policy Doc 5.docx (packaging_policy_docs) | similarity: 0.51",
+      "confidence": 0.5240396707010465,
+      "top_sources": [
+        "Packaging Policy Doc 5.docx",
+        "Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx",
+        "Packaging Policy Doc 5.docx"
+      ]
+    },
+    {
+      "category": "Packaging",
+      "query": "What trailer integrity checks are required?",
+      "answer": "Based on Packaging Policy Doc 13.docx [Packaging Policy Docs]:\n\nially declare the entire trailer load 100% Condemned. No laboratory testing is required; the administrative breach of custody is sufficient for total condemnation.\nBio-Secure Disposal Mandate: Freight subjected to a severed chain of custody is treated as potentially adulterated. The cargo must be transported via secure chain-of-custody to a certified facility for Bio-Secure Deep Incineration. It must absolutely never enter any commercial, liquidation, or agricultural feed channels.\nPunitive Carr...\n\nTop sources:\n- Packaging Policy Docs/Packaging Policy Doc 13.docx (packaging_policy_docs) | similarity: 0.54\n- Clinic SLA's/Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx (clinic_slas) | similarity: 0.54\n- Vendor Contract Docs/TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx (vendor_contract_docs) | similarity: 0.53",
+      "confidence": 0.5431273392059307,
+      "top_sources": [
+        "Packaging Policy Doc 13.docx",
+        "Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx",
+        "TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx"
+      ]
+    },
+    {
+      "category": "History",
+      "query": "What past resolutions exist for delivery delays?",
+      "answer": "Based on Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx [Clinic SLA's]:\n\nand legally shifts the burden of the resulting total revenue loss and reverse logistics costs entirely onto the negligent Third-Party Logistics (\"3PL\") Carrier.\n3. Key Definitions\nPromised Delivery Date (PDD): The baseline delivery commitment generated at order entry, housed within the SAP ERP system (VBAK/LIKP tables).\nExtreme Delay Event: Any transit lifecycle wherein a shipment fails to reach the final consignee by 23:59 local time on the seventh (7th) calendar day strictly following the orig...\n\nTop sources:\n- Clinic SLA's/Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx (clinic_slas) | similarity: 0.56\n- Vendor Contract Docs/STANDARD TRANSIT DELAY & CARRIER PERFORMANCE POLICY1.docx (vendor_contract_docs) | similarity: 0.53\n- Clinic SLA's/Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx (clinic_slas) | similarity: 0.52",
+      "confidence": 0.5609213903717213,
+      "top_sources": [
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx",
+        "STANDARD TRANSIT DELAY & CARRIER PERFORMANCE POLICY1.docx",
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx"
+      ]
+    },
+    {
+      "category": "History",
+      "query": "How were previous strike disruptions handled?",
+      "answer": "Based on Carrier-At-Fault Delay & Liability Passthrough Protocol.docx [Clinic SLA's]:\n\nunavoidable transit disruption.\n...\n\nTop sources:\n- Clinic SLA's/Carrier-At-Fault Delay & Liability Passthrough Protocol.docx (clinic_slas) | similarity: 0.49\n- Strike_Intelligence/Bandh_Pattern_Analysis.docx (strike_intelligence) | similarity: 0.48\n- Strike_Intelligence/Bhubaneswar_Strike_Intelligence.docx (strike_intelligence) | similarity: 0.47",
+      "confidence": 0.491775117947418,
+      "top_sources": [
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx",
+        "Bandh_Pattern_Analysis.docx",
+        "Bhubaneswar_Strike_Intelligence.docx"
+      ]
+    },
+    {
+      "category": "History",
+      "query": "What historical solutions exist for weather delays?",
+      "answer": "Based on Platinum Tier Delivery & Delay Penalty Framework.docx [Clinic SLA's]:\n\nMajeure / Exceptions\n7.1. Qualifying Events: The Carrier shall be exempt from the Platinum Delay Penalty only in the event of documented Force Majeure, explicitly limited to: severe, unpredicted natural disasters, acts of terrorism, or sudden, unannounced government road closures.\n7.2. AI Validation of Exceptions: Claims of weather-related Force Majeure must be corroborated by the AI Logistics Copilot. The Copilot will query historical and live data from the OpenWeather API for the specific tran...\n\nTop sources:\n- Clinic SLA's/Platinum Tier Delivery & Delay Penalty Framework.docx (clinic_slas) | similarity: 0.47\n- Vendor Contract Docs/STANDARD TRANSIT DELAY & CARRIER PERFORMANCE POLICY1.docx (vendor_contract_docs) | similarity: 0.46\n- Vendor Contract Docs/SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx (vendor_contract_docs) | similarity: 0.46",
+      "confidence": 0.4650240039877852,
+      "top_sources": [
+        "Platinum Tier Delivery & Delay Penalty Framework.docx",
+        "STANDARD TRANSIT DELAY & CARRIER PERFORMANCE POLICY1.docx",
+        "SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx"
+      ]
+    },
+    {
+      "category": "Vendor",
+      "query": "What are the carrier liability terms?",
+      "answer": "Based on Packaging Policy Doc 7.docx [Packaging Policy Docs]:\n\nl Liability: The failure of a Carrier to protect the physical security of a loaded trailer constitutes gross negligence and a catastrophic breach of the Master Vendor Agreement. Upon Condemnation, the AI Copilot is authorized to automatically execute a financial chargeback against the Carrier. The Carrier shall be billed for 100% of the commercial invoice value of the entire load, explicitly calculated using the Net Value field (VBAK-NETWR), plus all associated bio-secure destruction, forensic i...\n\nTop sources:\n- Packaging Policy Docs/Packaging Policy Doc 7.docx (packaging_policy_docs) | similarity: 0.60\n- Packaging Policy Docs/Packaging Policy Doc2.docx (packaging_policy_docs) | similarity: 0.58\n- Clinic SLA's/Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx (clinic_slas) | similarity: 0.56",
+      "confidence": 0.6020554670504384,
+      "top_sources": [
+        "Packaging Policy Doc 7.docx",
+        "Packaging Policy Doc2.docx",
+        "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx"
+      ]
+    },
+    {
+      "category": "Vendor",
+      "query": "What is the policy for carrier no-show situations?",
+      "answer": "Based on Packaging Policy Doc 13.docx [Packaging Policy Docs]:\n\nned Carrier\u2019s API telematics signal (e.g., FourKites), indicating the freight was moved to an untracked shadow truck.\n\n4. MANDATORY QA HOLD & MITIGATION PROTOCOL\nUpon the AI Copilot triggering the Unapproved Transloading alert, the following critical operational mandates take immediate effect:\nSystemic Embargo & Quarantine: The AI Copilot shall autonomously apply an irreversible Delivery Block (VBAK-LIFSK) preventing commercial receipt.\nMandatory Clinic Rejection Directive: The Copilot shall tra...\n\nTop sources:\n- Packaging Policy Docs/Packaging Policy Doc 13.docx (packaging_policy_docs) | similarity: 0.51\n- Vendor Contract Docs/CARRIER\u00a0NO-SHOW & TENDER REJECTION POLICY.docx (vendor_contract_docs) | similarity: 0.50\n- Packaging Policy Docs/Packaging Policy Doc 7.docx (packaging_policy_docs) | similarity: 0.49",
+      "confidence": 0.513939003023247,
+      "top_sources": [
+        "Packaging Policy Doc 13.docx",
+        "CARRIER\u00a0NO-SHOW & TENDER REJECTION POLICY.docx",
+        "Packaging Policy Doc 7.docx"
+      ]
+    },
+    {
+      "category": "Vendor",
+      "query": "What are the telematics tracking requirements?",
+      "answer": "Based on TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx [Vendor Contract Docs]:\n\n PERFORMANCE SLA & THE CORE SCENARIO: TELEMATICS DISCONNECT\n3.1 Duty to Transmit: By accepting the freight tender, FedEx Freight legally commits to ensuring their Electronic Logging Devices (ELD) or tracking applications remain powered on, integrated, and transmitting at all times while in possession of Enterprise cargo.\n3.2 The 12-Hour Critical Threshold: If a shipment (VTTK) goes \"dark\" and the Enterprise AI Copilot registers a cessation of GPS signal for a continuous duration exceeding twelve...\n\nTop sources:\n- Vendor Contract Docs/TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx (vendor_contract_docs) | similarity: 0.51\n- Vendor Contract Docs/TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx (vendor_contract_docs) | similarity: 0.48\n- Clinic SLA's/Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx (clinic_slas) | similarity: 0.48",
+      "confidence": 0.5060572862623971,
+      "top_sources": [
+        "TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx",
+        "TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx",
+        "Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx"
+      ]
+    },
+    {
+      "category": "Vendor",
+      "query": "What is the short-dated product liability policy?",
+      "answer": "Based on SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx [Vendor Contract Docs]:\n\nMASTER VENDOR AGREEMENT (MVA) ADDENDUM: SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY\nDOCUMENT HEADER\nAddendum ID: VFS-MVA-2024-018-FDX\nVendor / Carrier Name: FedEx Freight (Hereinafter referred to as \"Carrier\")\nVendor Number: C-901\nControlling Department: Global Supply Chain & Quality Assurance (QA)\nEffective Date: October 1, 2024\nApplicability: All Outbound Shipments (VTTK) containing perishable Veterinary Nutrition subject to expiration controls.\n\n1. PREAMBLE & PURPOSE\nThis Master Vendor ...\n\nTop sources:\n- Vendor Contract Docs/SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx (vendor_contract_docs) | similarity: 0.50\n- Clinic SLA's/12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx (clinic_slas) | similarity: 0.50\n- Vendor Contract Docs/SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx (vendor_contract_docs) | similarity: 0.50",
+      "confidence": 0.5022571343200063,
+      "top_sources": [
+        "SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx",
+        "12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx",
+        "SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx"
+      ]
+    }
+  ]
+}

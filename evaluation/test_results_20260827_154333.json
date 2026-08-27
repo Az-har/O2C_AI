@@ -1,0 +1,891 @@
+{
+  "timestamp": "20260827_154333",
+  "total_queries": 78,
+  "avg_confidence": 0.5681844696922429,
+  "categories": {
+    "Clinic SLA": {
+      "count": 15,
+      "avg_confidence": 0.5753374086699176
+    },
+    "Vendor Contract": {
+      "count": 15,
+      "avg_confidence": 0.5741052013663209
+    },
+    "Packaging Policy": {
+      "count": 14,
+      "avg_confidence": 0.5422129317705338
+    },
+    "History Ticket": {
+      "count": 15,
+      "avg_confidence": 0.5433705073899557
+    },
+    "Strike Intel": {
+      "count": 17,
+      "avg_confidence": 0.5908360643651969
+    },
+    "Weather Protocol": {
+      "count": 2,
+      "avg_confidence": 0.6454988678031083
+    }
+  },
+  "detailed_results": [
+    {
+      "category": "Clinic SLA",
+      "query": "What is the penalty for late delivery to a Platinum clinic past grace period?",
+      "confidence": 0.6326625394235285,
+      "top_sources": [
+        "Platinum Tier Delivery & Delay Penalty Framework.docx",
+        "Executive Escalation & Manual Financial Override Protocol.docx",
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Platinum Tier Delivery & Delay Penalty Framework.docx] (Category: clinic_slas | Similarity: 0.63):\nxpiration.\n5. Financial Matrices & Penalties\n5.1. Platinum Delay Penalty: In the even"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "What is the variable penalty percentage for Independent and Gold tier clinics?",
+      "confidence": 0.5133304796642421,
+      "top_sources": [
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx",
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx",
+        "Executive Escalation & Manual Financial Override Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Carrier-At-Fault Delay & Liability Passthrough Protocol.docx] (Category: clinic_slas | Similarity: 0.51):\nhis explicitly includes tractor/trailer breakdowns, lack of driver availabilit"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "What is the receiving window violation protocol when arriving after clinic closing hours?",
+      "confidence": 0.5160487336652547,
+      "top_sources": [
+        "12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx",
+        "Receiving Window Violation & Predictive Hold Protocol.docx",
+        "Packaging Policy Doc2.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx] (Category: clinic_slas | Similarity: 0.52):\nutomated notification must be successfully transmitted to"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "When can a clinic execute an extreme delay order cancellation after 7 days?",
+      "confidence": 0.53697621088705,
+      "top_sources": [
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx",
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx",
+        "Executive Escalation & Manual Financial Override Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx] (Category: clinic_slas | Similarity: 0.54):\nreaching an Extreme Delay Event, the clinic is automatically granted the righ"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "What is the policy when an expedited rush order fails to deliver in 48 hours?",
+      "confidence": 0.5542940868085322,
+      "top_sources": [
+        "HIGH-VALUE\u00a0 RUSH FREIGHT PERFORMANCE POLICY.docx",
+        "HIGH-VALUE\u00a0 RUSH FREIGHT PERFORMANCE POLICY.docx",
+        "Expedited\u00a0Rush Order Failure & Zero Tolerance Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\HIGH-VALUE\u00a0 RUSH FREIGHT PERFORMANCE POLICY.docx] (Category: vendor_contract_docs | Similarity: 0.55):\nIn these critical scenarios, standard logistical grace periods are unequi"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "What are the rules for specialty prescription diet stock-out replacement via air courier?",
+      "confidence": 0.534395506510562,
+      "top_sources": [
+        "Specialty Diet Stock-Out Mitigation & Expedited Replacement.docx",
+        "MEDICAL STOCK-OUT & EMERGENCY MITIGATION LIABILITY.docx",
+        "MEDICAL STOCK-OUT & EMERGENCY MITIGATION LIABILITY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Specialty Diet Stock-Out Mitigation & Expedited Replacement.docx] (Category: clinic_slas | Similarity: 0.53):\nmandated to execute an immediate replacement shipment of the affected Spec"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "What is the minimum shelf-life MHDRZ compliance requirement for short-dated product rejection?",
+      "confidence": 0.6154728400838942,
+      "top_sources": [
+        "Minimum Shelf-Life (MHDRZ) Compliance & Short-Dated Destruction.docx",
+        "SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx",
+        "SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Minimum Shelf-Life (MHDRZ) Compliance & Short-Dated Destruction.docx] (Category: clinic_slas | Similarity: 0.62):\nantine, recall, and certified destruction of any \"short-dated\" product"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "When is an environmental exposure quarantine or QA hold required for moisture?",
+      "confidence": 0.5701206008559481,
+      "top_sources": [
+        "Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx",
+        "Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx",
+        "Packaging policy Doc9.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Environmental Exposure Quarantine & Quality Assurance (QA) Hold Protocol.docx] (Category: clinic_slas | Similarity: 0.57):\ning the prolonged transit of dry medical-grade veterinary nut"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "What conditions grant a severe meteorological exemption and Act of God penalty waiver?",
+      "confidence": 0.5605584248754965,
+      "top_sources": [
+        "Severe Meteorological Exemption & Act of God Penalty Waiver Protocol.docx",
+        "SEVERE WEATHER LIABILITY WAIVER & FORCE MAJEURE DECLARATION.docx",
+        "TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Severe Meteorological Exemption & Act of God Penalty Waiver Protocol.docx] (Category: clinic_slas | Similarity: 0.56):\non and a total waiver of standard SLA delay penalties for Third-P"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "What is the 12-hour advance weather notification mandate to claim Force Majeure?",
+      "confidence": 0.624815433789019,
+      "top_sources": [
+        "SEVERE WEATHER LIABILITY WAIVER & FORCE MAJEURE DECLARATION.docx",
+        "12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx",
+        "12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\SEVERE WEATHER LIABILITY WAIVER & FORCE MAJEURE DECLARATION.docx] (Category: vendor_contract_docs | Similarity: 0.62):\nMASTER VENDOR CONTRACT ADDENDUM: SEVERE WEATHER LIABILITY"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "When is a mandatory intermodal mode shift from road to rail enforced during blizzards?",
+      "confidence": 0.6032209505858848,
+      "top_sources": [
+        "WEATHER-MANDATED MODE SHIFT (ROAD TO RAIL) POLICY.docx",
+        "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx",
+        "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\WEATHER-MANDATED MODE SHIFT (ROAD TO RAIL) POLICY.docx] (Category: vendor_contract_docs | Similarity: 0.60):\nMASTER VENDOR CONTRACT ADDENDUM: WEATHER-MANDATED MODE SHIFT (ROAD "
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "How does carrier-at-fault delay liability passthrough work on customer invoices?",
+      "confidence": 0.6203474677581171,
+      "top_sources": [
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx",
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx",
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Carrier-At-Fault Delay & Liability Passthrough Protocol.docx] (Category: clinic_slas | Similarity: 0.62):\nestablishes the legal mechanism for a 100% financial liability passthrough, en"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "What is the emergency cross-docking protocol for trailer breakdown temperature integrity?",
+      "confidence": 0.6087972372420756,
+      "top_sources": [
+        "Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx",
+        "Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx",
+        "Ticket 2.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx] (Category: clinic_slas | Similarity: 0.61):\no a rescue truck\u2014shall be borne 100% by the Carrier.\n4.4. Chain "
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "What is the copilot autonomous financial mitigation approval threshold of $500?",
+      "confidence": 0.6305738181694629,
+      "top_sources": [
+        "Autonomous Financial Mitigation & Agentic SLA Preservation Protocol.docx",
+        "Autonomous Financial Mitigation & Agentic SLA Preservation Protocol.docx",
+        "Autonomous Financial Mitigation & Agentic SLA Preservation Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Autonomous Financial Mitigation & Agentic SLA Preservation Protocol.docx] (Category: clinic_slas | Similarity: 0.63):\nwhere mitigation exceeds the $500 threshold, the Copilot will imme"
+    },
+    {
+      "category": "Clinic SLA",
+      "query": "What is the executive escalation and manual director override protocol via MS Teams?",
+      "confidence": 0.5084467997296966,
+      "top_sources": [
+        "Executive Escalation & Manual Financial Override Protocol.docx",
+        "Executive Escalation & Manual Financial Override Protocol.docx",
+        "Executive Escalation & Manual Financial Override Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Executive Escalation & Manual Financial Override Protocol.docx] (Category: clinic_slas | Similarity: 0.51):\nit halts SAP Purchase Order generation. The LangGraph orchestration nodes im"
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What is the standard transit delay deduction and carrier performance benchmark?",
+      "confidence": 0.5459921787147346,
+      "top_sources": [
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx",
+        "STANDARD TRANSIT DELAY & CARRIER PERFORMANCE POLICY1.docx",
+        "STANDARD TRANSIT DELAY & CARRIER PERFORMANCE POLICY1.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx] (Category: clinic_slas | Similarity: 0.55):\nthe Enterprise dispatched the freight late to the Carrier, truncating the Car"
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What penalty is charged for carrier origin no-show or tender rejection TONU?",
+      "confidence": 0.5912772763970169,
+      "top_sources": [
+        "CARRIER\u00a0NO-SHOW & TENDER REJECTION POLICY.docx",
+        "Ticket 6.docx",
+        "CARRIER\u00a0NO-SHOW & TENDER REJECTION POLICY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\CARRIER\u00a0NO-SHOW & TENDER REJECTION POLICY.docx] (Category: vendor_contract_docs | Similarity: 0.59):\nream clinic stock-outs.\nTONU (Truck Order Not Used) Penalty: A punitive fin"
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What are the consequences for high-value rush freight performance failure?",
+      "confidence": 0.5016240006219017,
+      "top_sources": [
+        "CATASTROPHIC BREAKDOWN & EMERGENCY CROSS-DOCKING MANDATE.docx",
+        "Expedited\u00a0Rush Order Failure & Zero Tolerance Protocol.docx",
+        "HIGH-VALUE\u00a0 RUSH FREIGHT PERFORMANCE POLICY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\CATASTROPHIC BREAKDOWN & EMERGENCY CROSS-DOCKING MANDATE.docx] (Category: vendor_contract_docs | Similarity: 0.50):\nd base freight rate for the failed shipment.\n5.4 Chargeback "
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What is carrier reimbursement liability for medical diet stock-out emergency mitigation?",
+      "confidence": 0.5973114955900558,
+      "top_sources": [
+        "MEDICAL STOCK-OUT & EMERGENCY MITIGATION LIABILITY.docx",
+        "HIGH-VALUE\u00a0 RUSH FREIGHT PERFORMANCE POLICY.docx",
+        "Packaging Policy Doc 5.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\MEDICAL STOCK-OUT & EMERGENCY MITIGATION LIABILITY.docx] (Category: vendor_contract_docs | Similarity: 0.60):\nMASTER VENDOR CONTRACT ADDENDUM: MEDICAL STOCK-OUT & EMERGENCY MIT"
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What is the mandate for catastrophic breakdown and 24-hour climate cross-docking?",
+      "confidence": 0.5006782062599339,
+      "top_sources": [
+        "Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx",
+        "Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx",
+        "Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Clinic SLA's\\Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx] (Category: clinic_slas | Similarity: 0.50):\nent temperature begins to deviate toward the limits of the SAP M"
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What is carrier liability for trailer integrity breach and moisture pest exposure?",
+      "confidence": 0.6412096060729797,
+      "top_sources": [
+        "TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx",
+        "TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx",
+        "TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx] (Category: vendor_contract_docs | Similarity: 0.64):\nte legal liability for maintaining \"Food-Grade\" trailer integrity, "
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What are carrier liabilities for short-dated product delay and bio-secure destruction?",
+      "confidence": 0.5797880478113534,
+      "top_sources": [
+        "Packaging Policy Doc 5.docx",
+        "SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx",
+        "Packaging Policy Doc1.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc 5.docx] (Category: packaging_policy_docs | Similarity: 0.58):\nDeep Burial or Incineration. The product must never enter liquidation or agricultural feed c"
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What are the terms of the severe weather liability waiver and 72-hour Force Majeure?",
+      "confidence": 0.6231068688244895,
+      "top_sources": [
+        "SEVERE WEATHER LIABILITY WAIVER & FORCE MAJEURE DECLARATION.docx",
+        "Ticket 10.docx",
+        "HIGH-VALUE\u00a0 RUSH FREIGHT PERFORMANCE POLICY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\SEVERE WEATHER LIABILITY WAIVER & FORCE MAJEURE DECLARATION.docx] (Category: vendor_contract_docs | Similarity: 0.62):\nMASTER VENDOR CONTRACT ADDENDUM: SEVERE WEATHER LIABILITY"
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What is the penalty for telematics disconnect and blind-tracking GPS drop >12 hours?",
+      "confidence": 0.5480463576505071,
+      "top_sources": [
+        "TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx",
+        "TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx",
+        "TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx] (Category: vendor_contract_docs | Similarity: 0.55):\nCarrier\u2019s legal obligation to transmit real-time geographic coordinate"
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What is the weather-mandated mode shift to rail and rate lock integrity rule?",
+      "confidence": 0.6271513918436081,
+      "top_sources": [
+        "WEATHER-MANDATED MODE SHIFT (ROAD TO RAIL) POLICY.docx",
+        "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx",
+        "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\WEATHER-MANDATED MODE SHIFT (ROAD TO RAIL) POLICY.docx] (Category: vendor_contract_docs | Similarity: 0.63):\nMASTER VENDOR CONTRACT ADDENDUM: WEATHER-MANDATED MODE SHIFT (ROAD "
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What happens during after-hours arrival and carrier redelivery fee assumption?",
+      "confidence": 0.6185513615549673,
+      "top_sources": [
+        "AFTER-HOURS ARRIVAL & REDELIVERY FEE ASSUMPTION.docx",
+        "Receiving Window Violation & Predictive Hold Protocol.docx",
+        "AFTER-HOURS ARRIVAL & REDELIVERY FEE ASSUMPTION.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\AFTER-HOURS ARRIVAL & REDELIVERY FEE ASSUMPTION.docx] (Category: vendor_contract_docs | Similarity: 0.62):\ne event of transit delay resulting in arrival after CLOSE_TIME, the r"
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What penalty applies for missing liftgate equipment at independent non-dock clinics?",
+      "confidence": 0.5260934375948861,
+      "top_sources": [
+        "MISSING EQUIPMENT & SPECIALIZED FINAL-MILE DELIVERY POLICY.docx",
+        "MISSING EQUIPMENT & SPECIALIZED FINAL-MILE DELIVERY POLICY.docx",
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\MISSING EQUIPMENT & SPECIALIZED FINAL-MILE DELIVERY POLICY.docx] (Category: vendor_contract_docs | Similarity: 0.53):\nMASTER VENDOR CONTRACT ADDENDUM: MISSING EQUIPMENT & FINAL"
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What is carrier liability for dumped unattended freight without POD signature?",
+      "confidence": 0.647302474876696,
+      "top_sources": [
+        "PROOF OF DELIVERY & UNATTENDED FREIGHT LIABILITY POLICY.docx",
+        "Packaging policy Doc9.docx",
+        "Packaging Policy Doc 6.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\PROOF OF DELIVERY & UNATTENDED FREIGHT LIABILITY POLICY.docx] (Category: vendor_contract_docs | Similarity: 0.65):\nMASTER VENDOR CONTRACT ADDENDUM: PROOF OF DELIVERY & UNATTEND"
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What are carrier responsibilities for rail yard demurrage and 48-hour free time?",
+      "confidence": 0.5416086444494949,
+      "top_sources": [
+        "RAIL YARD DEMURRAGE & INTERMODAL DRAYAGE LIABILITY.docx",
+        "Ticket 8.docx",
+        "Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\RAIL YARD DEMURRAGE & INTERMODAL DRAYAGE LIABILITY.docx] (Category: vendor_contract_docs | Similarity: 0.54):\nMASTER VENDOR CONTRACT ADDENDUM: RAIL YARD DEMURRAGE & INTERMODAL "
+    },
+    {
+      "category": "Vendor Contract",
+      "query": "What is the AI auto-deduction agreement and 14-day dispute portal timeline?",
+      "confidence": 0.5218366722321893,
+      "top_sources": [
+        "AI AUTO-DEDUCTION & SYSTEM OF RECORD AGREEMENT.docx",
+        "AI AUTO-DEDUCTION & SYSTEM OF RECORD AGREEMENT.docx",
+        "Autonomous Financial Mitigation & Agentic SLA Preservation Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\AI AUTO-DEDUCTION & SYSTEM OF RECORD AGREEMENT.docx] (Category: vendor_contract_docs | Similarity: 0.52):\nMASTER VENDOR CONTRACT ADDENDUM: AI AUTO-DEDUCTION & SYSTEM OF RECORD "
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "What are the QA rules for thermal degradation when temperatures exceed 100\u00b0F?",
+      "confidence": 0.5302208062956439,
+      "top_sources": [
+        "Packaging Policy Doc1.docx",
+        "Packaging Policy Doc 11.docx",
+        "Emergency Cross-Docking & Temperature Integrity Preservation Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc1.docx] (Category: packaging_policy_docs | Similarity: 0.53):\nthe purposes of this QA-SOP, the following scientific and operational definitions apply:\nTher"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "What is the inspection protocol for freezing temperatures and wet canned diet burst risk?",
+      "confidence": 0.5739003785121356,
+      "top_sources": [
+        "Packaging Policy Doc2.docx",
+        "Packaging Policy Doc2.docx",
+        "Ticket 4.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc2.docx] (Category: packaging_policy_docs | Similarity: 0.57):\nDocument ID: QA-SOP-2026-002-FREEZE\nTarget SAP Material Class: Canned / Wet Therapeutic Diets"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "When is dry kibble condemned due to trailer leak moisture and mycotoxins?",
+      "confidence": 0.6551629904413899,
+      "top_sources": [
+        "Packaging Policy Doc3.docx",
+        "Packaging Policy Doc3.docx",
+        "Packaging Policy Doc 11.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc3.docx] (Category: packaging_policy_docs | Similarity: 0.66):\nf porous, dry veterinary nutrition to environmental moisture during transit. Medical-grade dr"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "What is the penalty for double-stacking crush damage violating LIPS weight rules?",
+      "confidence": 0.5568652801673077,
+      "top_sources": [
+        "Packaging Policy Doc 4.docx",
+        "Ticket 13.docx",
+        "Packaging Policy Doc 4.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc 4.docx] (Category: packaging_policy_docs | Similarity: 0.56):\ncorrelates a LIPS non-stackable mandate with a physical crush damage rejection, the followin"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "When is black-light pest inspection required for LTL terminal dwell >72 hours?",
+      "confidence": 0.4901895566104528,
+      "top_sources": [
+        "Packaging Policy Doc 5.docx",
+        "Packaging Policy Doc 5.docx",
+        "Packaging Policy Doc 5.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc 5.docx] (Category: packaging_policy_docs | Similarity: 0.49):\nation exceeding 72 hours.\n4. MANDATORY QA HOLD & MITIGATION PROTOCOL\nUpon the AI Copilot tri"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "What is the procedure for short-dated expiration breach below MARA shelf life?",
+      "confidence": 0.5461220624548309,
+      "top_sources": [
+        "Packaging Policy Doc 6.docx",
+        "Ticket 9.docx",
+        "SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc 6.docx] (Category: packaging_policy_docs | Similarity: 0.55):\nedicted delivery mathematically falls below the strictly defined Minimum Shelf Life paramete"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "What actions are mandated when a physical trailer security seal is broken or tampered?",
+      "confidence": 0.5944987901465778,
+      "top_sources": [
+        "Packaging Policy Doc 7.docx",
+        "Packaging Policy Doc 13.docx",
+        "Packaging Policy Doc 7.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc 7.docx] (Category: packaging_policy_docs | Similarity: 0.59):\nt seal, the entire trailer load is officially declared 100% Condemned.\nBio-Secure Disposal M"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "How is chemical cross-contamination and solvent odor palatability failure handled?",
+      "confidence": 0.5664670670004718,
+      "top_sources": [
+        "Packaging Policy Doc 8.docx",
+        "Packaging Policy Doc 8.docx",
+        "Packaging Policy Doc 8.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc 8.docx] (Category: packaging_policy_docs | Similarity: 0.57):\nrposes of this QA-SOP, the following scientific and operational definitions apply:\nChemical/"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "What is the shake-test protocol for kibble pulverization and shock vibration?",
+      "confidence": 0.46177203238291226,
+      "top_sources": [
+        "Packaging Policy Doc 4.docx",
+        "Ticket 7.docx",
+        "Packaging Policy Doc3.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc 4.docx] (Category: packaging_policy_docs | Similarity: 0.46):\n-stackable by the Enterprise, subjecting the bottom pallet to compressive forces exceeding i"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "Why is bottom layer dumped freight automatically condemned for ground exposure?",
+      "confidence": 0.5076875223379482,
+      "top_sources": [
+        "Packaging policy Doc9.docx",
+        "TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx",
+        "TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging policy Doc9.docx] (Category: packaging_policy_docs | Similarity: 0.51):\nactile inspection of the bottom-tier bags for dampness, mud, pest tracks, or UV-bleached pack"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "What checks are needed for rapid 40\u00b0F temperature swings and internal condensation?",
+      "confidence": 0.5288022192954316,
+      "top_sources": [
+        "Packaging Policy Doc 11.docx",
+        "Packaging Policy Doc 11.docx",
+        "Packaging Policy Doc 11.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc 11.docx] (Category: packaging_policy_docs | Similarity: 0.53):\nthan 40\u00b0F (22.2\u00b0C).\nTime Constraint: This 40\u00b0F thermal shift occurs within a condensed time"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "How are punctured bags handled during emergency cross-dock forklift damage?",
+      "confidence": 0.49388354142292207,
+      "top_sources": [
+        "Packaging policy Doc 12.docx",
+        "Packaging policy Doc 12.docx",
+        "Packaging Policy Doc 4.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging policy Doc 12.docx] (Category: packaging_policy_docs | Similarity: 0.49):\nllowing scientific and operational definitions apply:\nEmergency Cross-Docking: The unplanne"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "What is the bio-security consequence of unapproved transloading and lost custody?",
+      "confidence": 0.4964549953672293,
+      "top_sources": [
+        "Packaging Policy Doc 13.docx",
+        "Packaging Policy Doc 14.docx",
+        "Packaging Policy Doc 14.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc 13.docx] (Category: packaging_policy_docs | Similarity: 0.50):\ndeclare the entire trailer load 100% Condemned. No laboratory testing is required; the admi"
+    },
+    {
+      "category": "Packaging Policy",
+      "query": "What is the lab quarantine release protocol and bio-secure destruction mandate?",
+      "confidence": 0.5889538023522183,
+      "top_sources": [
+        "Packaging Policy Doc 14.docx",
+        "SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx",
+        "Packaging Policy Doc 15.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Packaging Policy Docs\\Packaging Policy Doc 14.docx] (Category: packaging_policy_docs | Similarity: 0.59):\nic, sensory, or analytical laboratory testing (e.g., GC-MS, HPLC, gravimetric sieve analysi"
+    },
+    {
+      "category": "History Ticket",
+      "query": "How was Ticket 1 INC-26-001 resolved for medical diet stock-out via emergency air freight?",
+      "confidence": 0.5914315618111525,
+      "top_sources": [
+        "Ticket 1.docx",
+        "Ticket 7.docx",
+        "Ticket 6.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 1.docx] (Category: history_resolution_logs | Similarity: 0.59):\nTICKET HEADER\nTicket ID: INC-26-001\nStatus: RESOLVED\nPriority: P1 - CRITICAL\nSubject: Carrier Delay / "
+    },
+    {
+      "category": "History Ticket",
+      "query": "How was Ticket 2 INC-26-002 handled for blizzard mode shift on I-80 with Swift carrier?",
+      "confidence": 0.4812639089130064,
+      "top_sources": [
+        "Ticket 2.docx",
+        "Ticket 2.docx",
+        "Ticket 8.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 2.docx] (Category: history_resolution_logs | Similarity: 0.48):\n2024-021).\nDirectly instructed Carrier C-902 dispatch to immediately execute emergency drayage from th"
+    },
+    {
+      "category": "History Ticket",
+      "query": "What was the resolution for Ticket 3 INC-26-003 missing liftgate at independent clinic?",
+      "confidence": 0.5511916651773042,
+      "top_sources": [
+        "Ticket 3.docx",
+        "Ticket 4.docx",
+        "Ticket 1.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 3.docx] (Category: history_resolution_logs | Similarity: 0.55):\nTICKET HEADER\nTicket ID: INC-26-003\nStatus: RESOLVED\nPriority: P3 - MODERATE\nSubject: Delivery Rejecti"
+    },
+    {
+      "category": "History Ticket",
+      "query": "How was Ticket 4 INC-26-004 telematics disconnect and $200 blind-tracking penalty applied?",
+      "confidence": 0.5558238839188839,
+      "top_sources": [
+        "TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx",
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx",
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx] (Category: vendor_contract_docs | Similarity: 0.56):\nutonomously execute the following chargebacks against FedEx Freight\u2019s "
+    },
+    {
+      "category": "History Ticket",
+      "query": "What was the planner action for Ticket 5 INC-26-005 after-hours arrival overnight hold?",
+      "confidence": 0.5219482365426384,
+      "top_sources": [
+        "Ticket 6.docx",
+        "Ticket 5.docx",
+        "Ticket 8.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 6.docx] (Category: history_resolution_logs | Similarity: 0.52):\nTICKET HEADER\nTicket ID: INC-26-006\nStatus: RESOLVED\nPriority: P2 - HIGH\nSubject: Carrier Origin No-Sh"
+    },
+    {
+      "category": "History Ticket",
+      "query": "How was Ticket 6 INC-26-006 origin no-show and $350 TONU fee billed to carrier?",
+      "confidence": 0.5412127545206749,
+      "top_sources": [
+        "Ticket 6.docx",
+        "CARRIER\u00a0NO-SHOW & TENDER REJECTION POLICY.docx",
+        "Ticket 6.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 6.docx] (Category: history_resolution_logs | Similarity: 0.54):\nTICKET HEADER\nTicket ID: INC-26-006\nStatus: RESOLVED\nPriority: P2 - HIGH\nSubject: Carrier Origin No-Sh"
+    },
+    {
+      "category": "History Ticket",
+      "query": "What was the resolution for Ticket 7 INC-26-007 dumped freight 150% chargeback?",
+      "confidence": 0.5734025832415897,
+      "top_sources": [
+        "CATASTROPHIC BREAKDOWN & EMERGENCY CROSS-DOCKING MANDATE.docx",
+        "TELEMATICS DISCONNECT & BLIND-TRACKING PENALTY.docx",
+        "SHORT-DATED PRODUCT DELAY & DESTRUCTION LIABILITY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\CATASTROPHIC BREAKDOWN & EMERGENCY CROSS-DOCKING MANDATE.docx] (Category: vendor_contract_docs | Similarity: 0.57):\nd base freight rate for the failed shipment.\n5.4 Chargeback "
+    },
+    {
+      "category": "History Ticket",
+      "query": "How was Ticket 8 INC-26-008 rail yard demurrage dispute resolved?",
+      "confidence": 0.5402579576972871,
+      "top_sources": [
+        "Ticket 8.docx",
+        "Ticket 8.docx",
+        "Ticket 6.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 8.docx] (Category: history_resolution_logs | Similarity: 0.54):\nrailroad's Demurrage penalties to the Enterprise.\nManually rejected the accessorial line item. Per MVA"
+    },
+    {
+      "category": "History Ticket",
+      "query": "What happened in Ticket 9 INC-26-009 short-dated product rejection and destruction?",
+      "confidence": 0.5067408012339706,
+      "top_sources": [
+        "Ticket 6.docx",
+        "Ticket 14.docx",
+        "Ticket 13.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 6.docx] (Category: history_resolution_logs | Similarity: 0.51):\nTICKET HEADER\nTicket ID: INC-26-006\nStatus: RESOLVED\nPriority: P2 - HIGH\nSubject: Carrier Origin No-Sh"
+    },
+    {
+      "category": "History Ticket",
+      "query": "How was Ticket 10 INC-26-010 hurricane Force Majeure 72-hour waiver verified via API?",
+      "confidence": 0.5443722395212208,
+      "top_sources": [
+        "Ticket 10.docx",
+        "Ticket 10.docx",
+        "12-Hour Weather Notification Mandate & Force Majeure Conditionality Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 10.docx] (Category: history_resolution_logs | Similarity: 0.54):\nially requested a waiver for the impending late delivery.\nCross-referenced the Carrier's stationary G"
+    },
+    {
+      "category": "History Ticket",
+      "query": "What were the planner steps for Ticket 11 INC-26-011 Texas heatwave thermal QA hold?",
+      "confidence": 0.4897195251232485,
+      "top_sources": [
+        "Ticket 6.docx",
+        "Ticket 2.docx",
+        "Ticket 11.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 6.docx] (Category: history_resolution_logs | Similarity: 0.49):\nTICKET HEADER\nTicket ID: INC-26-006\nStatus: RESOLVED\nPriority: P2 - HIGH\nSubject: Carrier Origin No-Sh"
+    },
+    {
+      "category": "History Ticket",
+      "query": "How was Ticket 12 INC-26-012 broken trailer security seal embargoed?",
+      "confidence": 0.5609869230238347,
+      "top_sources": [
+        "Ticket 12.docx",
+        "Ticket 12.docx",
+        "Ticket 12.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 12.docx] (Category: history_resolution_logs | Similarity: 0.56):\nShipment (VTTK): TK-12101\nDestination (KNA1): VCA Specialty Group (New York)\nINCIDENT DESCRIPTION\nTel"
+    },
+    {
+      "category": "History Ticket",
+      "query": "What was the credit memo action for Ticket 13 INC-26-013 crushed double-stacked pallet?",
+      "confidence": 0.5126798076673323,
+      "top_sources": [
+        "Ticket 13.docx",
+        "Ticket 7.docx",
+        "Ticket 3.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 13.docx] (Category: history_resolution_logs | Similarity: 0.51):\nTicket ID: INC-26-013\nStatus: RESOLVED\nPriority: P2 - HIGH\nSubject: Carrier Negligence / Double-Stack"
+    },
+    {
+      "category": "History Ticket",
+      "query": "How was Ticket 14 INC-26-014 rush freight failure zeroed out on carrier invoice?",
+      "confidence": 0.5813242872857454,
+      "top_sources": [
+        "Ticket 8.docx",
+        "Ticket 6.docx",
+        "Ticket 3.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 8.docx] (Category: history_resolution_logs | Similarity: 0.58):\nTICKET HEADER\nTicket ID: INC-26-008\nStatus: RESOLVED\nPriority: P3 - MODERATE\nSubject: Carrier Drayage "
+    },
+    {
+      "category": "History Ticket",
+      "query": "What lab testing and compliance block occurred in Ticket 15 INC-26-015 chemical odor?",
+      "confidence": 0.5982014751714463,
+      "top_sources": [
+        "Ticket 15.docx",
+        "Ticket 15.docx",
+        "Packaging Policy Doc 8.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [History Resolution Logs\\Ticket 15.docx] (Category: history_resolution_logs | Similarity: 0.60):\nHISTORICAL RESOLUTION LOG - TICKET 15 (INC-26-015)\nTICKET HEADER\nTicket ID: INC-26-015\nStatus: RESOLV"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What transportation disruptions and strikes affect freight in Delhi?",
+      "confidence": 0.6462202744234185,
+      "top_sources": [
+        "Delhi_Strike_Intelligence.docx",
+        "Truck_Pattern_Analysis.docx",
+        "Bhubaneswar_Strike_Intelligence.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Delhi_Strike_Intelligence.docx] (Category: strike_intelligence | Similarity: 0.65):\nDelhi Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal Incidents A"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What strike intelligence and route risks are documented for Mumbai?",
+      "confidence": 0.5650461565736651,
+      "top_sources": [
+        "Mumbai_Strike_Intelligence.docx",
+        "General_Pattern_Analysis.docx",
+        "Railway_Pattern_Analysis.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Mumbai_Strike_Intelligence.docx] (Category: strike_intelligence | Similarity: 0.57):\nMumbai Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal Incidents"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What disruption patterns affect railway logistics across India?",
+      "confidence": 0.6226372275412685,
+      "top_sources": [
+        "Railway_Pattern_Analysis.docx",
+        "Kolkata_Strike_Intelligence.docx",
+        "Bhubaneswar_Strike_Intelligence.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Railway_Pattern_Analysis.docx] (Category: strike_intelligence | Similarity: 0.62):\nRailway Disruption Pattern Analysis\nTotal Railway Incidents: 33\nMost Affected Cities\nNational/"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What are the bus strike patterns and transit risks in India?",
+      "confidence": 0.6185012172450091,
+      "top_sources": [
+        "Bus_Pattern_Analysis.docx",
+        "Railway_Pattern_Analysis.docx",
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Bus_Pattern_Analysis.docx] (Category: strike_intelligence | Similarity: 0.62):\nBus Disruption Pattern Analysis\nTotal Bus Incidents: 75\nMost Affected Cities\nNational/Unknown: 30 "
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What bandh and hartal disruption patterns should be anticipated?",
+      "confidence": 0.5480559893872482,
+      "top_sources": [
+        "Bandh_Pattern_Analysis.docx",
+        "Bhubaneswar_Strike_Intelligence.docx",
+        "National-Unknown_Strike_Intelligence.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Bandh_Pattern_Analysis.docx] (Category: strike_intelligence | Similarity: 0.55):\nBandh Disruption Pattern Analysis\nTotal Bandh Incidents: 58\nMost Affected Cities\nNational/Unknow"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What strike intelligence exists for Chennai transport corridors?",
+      "confidence": 0.6223046593316252,
+      "top_sources": [
+        "Chennai_Strike_Intelligence.docx",
+        "Delhi_Strike_Intelligence.docx",
+        "Hyderabad_Strike_Intelligence.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Chennai_Strike_Intelligence.docx] (Category: strike_intelligence | Similarity: 0.62):\nChennai Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal Inciden"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What auto rickshaw strike patterns affect local city deliveries?",
+      "confidence": 0.49176537363281636,
+      "top_sources": [
+        "Truck_Pattern_Analysis.docx",
+        "Auto_Pattern_Analysis.docx",
+        "Taxi_Pattern_Analysis.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Truck_Pattern_Analysis.docx] (Category: strike_intelligence | Similarity: 0.49):\nTruck Disruption Pattern Analysis\nTotal Truck Incidents: 25\nMost Affected Cities\nDelhi: 10 incid"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What taxi disruption patterns are documented in urban hubs?",
+      "confidence": 0.6595721929170163,
+      "top_sources": [
+        "Taxi_Pattern_Analysis.docx",
+        "Truck_Pattern_Analysis.docx",
+        "Lucknow_Strike_Intelligence.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Taxi_Pattern_Analysis.docx] (Category: strike_intelligence | Similarity: 0.66):\nTaxi Disruption Pattern Analysis\nTotal Taxi Incidents: 27\nMost Affected Cities\nDelhi: 9 incidents"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What truck and lorry strike risks affect highway freight?",
+      "confidence": 0.5317731052867398,
+      "top_sources": [
+        "Truck_Pattern_Analysis.docx",
+        "TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx",
+        "TRAILER INTEGRITY & PEST MOISTURE EXPOSURE POLICY.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Truck_Pattern_Analysis.docx] (Category: strike_intelligence | Similarity: 0.53):\nTruck Disruption Pattern Analysis\nTotal Truck Incidents: 25\nMost Affected Cities\nDelhi: 10 incid"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What general strike patterns impact supply chain logistics?",
+      "confidence": 0.47040269507525534,
+      "top_sources": [
+        "CARRIER\u00a0NO-SHOW & TENDER REJECTION POLICY.docx",
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx",
+        "Bhubaneswar_Strike_Intelligence.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Vendor Contract Docs\\CARRIER\u00a0NO-SHOW & TENDER REJECTION POLICY.docx] (Category: vendor_contract_docs | Similarity: 0.47):\nMaster Vendor Agreement (MVA) Addendum (the \"Addendum\") establishes the bin"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What disruption intelligence is recorded for Bangalore logistics?",
+      "confidence": 0.6027917554297267,
+      "top_sources": [
+        "Bhubaneswar_Strike_Intelligence.docx",
+        "Chennai_Strike_Intelligence.docx",
+        "Kolkata_Strike_Intelligence.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx] (Category: strike_intelligence | Similarity: 0.60):\nBhubaneswar Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What transportation strike patterns affect Hyderabad freight?",
+      "confidence": 0.5755830632481377,
+      "top_sources": [
+        "Hyderabad_Strike_Intelligence.docx",
+        "Kolkata_Strike_Intelligence.docx",
+        "Lucknow_Strike_Intelligence.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Hyderabad_Strike_Intelligence.docx] (Category: strike_intelligence | Similarity: 0.58):\nHyderabad Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal Inc"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What strike risks are documented for Kolkata deliveries?",
+      "confidence": 0.5550307912906313,
+      "top_sources": [
+        "Kolkata_Strike_Intelligence.docx",
+        "Master_Disruption_Intelligence.docx",
+        "General_Pattern_Analysis.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Kolkata_Strike_Intelligence.docx] (Category: strike_intelligence | Similarity: 0.56):\nKolkata Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal Inciden"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What disruption patterns affect Pune transport routes?",
+      "confidence": 0.6667307809388586,
+      "top_sources": [
+        "Pune_Strike_Intelligence.docx",
+        "Railway_Pattern_Analysis.docx",
+        "General_Pattern_Analysis.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Pune_Strike_Intelligence.docx] (Category: strike_intelligence | Similarity: 0.67):\nPune Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal Incidents Ana"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What strike intelligence exists for Lucknow logistics corridors?",
+      "confidence": 0.6145360801329787,
+      "top_sources": [
+        "Lucknow_Strike_Intelligence.docx",
+        "Hyderabad_Strike_Intelligence.docx",
+        "Kolkata_Strike_Intelligence.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Lucknow_Strike_Intelligence.docx] (Category: strike_intelligence | Similarity: 0.61):\nLucknow Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal Inciden"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What disruption patterns are monitored for Bhubaneswar freight?",
+      "confidence": 0.6750395519922735,
+      "top_sources": [
+        "Bhubaneswar_Strike_Intelligence.docx",
+        "National-Unknown_Strike_Intelligence.docx",
+        "Kolkata_Strike_Intelligence.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx] (Category: strike_intelligence | Similarity: 0.68):\nBhubaneswar Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:39:21\nTotal"
+    },
+    {
+      "category": "Strike Intel",
+      "query": "What national-level disruption intelligence guides supply chain rerouting?",
+      "confidence": 0.5782221797616778,
+      "top_sources": [
+        "National-Unknown_Strike_Intelligence.docx",
+        "Bhubaneswar_Strike_Intelligence.docx",
+        "Master_Disruption_Intelligence.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx] (Category: strike_intelligence | Similarity: 0.58):\nNational/Unknown Transportation Disruption Intelligence\nGenerated: 2026-08-25 11:3"
+    },
+    {
+      "category": "Weather Protocol",
+      "query": "What is the Hyderabad severe weather protocol for heat and rain thresholds?",
+      "confidence": 0.6516617432404996,
+      "top_sources": [
+        "Hyderabad_Weather_Protocol.docx",
+        "Hyderabad_Weather_Protocol.docx",
+        "Master_Weather_Protocol.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Weather_Policies\\Hyderabad_Weather_Protocol.docx] (Category: weather_policies | Similarity: 0.65):\nHyderabad Severe Weather Protocol\nGenerated: 2026-08-25 11:39:21\nTotal Alerts Analyzed: 1\nExecutiv"
+    },
+    {
+      "category": "Weather Protocol",
+      "query": "What is the Master Severe Weather Protocol for national Force Majeure eligibility?",
+      "confidence": 0.6393359923657169,
+      "top_sources": [
+        "Master_Weather_Protocol.docx",
+        "CATASTROPHIC BREAKDOWN & EMERGENCY CROSS-DOCKING MANDATE.docx",
+        "SEVERE WEATHER LIABILITY WAIVER & FORCE MAJEURE DECLARATION.docx"
+      ],
+      "answer_preview": "\ud83d\udcc4 [Weather_Policies\\Master_Weather_Protocol.docx] (Category: weather_policies | Similarity: 0.64):\nMaster Severe Weather Protocol\nPurpose\nThis master protocol provides cross-regional guidance for the "
+    }
+  ]
+}

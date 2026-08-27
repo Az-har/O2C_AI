@@ -1,0 +1,21 @@
+{
+  "order_to_delivery_days": 0.005511599961320502,
+  "order_to_departure_days": 0.2644570133724491,
+  "days_since_order": 0.005090346347029854,
+  "days_until_delivery": 0.003415118112425899,
+  "total_quantity": 0.0029003856377530935,
+  "total_weight": 0.0013674707106497432,
+  "weight_per_unit": 0.004658253540667654,
+  "is_heavy_shipment": 0.0007036026393283064,
+  "has_specialty_diet": 0.00011283925933085034,
+  "min_shelf_life": 0.0003734468857961133,
+  "customer_tier_code": 0.0133266837579916,
+  "shipping_risk_code": 0.02800278327826153,
+  "status_code": 0.6032056380806937,
+  "haversine_distance_km": 0.002732112124549208,
+  "required_transit_speed_kmh": 0.027391182554829013,
+  "is_unrealistic_speed": 0.014031274278152152,
+  "order_day_of_week": 0.008730535873503815,
+  "is_weekend_order": 0.004874054634326546,
+  "is_month_end": 0.009115658950941257
+}

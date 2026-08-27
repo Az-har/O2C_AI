@@ -1,0 +1,112 @@
+{
+  "metadata": {
+    "evaluation_date": "2026-08-25T10:07:20.345210",
+    "total_analyses": 1860,
+    "date_range": {
+      "start": "2026-08-21T07:11:49.476772",
+      "end": "2026-08-21T10:14:57.672711"
+    }
+  },
+  "retrieval": {
+    "confidence": {
+      "mean": 0.503705359595142,
+      "median": 0.4926471805980144,
+      "std": 0.030065580536363688,
+      "min": 0.47532886004307906,
+      "max": 0.581026992593551,
+      "percentiles": {
+        "10": 0.47944563001665363,
+        "25": 0.47944563001665363,
+        "50": 0.4926471805980144,
+        "75": 0.5163049890662432,
+        "90": 0.5474904037853724,
+        "95": 0.581026992593551,
+        "99": 0.581026992593551
+      }
+    },
+    "sources_per_query": {
+      "mean": 5.0,
+      "median": 5.0,
+      "mode": 5.0
+    },
+    "document_diversity": {
+      "unique_docs_retrieved": 4,
+      "total_docs_in_corpus": 50,
+      "coverage_percentage": 8.0,
+      "top_docs": {
+        "resolution_logs_2023.txt": 3906,
+        "sop_strike_response.txt": 2228,
+        "kedb_2024.txt": 1666,
+        "sla_2024.txt": 1500
+      }
+    },
+    "category_distribution": {
+      "resolution_log": 3906,
+      "sop": 2228,
+      "kedb": 1666,
+      "sla": 1500
+    }
+  },
+  "questions": {
+    "total_unique_questions": 22,
+    "total_analyses": 1860,
+    "top_questions": {
+      "What is the standard operating procedure for LOW severity strikes?": 560,
+      "What are past resolutions for strikes in National/Unknown?": 218,
+      "What are past resolutions for strikes in Unknown?": 208,
+      "What is the SLA for handling general strikes?": 204,
+      "What is the SLA for handling bus strikes?": 137
+    }
+  },
+  "consistency": {
+    "consistency_checks": [
+      {
+        "question": "What is the standard operating procedure for LOW severity strikes?",
+        "times_asked": 560,
+        "consistency_percentage": 100.0
+      },
+      {
+        "question": "What are past resolutions for strikes in National/Unknown?",
+        "times_asked": 218,
+        "consistency_percentage": 100.0
+      },
+      {
+        "question": "What are past resolutions for strikes in Unknown?",
+        "times_asked": 208,
+        "consistency_percentage": 100.0
+      }
+    ]
+  },
+  "quality": {
+    "confidence_distribution": {
+      "high": {
+        "count": 1860,
+        "percentage": 100.0
+      },
+      "medium": {
+        "count": 0,
+        "percentage": 0.0
+      },
+      "low": {
+        "count": 0,
+        "percentage": 0.0
+      }
+    },
+    "overall_grade": "C (Fair)",
+    "avg_confidence": 0.503705359595142,
+    "coverage_percentage": 8.0
+  },
+  "recommendations": [
+    {
+      "severity": "critical",
+      "issue": "LOW COVERAGE",
+      "description": "Only 4/50 documents being retrieved (8.0%)",
+      "actions": [
+        "Audit unused documents - are they relevant to queries?",
+        "Check document preprocessing and chunking",
+        "Verify embeddings are generated for all documents",
+        "Review if corpus contains irrelevant documents"
+      ]
+    }
+  ]
+}

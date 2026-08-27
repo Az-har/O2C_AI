@@ -1,0 +1,32 @@
+{
+  "results": [
+    {
+      "category": "Weather",
+      "query": "What weather conditions affect Hyderabad deliveries?",
+      "confidence": 0.5720794648621328,
+      "top_sources": [
+        "Hyderabad_Weather_Protocol.docx",
+        "Hyderabad_Weather_Protocol.docx"
+      ]
+    },
+    {
+      "category": "Strike",
+      "query": "What transportation disruptions affect Delhi?",
+      "confidence": 0.6500352464356233,
+      "top_sources": [
+        "Delhi_Strike_Intelligence.docx",
+        "Truck_Pattern_Analysis.docx"
+      ]
+    },
+    {
+      "category": "SLA",
+      "query": "What is the penalty for late delivery to a Platinum clinic?",
+      "confidence": 0.643178747258657,
+      "top_sources": [
+        "Platinum Tier Delivery & Delay Penalty Framework.docx",
+        "Executive Escalation & Manual Financial Override Protocol.docx"
+      ]
+    }
+  ],
+  "timestamp": "20260825_115128"
+}

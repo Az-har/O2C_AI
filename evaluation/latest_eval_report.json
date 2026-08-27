@@ -1,0 +1,124 @@
+{
+  "metadata": {
+    "evaluation_date": "2026-08-27T16:31:32.279038",
+    "total_analyses": 1958,
+    "date_range": {
+      "start": "2026-08-21T07:11:49.476772",
+      "end": "2026-08-27T16:31:31.467022"
+    }
+  },
+  "retrieval": {
+    "confidence": {
+      "mean": 0.5115088875511532,
+      "median": 0.4926471805980144,
+      "std": 0.05042789549102097,
+      "min": 0.3,
+      "max": 0.8326276779174804,
+      "percentiles": {
+        "10": 0.47944563001665363,
+        "25": 0.47944563001665363,
+        "50": 0.4926471805980144,
+        "75": 0.5163049890662432,
+        "90": 0.5780839903152452,
+        "95": 0.581026992593551,
+        "99": 0.7413122089585843
+      }
+    },
+    "sources_per_query": {
+      "mean": 5.0,
+      "median": 5.0,
+      "mode": 5.0
+    },
+    "document_diversity": {
+      "unique_docs_retrieved": 82,
+      "total_docs_in_corpus": 78,
+      "coverage_percentage": 105.12820512820514,
+      "top_docs": {
+        "resolution_logs_2023.txt": 3906,
+        "sop_strike_response.txt": 2228,
+        "kedb_2024.txt": 1666,
+        "sla_2024.txt": 1500,
+        "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx": 13,
+        "Bhubaneswar_Strike_Intelligence.docx": 12,
+        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx": 12,
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx": 11,
+        "STANDARD TRANSIT DELAY & CARRIER PERFORMANCE POLICY1.docx": 11,
+        "Packaging Policy Doc 8.docx": 11
+      }
+    },
+    "category_distribution": {
+      "resolution_log": 3906,
+      "sop": 2228,
+      "kedb": 1666,
+      "sla": 1500,
+      "clinic_slas": 112,
+      "strike_intelligence": 106,
+      "vendor_contract_docs": 92,
+      "packaging_policy_docs": 87,
+      "history_resolution_logs": 74,
+      "weather_policies": 19
+    }
+  },
+  "questions": {
+    "total_unique_questions": 120,
+    "total_analyses": 1958,
+    "top_questions": {
+      "What is the standard operating procedure for LOW severity strikes?": 560,
+      "What are past resolutions for strikes in National/Unknown?": 218,
+      "What are past resolutions for strikes in Unknown?": 208,
+      "What is the SLA for handling general strikes?": 204,
+      "What is the SLA for handling bus strikes?": 137
+    }
+  },
+  "consistency": {
+    "consistency_checks": [
+      {
+        "question": "What is the standard operating procedure for LOW severity strikes?",
+        "times_asked": 560,
+        "consistency_percentage": 100.0
+      },
+      {
+        "question": "What are past resolutions for strikes in National/Unknown?",
+        "times_asked": 218,
+        "consistency_percentage": 100.0
+      },
+      {
+        "question": "What are past resolutions for strikes in Unknown?",
+        "times_asked": 208,
+        "consistency_percentage": 100.0
+      }
+    ]
+  },
+  "quality": {
+    "confidence_distribution": {
+      "high": {
+        "count": 1956,
+        "percentage": 99.89785495403473
+      },
+      "medium": {
+        "count": 1,
+        "percentage": 0.05107252298263534
+      },
+      "low": {
+        "count": 1,
+        "percentage": 0.05107252298263534
+      }
+    },
+    "overall_grade": "A (Excellent)",
+    "avg_confidence": 0.5115088875511532,
+    "coverage_percentage": 105.12820512820514
+  },
+  "recommendations": [
+    {
+      "severity": "info",
+      "issue": "SYSTEM PERFORMING WELL",
+      "description": "Consider these enhancements",
+      "actions": [
+        "Add reranking layer for top-1 accuracy improvement",
+        "Implement hybrid search (BM25 + vector) for better recall",
+        "Add LLM generation for natural language answers",
+        "Set up automated evaluation tracking"
+      ]
+    }
+  ]
+}

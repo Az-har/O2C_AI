@@ -1,0 +1,21 @@
+reading_id,session_id,city_name,state,recorded_at,date_only,hour_of_day,temperature,feels_like,temp_min,temp_max,humidity,pressure,visibility_km,cloudiness,weather_main,weather_description,wind_speed,wind_direction,rain_1h,snow_1h,data_source
+339,33,Jaipur,Rajasthan,2026-08-27T17:11:42,2026-08-27,17,33.69,38.38,33.69,33.69,52,1002.0,10.0,99,Clouds,overcast clouds,3.09,280.0,0.0,0.0,OpenWeatherMap
+340,33,Lucknow,Uttar Pradesh,2026-08-27T17:11:42,2026-08-27,17,32.05,39.05,32.05,32.05,79,999.0,10.0,100,Rain,light rain,5.14,320.0,0.81,0.0,OpenWeatherMap
+337,33,Pune,Maharashtra,2026-08-27T17:11:41,2026-08-27,17,27.46,27.8,25.74,27.83,49,1011.0,10.0,68,Clouds,broken clouds,6.87,273.0,0.0,0.0,OpenWeatherMap
+338,33,Ahmedabad,Gujarat,2026-08-27T17:11:41,2026-08-27,17,30.02,32.48,30.02,30.02,58,1004.0,10.0,100,Clouds,overcast clouds,5.14,190.0,0.0,0.0,OpenWeatherMap
+335,33,Kolkata,West Bengal,2026-08-27T17:11:40,2026-08-27,17,31.95,38.95,31.95,32.22,84,999.0,10.0,53,Rain,light rain,3.09,180.0,0.78,0.0,OpenWeatherMap
+336,33,Hyderabad,Telangana,2026-08-27T17:11:40,2026-08-27,17,31.21,34.06,30.71,31.21,55,1007.0,10.0,88,Clouds,overcast clouds,8.23,290.0,0.0,0.0,OpenWeatherMap
+333,33,Bangalore,Karnataka,2026-08-27T17:11:39,2026-08-27,17,27.76,29.97,26.83,28.68,68,1010.0,10.0,100,Clouds,overcast clouds,5.66,260.0,0.0,0.0,OpenWeatherMap
+334,33,Chennai,Tamil Nadu,2026-08-27T17:11:39,2026-08-27,17,31.87,38.87,31.7,33.03,74,1005.0,10.0,100,Clouds,overcast clouds,4.12,130.0,0.0,0.0,OpenWeatherMap
+331,33,Mumbai,Maharashtra,2026-08-27T17:11:38,2026-08-27,17,30.0,35.04,29.95,30.0,70,1008.0,10.0,56,Rain,light rain,6.17,280.0,0.14,0.0,OpenWeatherMap
+332,33,Delhi,Delhi,2026-08-27T17:11:38,2026-08-27,17,30.99,37.57,30.07,30.99,70,1000.0,10.0,88,Rain,moderate rain,5.66,90.0,1.68,0.0,OpenWeatherMap
+240,23,Lucknow,Uttar Pradesh,2026-08-27T16:13:17,2026-08-27,16,31.05,38.05,31.05,31.05,79,999.0,10.0,100,Rain,moderate rain,4.12,340.0,3.17,0.0,OpenWeatherMap
+238,23,Ahmedabad,Gujarat,2026-08-27T16:13:16,2026-08-27,16,30.02,32.48,30.02,30.02,58,1004.0,10.0,100,Clouds,overcast clouds,5.14,190.0,0.0,0.0,OpenWeatherMap
+239,23,Jaipur,Rajasthan,2026-08-27T16:13:16,2026-08-27,16,33.68,38.36,33.68,33.68,52,1002.0,10.0,99,Clouds,overcast clouds,3.6,270.0,0.0,0.0,OpenWeatherMap
+236,23,Hyderabad,Telangana,2026-08-27T16:13:15,2026-08-27,16,31.13,34.14,30.23,31.93,56,1007.0,10.0,96,Clouds,overcast clouds,31.68,,0.0,0.0,OpenWeatherMap
+237,23,Pune,Maharashtra,2026-08-27T16:13:15,2026-08-27,16,26.72,27.86,26.3,26.72,62,1010.0,10.0,68,Clouds,broken clouds,6.87,273.0,0.0,0.0,OpenWeatherMap
+234,23,Chennai,Tamil Nadu,2026-08-27T16:13:14,2026-08-27,16,32.54,39.54,32.22,35.01,70,1005.0,10.0,100,Clouds,overcast clouds,4.12,140.0,0.0,0.0,OpenWeatherMap
+235,23,Kolkata,West Bengal,2026-08-27T16:13:14,2026-08-27,16,32.96,39.96,32.23,32.96,75,999.0,10.0,55,Clouds,broken clouds,2.57,130.0,0.0,0.0,OpenWeatherMap
+232,23,Delhi,Delhi,2026-08-27T16:13:13,2026-08-27,16,32.99,39.99,31.07,32.99,66,1000.0,10.0,84,Rain,moderate rain,5.14,80.0,1.1,0.0,OpenWeatherMap
+233,23,Bangalore,Karnataka,2026-08-27T16:13:13,2026-08-27,16,27.54,29.59,26.83,29.12,68,1009.0,10.0,100,Clouds,overcast clouds,4.63,240.0,0.0,0.0,OpenWeatherMap
+231,23,Mumbai,Maharashtra,2026-08-27T16:13:12,2026-08-27,16,30.0,35.04,30.0,30.95,70,1008.0,10.0,51,Rain,light rain,7.2,270.0,0.19,0.0,OpenWeatherMap
