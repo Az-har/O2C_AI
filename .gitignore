@@ -32,13 +32,23 @@ venv/
 ENV/
 env/
 
-# SQLite WAL and temp files
+# SQLite Database & temporary files
+*.db
 *.db-wal
 *.db-shm
 *.db-journal
+india_monitor_data/database/*.db*
+
+# Binary vector store & models (auto-generated at runtime)
+*.faiss
+*.pkl
+*.pickle
+india_monitor_data/rag/vector_store/*
+india_monitor_data/models/*.pkl
 
 # Logs and temporary files
 *.log
+india_monitor_data/logs/*
 scratch/
 check_ml_evaluation.py
 
