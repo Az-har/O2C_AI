@@ -80,7 +80,7 @@ def query_order(order_id: str):
     """Retrieve detailed prediction for a specific order ID"""
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT * FROM ml_predictions WHERE order_id = ? ORDER BY id DESC LIMIT 1", (str(order_id),))
+    c.execute("SELECT * FROM ml_predictions WHERE order_id = ? ORDER BY prediction_id DESC LIMIT 1", (str(order_id),))
     row = c.fetchone()
     conn.close()
 
@@ -113,7 +113,7 @@ def list_orders(delayed_only: bool = False, limit: int = 20):
     query = "SELECT order_id, customer_name, carrier_name, will_be_delayed, delay_probability, delay_hours, financial_risk_usd, predicted_at FROM ml_predictions"
     if delayed_only:
         query += " WHERE will_be_delayed = 1"
-    query += f" ORDER BY id DESC LIMIT {limit}"
+    query += f" ORDER BY prediction_id DESC LIMIT {limit}"
     
     c.execute(query)
     rows = c.fetchall()
