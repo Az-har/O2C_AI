@@ -30,7 +30,8 @@ def run_databricks_agent(
     date: str = None,
     order_limit: int = None,
     target_order: str = None,
-    all_orders: bool = True,
+    all_orders: bool = False,
+    repredict: bool = False,
     rebuild_rag: bool = False,
     enable_teams_dispatch: bool = False
 ):
@@ -40,12 +41,17 @@ def run_databricks_agent(
     print(f"📍 Project Root: {PROJECT_ROOT}")
     print("=" * 80)
 
+    # If neither target_order nor limit is set, default to processing all orders
+    if not target_order and (order_limit is None or order_limit <= 0):
+        all_orders = True
+
     agent = AgenticOrchestrator()
     result = agent.run_daily_agent_cycle(
         date=date,
         order_limit=order_limit,
         target_order=target_order,
         all_orders=all_orders,
+        repredict=repredict,
         rebuild_rag=rebuild_rag,
         enable_teams_dispatch=enable_teams_dispatch
     )
@@ -58,7 +64,8 @@ if __name__ == "__main__":
     parser.add_argument("--date", type=str, default=None, help="Target execution date (YYYY-MM-DD)")
     parser.add_argument("--order", type=str, default=None, help="Single target order ID")
     parser.add_argument("--limit", type=int, default=None, help="Max orders to process")
-    parser.add_argument("--all-orders", "--all", action="store_true", default=True, help="Process all orders in dataset")
+    parser.add_argument("--all-orders", "--all", action="store_true", default=False, help="Process all orders in dataset")
+    parser.add_argument("--repredict", "--force-repredict", action="store_true", default=False, help="Force re-predict all orders (default: skip already predicted)")
     parser.add_argument("--rebuild-rag", action="store_true", default=False, help="Rebuild RAG index")
     parser.add_argument("--enable-teams", action="store_true", default=False, help="Enable Teams dispatcher")
     args = parser.parse_args()
@@ -68,6 +75,7 @@ if __name__ == "__main__":
         order_limit=args.limit,
         target_order=args.order,
         all_orders=args.all_orders,
+        repredict=args.repredict,
         rebuild_rag=args.rebuild_rag,
         enable_teams_dispatch=args.enable_teams
     )

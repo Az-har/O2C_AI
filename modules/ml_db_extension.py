@@ -447,6 +447,16 @@ class MLDatabaseExtension:
         self.conn.commit()
         return cursor.lastrowid
 
+    def get_predicted_order_ids(self) -> set:
+        """Return a set of order_id strings that have already been predicted in ml_predictions"""
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT DISTINCT order_id FROM ml_predictions")
+            rows = cursor.fetchall()
+            return {str(r[0]) for r in rows if r[0]}
+        except Exception:
+            return set()
+
     def close(self):
         """Close SQLite database connection"""
         if self.conn:

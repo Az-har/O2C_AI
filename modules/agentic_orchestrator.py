@@ -244,6 +244,7 @@ class AgenticOrchestrator:
         order_limit: int = 5,
         target_order: str = None,
         all_orders: bool = False,
+        repredict: bool = False,
         rebuild_rag: bool = False,
         enable_teams_dispatch: bool = False
     ) -> Dict[str, Any]:
@@ -252,7 +253,7 @@ class AgenticOrchestrator:
         1. Ingest real-time Weather & Strike feeds into SQLite
         2. Check & index RAG policy knowledge base
         3. Load SAP tables & train Engine A ML models
-        4. Predict delay risks with weather & strike intersection
+        4. Predict delay risks with weather & strike intersection (auto-skips already predicted orders unless repredict=True)
         5. Retrieve RAG SLA clauses & contract addenda
         6. Execute Phase 4 LLM Decision Synthesis & MS Teams Approval Routing
         7. Generate daily executive report & export datasets
@@ -280,7 +281,7 @@ class AgenticOrchestrator:
             s_saved, _ = self.db.write_strikes(s_data, session_id) if s_data else (0, 0)
             print(f"   📰 News Feed   : Ingested {s_saved} disruption articles into SQLite")
 
-            # ── STEP 2: RAG KNOWLEDGE VERIFICATION & REBUILD ───────────────
+            # ── STEP 2: RAG KNOWLEDGE BASE VERIFICATION ───────────────
             print("\n[Step 2/6] 📚 RAG KNOWLEDGE BASE VERIFICATION")
             print("-" * 75)
             # Re-generate policy docs from fresh weather/news if needed
@@ -311,12 +312,33 @@ class AgenticOrchestrator:
             orders_to_process = []
             if target_order:
                 orders_to_process = [str(target_order)]
-            elif all_orders or order_limit is None or order_limit <= 0:
-                orders_to_process = [str(oid) for oid in ml_df['order_id'].drop_duplicates()]
             else:
-                orders_to_process = [str(oid) for oid in ml_df['order_id'].drop_duplicates().head(order_limit)]
-
-            print(f"   Analyzing {len(orders_to_process)} order(s)...")
+                total_dataset_orders = ml_df['order_id'].drop_duplicates().tolist()
+                
+                # Check for already predicted orders to skip them unless repredict=True
+                if not repredict:
+                    already_predicted = self.ml_db.get_predicted_order_ids()
+                    unpredicted_df = ml_df[~ml_df['order_id'].astype(str).isin(already_predicted)]
+                    
+                    if len(already_predicted) > 0:
+                        print(f"   ⚡ Order Caching: {len(already_predicted):,} orders already predicted in database (skipping).")
+                    
+                    if unpredicted_df.empty:
+                        print(f"   ✨ All {len(total_dataset_orders):,} active orders have already been predicted.")
+                        print(f"   💡 Pass --repredict (or repredict=True) to force re-evaluation of all orders.")
+                        orders_to_process = []
+                    else:
+                        if all_orders or order_limit is None or order_limit <= 0:
+                            orders_to_process = [str(oid) for oid in unpredicted_df['order_id'].drop_duplicates()]
+                        else:
+                            orders_to_process = [str(oid) for oid in unpredicted_df['order_id'].drop_duplicates().head(order_limit)]
+                        print(f"   📦 Found {len(orders_to_process):,} NEW unpredicted order(s) to process.")
+                else:
+                    if all_orders or order_limit is None or order_limit <= 0:
+                        orders_to_process = [str(oid) for oid in total_dataset_orders]
+                    else:
+                        orders_to_process = [str(oid) for oid in total_dataset_orders[:order_limit]]
+                    print(f"   🔄 Force Re-Predict Active: Processing {len(orders_to_process):,} order(s)...")
 
             synthesized_decisions = []
             for idx, ord_id in enumerate(orders_to_process, 1):
@@ -324,15 +346,19 @@ class AgenticOrchestrator:
                 order_data = self.ml_db.get_order_details(ord_id) or {}
                 pred_result = self.predictive_engine.predict_delivery_delay(ord_id)
                 
+                # Record prediction into SQLite to enable skipping on future runs
+                self.ml_db.record_prediction(pred_result)
+                
                 # Synthesize via Phase 4 Multi-Agent Specialists & Phase 5 Executors
                 decision = self.llm_synthesizer.synthesize(pred_result, order_data=order_data)
                 synthesized_decisions.append(decision)
 
-                print(f"\n   [{idx}/{len(orders_to_process)}] Order {ord_id} -> "
-                      f"Status: {'❌ DELAYED' if decision['engine_a_ml_prediction']['is_delayed'] else '✅ ON TIME'} "
-                      f"({decision['engine_a_ml_prediction']['delay_probability']:.1%}) | "
-                      f"Penalty: ${decision['legal_and_sla_adjudication']['sla_delay_penalty_usd']:.2f} | "
-                      f"Approval: {decision['emergency_mitigation']['approval_status']}")
+                if idx <= 10 or idx % 500 == 0 or idx == len(orders_to_process):
+                    print(f"\n   [{idx}/{len(orders_to_process)}] Order {ord_id} -> "
+                          f"Status: {'❌ DELAYED' if decision['engine_a_ml_prediction']['is_delayed'] else '✅ ON TIME'} "
+                          f"({decision['engine_a_ml_prediction']['delay_probability']:.1%}) | "
+                          f"Penalty: ${decision['legal_and_sla_adjudication']['sla_delay_penalty_usd']:.2f} | "
+                          f"Approval: {decision['emergency_mitigation']['approval_status']}")
 
             # ── STEP 6: EXPORT DAILY REPORT & SUMMARY ──────────────────────
             print("\n[Step 5/6] 📊 GENERATING DAILY AGENTIC DECISION REPORT")
@@ -394,6 +420,7 @@ def main():
     parser.add_argument("--order", type=str, default=None, help="Single Order ID to analyze")
     parser.add_argument("--limit", type=int, default=5, help="Number of active orders to analyze")
     parser.add_argument("--all-orders", "--all", action="store_true", default=False, help="Process ALL active orders in dataset")
+    parser.add_argument("--repredict", "--force-repredict", action="store_true", default=False, help="Force re-prediction of already predicted orders (default: skip already processed)")
     parser.add_argument("--rebuild-rag", action="store_true", default=False, help="Rebuild RAG index")
     parser.add_argument("--enable-teams", action="store_true", default=False, help="Enable live Microsoft Teams webhook dispatching")
     args = parser.parse_args()
@@ -404,6 +431,7 @@ def main():
         order_limit=args.limit,
         target_order=args.order,
         all_orders=args.all_orders,
+        repredict=args.repredict,
         rebuild_rag=args.rebuild_rag,
         enable_teams_dispatch=args.enable_teams
     )

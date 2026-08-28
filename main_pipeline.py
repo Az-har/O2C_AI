@@ -57,6 +57,7 @@ def main():
     parser.add_argument("--order", type=str, default=None, help="Specific SAP Sales Order ID to analyze")
     parser.add_argument("--limit", type=int, default=5, help="Number of active SAP orders to process (default: 5)")
     parser.add_argument("--all-orders", "--all", action="store_true", default=False, help="Process ALL active SAP orders in dataset")
+    parser.add_argument("--repredict", "--force-repredict", action="store_true", default=False, help="Force re-prediction of already processed orders (default: skip already predicted)")
     parser.add_argument("--rebuild-rag", action="store_true", default=False, help="Force rebuild RAG vector store")
     parser.add_argument("--enable-teams", action="store_true", default=False, help="Enable live Microsoft Teams webhook dispatching")
     args = parser.parse_args()
@@ -67,6 +68,7 @@ def main():
         order_limit=args.limit,
         target_order=args.order,
         all_orders=args.all_orders,
+        repredict=args.repredict,
         rebuild_rag=args.rebuild_rag,
         enable_teams_dispatch=args.enable_teams
     )

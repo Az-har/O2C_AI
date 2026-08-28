@@ -1,8 +1,11 @@
 """News Service for O2C AI Monitor"""
 import requests
 import time
-from bs4 import BeautifulSoup
+import warnings
+from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from datetime import datetime
+
+warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 
 class NewsService:

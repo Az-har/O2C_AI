@@ -29,17 +29,29 @@ class WeatherService:
         **{k: "Thunderstorm" for k in [95, 96]},
     }
 
+    METEO_CURRENT_URL = "https://api.open-meteo.com/v1/forecast"
+
     def __init__(self, api_key: str, cities: dict):
-        self.api_key = api_key
+        self.api_key = api_key or ""
         self.cities = cities
 
     def fetch_current(self) -> list:
-        """Fetch live weather for all cities via OpenWeatherMap"""
-        print("🌤️  Fetching current weather (OpenWeatherMap)...")
+        """Fetch live weather for all cities (OpenWeatherMap or Open-Meteo fallback)"""
+        use_owm = bool(self.api_key and len(self.api_key) >= 16)
+        source_label = "OpenWeatherMap" if use_owm else "Open-Meteo (Live Global API)"
+        print(f"🌤️  Fetching current weather ({source_label})...")
+        
         results = []
         for city, coords in self.cities.items():
             print(f"   📍 {city:<15}", end=" ")
-            rec = self._owm_one(city, coords)
+            rec = None
+            if use_owm:
+                rec = self._owm_one(city, coords)
+            
+            # If OWM was not used or failed (e.g. 401 Unauthorized), fallback to Open-Meteo live
+            if not rec:
+                rec = self._meteo_current_one(city, coords)
+
             if rec:
                 results.append(rec)
         return results
@@ -86,6 +98,44 @@ class WeatherService:
                 "rain_1h": data.get("rain", {}).get("1h", 0),
                 "snow_1h": data.get("snow", {}).get("1h", 0),
                 "data_source": "OpenWeatherMap"
+            }
+            print(f"✅ {rec['temperature']}°C  {rec['weather_description']} [OWM]")
+            return rec
+        except Exception:
+            return None
+
+    def _meteo_current_one(self, city: str, coords: dict) -> dict:
+        """Fetch current weather from Open-Meteo (zero-key live API)"""
+        try:
+            r = requests.get(self.METEO_CURRENT_URL, params={
+                "latitude": coords["lat"],
+                "longitude": coords["lon"],
+                "current": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m",
+                "timezone": "auto"
+            }, timeout=10)
+            r.raise_for_status()
+            cur = r.json()["current"]
+            w_code = cur.get("weather_code", 0)
+            
+            rec = {
+                "city_name": city,
+                "state": coords.get("state"),
+                "recorded_at": cur.get("time", datetime.now().isoformat()),
+                "temperature": cur.get("temperature_2m", 25.0),
+                "feels_like": cur.get("apparent_temperature", cur.get("temperature_2m", 25.0)),
+                "temp_min": cur.get("temperature_2m", 25.0) - 2.0,
+                "temp_max": cur.get("temperature_2m", 25.0) + 2.0,
+                "humidity": cur.get("relative_humidity_2m", 60),
+                "pressure": 1013,
+                "visibility_km": 10.0,
+                "cloudiness": 20 if w_code > 0 else 0,
+                "weather_main": self.WEATHER_MAIN.get(w_code, "Clear"),
+                "weather_description": self.WEATHER_CODES.get(w_code, "clear sky"),
+                "wind_speed": cur.get("wind_speed_10m", 5.0),
+                "wind_direction": 0,
+                "rain_1h": cur.get("precipitation", 0.0),
+                "snow_1h": 0,
+                "data_source": "Open-Meteo (Live)"
             }
             print(f"✅ {rec['temperature']}°C  {rec['weather_description']}")
             return rec
