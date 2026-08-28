@@ -1,0 +1,296 @@
+{
+  "date": "2026-08-28",
+  "generated_at": "2026-08-28T16:07:52.194893",
+  "total_orders_analyzed": 2,
+  "delayed_orders_count": 2,
+  "total_financial_risk_usd": 0.0,
+  "total_carrier_chargebacks_usd": 0.0,
+  "decisions": [
+    {
+      "order_id": "800000000000001",
+      "synthesis_timestamp": "2026-08-28T16:07:48.476315",
+      "customer_profile": {
+        "name": "Thrive Pet Healthcare",
+        "tier": "Gold",
+        "destination_city": "Austin",
+        "order_value_usd": 91125.68
+      },
+      "carrier_profile": {
+        "name": "JB Hunt",
+        "shipping_mode": "Road (FTL)"
+      },
+      "engine_a_ml_prediction": {
+        "delay_probability": 0.8174739808803845,
+        "is_delayed": true,
+        "predicted_delay_hours": 197.80562254204315,
+        "predicted_eta": "2026-10-06 05:48",
+        "haversine_distance_km": 14437.287795364526,
+        "required_transit_speed_kmh": 10.0,
+        "root_causes": [
+          "Carrier route delay / in-transit bottleneck",
+          "Heavy pallet freight handling restriction (1200 kg)",
+          "Tight expedited turnaround window (<48h)",
+          "Weekend dispatch / receiving dock closure window"
+        ],
+        "feature_attributions": [
+          {
+            "factor": "Shipment In-Transit / Delayed Status",
+            "contribution_pct": 80.5
+          },
+          {
+            "factor": "Weekend Dispatch / Receiving Dock Closure",
+            "contribution_pct": 0.7
+          },
+          {
+            "factor": "Long-Haul Corridor (14437 km)",
+            "contribution_pct": 0.3
+          },
+          {
+            "factor": "Heavy Pallet Weight (1200 kg)",
+            "contribution_pct": 0.2
+          }
+        ]
+      },
+      "specialist_agents_analysis": {
+        "route_supervisor": {
+          "agent_name": "RouteSupervisorAgent",
+          "telematics_active": true,
+          "telematics_penalty_usd": 0.0,
+          "telematics_notes": [],
+          "route_hazards": [],
+          "corridor_distance_km": 14437.287795364526,
+          "transit_speed_kmh": 10.0,
+          "destination_city": "Austin",
+          "shipping_mode": "Road (FTL)"
+        },
+        "contract_adjudication": {
+          "agent_name": "ContractAdjudicatorAgent",
+          "customer_tier": "Gold",
+          "force_majeure_status": "GRANTED_72H_WAIVER (Act of God verified, 12h notification confirmed)",
+          "force_majeure_waived": true,
+          "sla_delay_penalty_usd": 0.0,
+          "after_hours_violation": false,
+          "after_hours_redelivery_fee_usd": 0.0,
+          "total_carrier_chargeback_usd": 0.0,
+          "penalty_clauses": [
+            "Force Majeure Exemption: Standard SLA late penalties 100% waived under Act of God protocol."
+          ]
+        },
+        "quality_mitigation": {
+          "qa_hold_required": true,
+          "qa_hold_reasons": [
+            "Short-Dated Shelf Life Breach (<6 mos): Order quarantined for bio-secure return/destruction at carrier liability."
+          ],
+          "mitigation_actions": [
+            "EMERGENCY_AIR_FREIGHT: Authorized $1,000 replacement pallet via expedited air courier to prevent critical prescription diet stock-out."
+          ],
+          "mitigation_cost_usd": 1000.0
+        }
+      },
+      "legal_and_sla_adjudication": {
+        "force_majeure_status": "GRANTED_72H_WAIVER (Act of God verified, 12h notification confirmed)",
+        "sla_delay_penalty_usd": 0.0,
+        "after_hours_redelivery_fee_usd": 0.0,
+        "total_carrier_chargeback_usd": 0.0,
+        "penalty_breakdown": [
+          "Force Majeure Exemption: Standard SLA late penalties 100% waived under Act of God protocol."
+        ]
+      },
+      "emergency_mitigation": {
+        "actions": [
+          "EMERGENCY_AIR_FREIGHT: Authorized $1,000 replacement pallet via expedited air courier to prevent critical prescription diet stock-out."
+        ],
+        "total_mitigation_cost_usd": 1000.0,
+        "approval_status": "DIRECTOR_APPROVAL_REQUIRED",
+        "approval_gate": "Actionable Card Routed to Regional Logistics Director via MS Teams (Expense > $500, 2-Hour SLA)",
+        "ms_teams_escalation_card": {
+          "recipient": "Regional Logistics Director",
+          "channel": "MS Teams / Logistics Desk",
+          "order_id": "800000000000001",
+          "customer": "Thrive Pet Healthcare",
+          "carrier": "JB Hunt",
+          "mitigation_expense_usd": 1000.0,
+          "recommended_action": "EMERGENCY_AIR_FREIGHT: Authorized $1,000 replacement pallet via expedited air courier to prevent critical prescription diet stock-out.",
+          "sla_response_hours": 2.0,
+          "urgency": "CRITICAL"
+        },
+        "teams_card_dispatch": {
+          "dispatch_status": "DISABLED_BY_CONFIGURATION (MSTeamsDispatcher turned off)"
+        }
+      },
+      "executed_enterprise_actions": {
+        "clinic_12h_notice": {
+          "notice_status": "DISPATCHED_12H_PROACTIVE_NOTICE",
+          "force_majeure_compliant": true,
+          "notice_message": "CLINIC EARLY WARNING: Proactive logistics notice for SAP Order 800000000000001 destined for Thrive Pet Healthcare (Austin). Due to verified transit conditions (Carrier route delay / in-transit bottleneck; Heavy pallet freight handling restriction (1200 kg); Tight expedited turnaround window (<48h); Weekend dispatch / receiving dock closure window), estimated delivery is updated to 2026-10-06 05:48. Proactive notice registered >= 12h prior to arrival window under Act of God protocols.",
+          "sent_at": "2026-08-28T16:07:48.406468"
+        },
+        "sap_writebacks": [
+          {
+            "action": "SAP_DELIVERY_BLOCK_POSTED",
+            "table": "SAP_VBAK",
+            "field": "LIFSK",
+            "value": "01 (QA Quarantine Hold)",
+            "reason": "Short-Dated Shelf Life Breach (<6 mos): Order quarantined for bio-secure return/destruction at carrier liability."
+          },
+          {
+            "action": "SAP_VDATU_UPDATED",
+            "table": "SAP_VBAK",
+            "field": "VDATU",
+            "value": "2026-10-06",
+            "reason": "Updated promised delivery date to ML Predicted ETA: 2026-10-06 05:48"
+          }
+        ]
+      },
+      "engine_b_rag_citations": [
+        "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx",
+        "WEATHER-MANDATED MODE SHIFT (ROAD TO RAIL) POLICY.docx",
+        "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx"
+      ],
+      "executive_decision_brief": "Order 800000000000001 destined for Thrive Pet Healthcare (Gold Tier) via JB Hunt (Road (FTL)) is predicted to be DELAYED by 197.8 hrs (ETA: 2026-10-06 05:48) (Delay Probability: 81.7%).\nContractual SLA Exposure: $0.00. Total Carrier Chargeback: $0.00.\nForce Majeure Status: GRANTED_72H_WAIVER (Act of God verified, 12h notification confirmed).\nRecommended Action: EMERGENCY_AIR_FREIGHT: Authorized $1,000 replacement pallet via expedited air courier to prevent critical prescription diet stock-out..\nQA Quarantine: Short-Dated Shelf Life Breach (<6 mos): Order quarantined for bio-secure return/destruction at carrier liability.\nGovernance Status: DIRECTOR_APPROVAL_REQUIRED (Actionable Card Routed to Regional Logistics Director via MS Teams (Expense > $500, 2-Hour SLA)).\nReferenced Policy Citations: Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx, WEATHER-MANDATED MODE SHIFT (ROAD TO RAIL) POLICY.docx, Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx."
+    },
+    {
+      "order_id": "800000000000002",
+      "synthesis_timestamp": "2026-08-28T16:07:52.194893",
+      "customer_profile": {
+        "name": "CVS Vet Clinic",
+        "tier": "Gold",
+        "destination_city": "Boston",
+        "order_value_usd": 89489.15
+      },
+      "carrier_profile": {
+        "name": "JB Hunt",
+        "shipping_mode": "Road (FTL)"
+      },
+      "engine_a_ml_prediction": {
+        "delay_probability": 0.664173885262948,
+        "is_delayed": true,
+        "predicted_delay_hours": 62.69921009229003,
+        "predicted_eta": "2026-10-29 14:41",
+        "haversine_distance_km": 559.0,
+        "required_transit_speed_kmh": 0.8,
+        "root_causes": [
+          "Carrier route delay / in-transit bottleneck",
+          "Heavy pallet freight handling restriction (1200 kg)",
+          "Tight expedited turnaround window (<48h)",
+          "Month-end shipping surge & warehouse dock congestion"
+        ],
+        "feature_attributions": [
+          {
+            "factor": "Shipment In-Transit / Delayed Status",
+            "contribution_pct": 65.2
+          },
+          {
+            "factor": "Month-End Warehouse Surge Congestion",
+            "contribution_pct": 1.0
+          },
+          {
+            "factor": "Heavy Pallet Weight (1200 kg)",
+            "contribution_pct": 0.2
+          },
+          {
+            "factor": "Prescription Specialty Diet Fragility",
+            "contribution_pct": 0.0
+          }
+        ]
+      },
+      "specialist_agents_analysis": {
+        "route_supervisor": {
+          "agent_name": "RouteSupervisorAgent",
+          "telematics_active": true,
+          "telematics_penalty_usd": 0.0,
+          "telematics_notes": [],
+          "route_hazards": [],
+          "corridor_distance_km": 559.0,
+          "transit_speed_kmh": 0.8,
+          "destination_city": "Boston",
+          "shipping_mode": "Road (FTL)"
+        },
+        "contract_adjudication": {
+          "agent_name": "ContractAdjudicatorAgent",
+          "customer_tier": "Gold",
+          "force_majeure_status": "GRANTED_72H_WAIVER (Act of God verified, 12h notification confirmed)",
+          "force_majeure_waived": true,
+          "sla_delay_penalty_usd": 0.0,
+          "after_hours_violation": false,
+          "after_hours_redelivery_fee_usd": 0.0,
+          "total_carrier_chargeback_usd": 0.0,
+          "penalty_clauses": [
+            "Force Majeure Exemption: Standard SLA late penalties 100% waived under Act of God protocol."
+          ]
+        },
+        "quality_mitigation": {
+          "qa_hold_required": true,
+          "qa_hold_reasons": [
+            "Short-Dated Shelf Life Breach (<6 mos): Order quarantined for bio-secure return/destruction at carrier liability."
+          ],
+          "mitigation_actions": [
+            "EMERGENCY_AIR_FREIGHT: Authorized $1,000 replacement pallet via expedited air courier to prevent critical prescription diet stock-out."
+          ],
+          "mitigation_cost_usd": 1000.0
+        }
+      },
+      "legal_and_sla_adjudication": {
+        "force_majeure_status": "GRANTED_72H_WAIVER (Act of God verified, 12h notification confirmed)",
+        "sla_delay_penalty_usd": 0.0,
+        "after_hours_redelivery_fee_usd": 0.0,
+        "total_carrier_chargeback_usd": 0.0,
+        "penalty_breakdown": [
+          "Force Majeure Exemption: Standard SLA late penalties 100% waived under Act of God protocol."
+        ]
+      },
+      "emergency_mitigation": {
+        "actions": [
+          "EMERGENCY_AIR_FREIGHT: Authorized $1,000 replacement pallet via expedited air courier to prevent critical prescription diet stock-out."
+        ],
+        "total_mitigation_cost_usd": 1000.0,
+        "approval_status": "DIRECTOR_APPROVAL_REQUIRED",
+        "approval_gate": "Actionable Card Routed to Regional Logistics Director via MS Teams (Expense > $500, 2-Hour SLA)",
+        "ms_teams_escalation_card": {
+          "recipient": "Regional Logistics Director",
+          "channel": "MS Teams / Logistics Desk",
+          "order_id": "800000000000002",
+          "customer": "CVS Vet Clinic",
+          "carrier": "JB Hunt",
+          "mitigation_expense_usd": 1000.0,
+          "recommended_action": "EMERGENCY_AIR_FREIGHT: Authorized $1,000 replacement pallet via expedited air courier to prevent critical prescription diet stock-out.",
+          "sla_response_hours": 2.0,
+          "urgency": "CRITICAL"
+        },
+        "teams_card_dispatch": {
+          "dispatch_status": "DISABLED_BY_CONFIGURATION (MSTeamsDispatcher turned off)"
+        }
+      },
+      "executed_enterprise_actions": {
+        "clinic_12h_notice": {
+          "notice_status": "DISPATCHED_12H_PROACTIVE_NOTICE",
+          "force_majeure_compliant": true,
+          "notice_message": "CLINIC EARLY WARNING: Proactive logistics notice for SAP Order 800000000000002 destined for CVS Vet Clinic (Boston). Due to verified transit conditions (Carrier route delay / in-transit bottleneck; Heavy pallet freight handling restriction (1200 kg); Tight expedited turnaround window (<48h); Month-end shipping surge & warehouse dock congestion), estimated delivery is updated to 2026-10-29 14:41. Proactive notice registered >= 12h prior to arrival window under Act of God protocols.",
+          "sent_at": "2026-08-28T16:07:52.144668"
+        },
+        "sap_writebacks": [
+          {
+            "action": "SAP_DELIVERY_BLOCK_POSTED",
+            "table": "SAP_VBAK",
+            "field": "LIFSK",
+            "value": "01 (QA Quarantine Hold)",
+            "reason": "Short-Dated Shelf Life Breach (<6 mos): Order quarantined for bio-secure return/destruction at carrier liability."
+          },
+          {
+            "action": "SAP_VDATU_UPDATED",
+            "table": "SAP_VBAK",
+            "field": "VDATU",
+            "value": "2026-10-29",
+            "reason": "Updated promised delivery date to ML Predicted ETA: 2026-10-29 14:41"
+          }
+        ]
+      },
+      "engine_b_rag_citations": [
+        "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx",
+        "WEATHER-MANDATED MODE SHIFT (ROAD TO RAIL) POLICY.docx",
+        "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx"
+      ],
+      "executive_decision_brief": "Order 800000000000002 destined for CVS Vet Clinic (Gold Tier) via JB Hunt (Road (FTL)) is predicted to be DELAYED by 62.7 hrs (ETA: 2026-10-29 14:41) (Delay Probability: 66.4%).\nContractual SLA Exposure: $0.00. Total Carrier Chargeback: $0.00.\nForce Majeure Status: GRANTED_72H_WAIVER (Act of God verified, 12h notification confirmed).\nRecommended Action: EMERGENCY_AIR_FREIGHT: Authorized $1,000 replacement pallet via expedited air courier to prevent critical prescription diet stock-out..\nQA Quarantine: Short-Dated Shelf Life Breach (<6 mos): Order quarantined for bio-secure return/destruction at carrier liability.\nGovernance Status: DIRECTOR_APPROVAL_REQUIRED (Actionable Card Routed to Regional Logistics Director via MS Teams (Expense > $500, 2-Hour SLA)).\nReferenced Policy Citations: Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx, WEATHER-MANDATED MODE SHIFT (ROAD TO RAIL) POLICY.docx, Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx."
+    }
+  ]
+}
