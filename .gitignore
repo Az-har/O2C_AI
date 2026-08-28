@@ -60,3 +60,10 @@ PREDICTIONS_REPORT.md
 # OS generated files
 .DS_Store
 Thumbs.db
+
+#DOCS
+.DOCX
+.JSON
+.csv
+.json
+.docx
