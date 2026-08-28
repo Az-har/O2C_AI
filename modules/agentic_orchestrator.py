@@ -34,15 +34,11 @@ if sys.platform == "win32":
     except AttributeError:
         pass
 
-# Databricks workspace path support
-DATABRICKS_PATH = Path("/Workspace/Users/ayyash.a@tcs.com/O2C_AI")
-if DATABRICKS_PATH.exists() or "DATABRICKS_RUNTIME_VERSION" in os.environ:
-    PROJECT_ROOT = DATABRICKS_PATH
-else:
-    try:
-        PROJECT_ROOT = Path(__file__).resolve().parent.parent
-    except NameError:
-        PROJECT_ROOT = DATABRICKS_PATH
+# Dynamic Project Root Resolution
+try:
+    PROJECT_ROOT = Path(__file__).resolve().parent.parent
+except Exception:
+    PROJECT_ROOT = Path.cwd()
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))

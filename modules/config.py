@@ -27,18 +27,45 @@ STRIKE_KEYWORDS = [
     "bharat bandh", "road blockade",
 ]
 
-# Paths - Supports Databricks Workspace and standalone execution
+# Paths - Dynamic resolution for Databricks (all users/workspaces), Linux, and Windows
 import os
-DATABRICKS_WORKSPACE = Path("/Workspace/Users/ayyash.a@tcs.com/O2C_AI")
 
-if DATABRICKS_WORKSPACE.exists() or "DATABRICKS_RUNTIME_VERSION" in os.environ:
-    _project_root = DATABRICKS_WORKSPACE
-else:
+def _resolve_project_root() -> Path:
+    if "O2C_PROJECT_ROOT" in os.environ:
+        p = Path(os.environ["O2C_PROJECT_ROOT"])
+        if p.exists():
+            return p
+
     try:
-        _module_dir = Path(__file__).resolve().parent
-        _project_root = _module_dir.parent
-    except NameError:
-        _project_root = DATABRICKS_WORKSPACE
+        p = Path(__file__).resolve().parent.parent
+        if (p / "modules").exists() or (p / "Input Files").exists():
+            return p
+    except Exception:
+        pass
+
+    cwd = Path.cwd()
+    if (cwd / "modules").exists() or (cwd / "Input Files").exists():
+        return cwd
+    if (cwd.parent / "modules").exists() or (cwd.parent / "Input Files").exists():
+        return cwd.parent
+
+    for base in [Path("/Workspace/Users"), Path("/Workspace/Repos")]:
+        if base.exists():
+            try:
+                for sub in base.glob("*/O2C_AI"):
+                    if sub.exists():
+                        return sub
+            except Exception:
+                pass
+
+    if "DATABRICKS_RUNTIME_VERSION" in os.environ:
+        tmp_p = Path("/tmp/O2C_AI")
+        tmp_p.mkdir(parents=True, exist_ok=True)
+        return tmp_p
+
+    return cwd
+
+_project_root = _resolve_project_root()
 
 BASE_DIR = _project_root / "india_monitor_data"
 DB_PATH = BASE_DIR / "database" / "india_monitor.db"

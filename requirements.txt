@@ -1,0 +1,11 @@
+# O2C AI Monitor - Dependencies
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.4
+python-docx>=0.8.11
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+openpyxl>=3.1.0
+tqdm>=4.66.0

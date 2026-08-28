@@ -14,12 +14,11 @@ import os
 import sys
 from pathlib import Path
 
-# Databricks Workspace Path Setup
-DATABRICKS_PATH = Path("/Workspace/Users/ayyash.a@tcs.com/O2C_AI")
-if DATABRICKS_PATH.exists():
-    PROJECT_ROOT = DATABRICKS_PATH
-else:
+# Dynamic Project Root Resolution
+try:
     PROJECT_ROOT = Path(__file__).resolve().parent
+except Exception:
+    PROJECT_ROOT = Path.cwd()
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
