@@ -8,10 +8,10 @@ All modules, databases, machine learning models, multi-agent specialists, RAG kn
 
 | Phase | Core Component | Implementation File | Status | Verification & Deliverables |
 |---|---|---|---|---|
-| **Phase 1** | **Real-Time External Ingestion** | [`modules/weather_service.py`](file:///d:/Progamming/O2C_AI/modules/weather_service.py)<br>[`modules/news_service.py`](file:///d:/Progamming/O2C_AI/modules/news_service.py) | ✅ **100% DONE** | Live OpenWeatherMap API (10 Indian cities) + Google News RSS transport strike scraper with SQLite auto-deduplication. |
+| **Phase 1** | **Real-Time External Ingestion** | [`modules/weather_service.py`](file:///d:/Progamming/O2C_AI/modules/weather_service.py)<br>[`modules/news_service.py`](file:///d:/Progamming/O2C_AI/modules/news_service.py) | ✅ **100% DONE** | Live OpenWeatherMap API + **Open-Meteo Zero-Key Live Fallback** (10 Indian cities) + Google News RSS transport strike scraper with SQLite auto-deduplication. |
 | **Phase 2** | **Engine B: Hybrid RAG Knowledge Engine** | [`modules/rag_engine.py`](file:///d:/Progamming/O2C_AI/modules/rag_engine.py) | ✅ **100% DONE** | **Hybrid Search (BM25 + FAISS via RRF)** + **Clause-Aware Semantic Chunking** (700 vectors across 78 docs, **Grade A (105.1% Coverage)**). |
-| **Phase 3** | **Engine A: Predictive ML Feature Store** | [`modules/ml_db_extension.py`](file:///d:/Progamming/O2C_AI/modules/ml_db_extension.py)<br>[`modules/predictive_engine.py`](file:///d:/Progamming/O2C_AI/modules/predictive_engine.py) | ✅ **100% DONE** | 62,299 SAP records, 19 ML features, Geospatial Haversine distance, Transit speed demand, **XAI Feature Attributions**, Model persistence (**96.3% Accuracy**). |
-| **Phase 4** | **Multi-Agent Specialist Graph & LLM** | [`modules/agent_specialists.py`](file:///d:/Progamming/O2C_AI/modules/agent_specialists.py)<br>[`modules/agentic_orchestrator.py`](file:///d:/Progamming/O2C_AI/modules/agentic_orchestrator.py) | ✅ **100% DONE** | 4 Collaborative Specialists (`RouteSupervisor`, `ContractAdjudicator`, `QualityMitigation`, `LLMReasoningEngine`) + Local Deterministic Engine + Databricks/Cloud LLM connectors. |
+| **Phase 3** | **Engine A: Predictive ML Feature Store** | [`modules/ml_db_extension.py`](file:///d:/Progamming/O2C_AI/modules/ml_db_extension.py)<br>[`modules/predictive_engine.py`](file:///d:/Progamming/O2C_AI/modules/predictive_engine.py) | ✅ **100% DONE** | 62,299 SAP records, 19 ML features, Geospatial Haversine distance, Transit speed demand, **XAI Feature Attributions**, Model persistence (**96.4% Accuracy**, **7.8h MAE**). |
+| **Phase 4** | **Multi-Agent Specialist Graph & LLM** | [`modules/agent_specialists.py`](file:///d:/Progamming/O2C_AI/modules/agent_specialists.py)<br>[`modules/agentic_orchestrator.py`](file:///d:/Progamming/O2C_AI/modules/agentic_orchestrator.py) | ✅ **100% DONE** | 4 Collaborative Specialists (`RouteSupervisor`, `ContractAdjudicator`, `QualityMitigation`, `LLMReasoningEngine`) + Local Deterministic Engine + **Order Deduplication Caching** (`--repredict`). |
 | **Phase 5** | **Celonis / ERP Action Execution Layer** | [`modules/action_execution_engine.py`](file:///d:/Progamming/O2C_AI/modules/action_execution_engine.py) | ✅ **100% DONE** | **SAP ERP Write-Backs** (`VBAK-LIFSK = '01'`, `VDATU` sync, AP Debit Memos), **MS Teams Adaptive Cards (v1.4)**, **12h Clinic Notices**. |
 
 ---
@@ -27,7 +27,7 @@ The system operates on a closed-loop **Sense $\to$ Think $\to$ Act** architectur
         │
         ▼
   [STEP 1: SENSE - EXTERNAL FEEDS INGESTION]
-    • OpenWeatherMap API -> Fetches live precipitation, temp, alerts -> SQLite table `weather_readings`
+    • OpenWeatherMap + Open-Meteo Live Fallback -> Fetches live precipitation, temp, alerts -> SQLite table `weather_readings`
     • Google News RSS -> Fetches transport strikes & bandhs -> SQLite table `strike_news`
         │
         ▼
@@ -40,11 +40,12 @@ The system operates on a closed-loop **Sense $\to$ Think $\to$ Act** architectur
   [STEP 3: SENSE - SAP FEATURE STORE & ENGINE A ML TRAINING]
     • Ingests 10 SAP tables from `Input Files/` (`VBAK`, `VBAP`, `LIKP`, `LIPS`, `VTTK`, `VTTP`, etc.)
     • Relational SQL joins generate 62,299 ML-ready rows across 19 engineered features
-    • Trains and persists `RandomForestClassifier` (96.3% Acc) + `GradientBoostingRegressor` (8.0h MAE)
+    • Trains and persists `RandomForestClassifier` (96.4% Acc) + `GradientBoostingRegressor` (7.8h MAE)
         │
         ▼
-  [STEP 4: THINK - PREDICTIVE DELAY SCORING & ROOT CAUSE DIAGNOSIS]
-    • Calculates delay probability, predicted delay hours, and exact ETA
+  [STEP 4: THINK - PREDICTIVE DELAY SCORING & ORDER DEDUPLICATION]
+    • Order Caching: Checks SQLite `ml_predictions`; skips already-predicted orders unless `--repredict` is set
+    • Calculates delay probability, predicted delay hours, and exact ETA for new unpredicted orders
     • Diagnoses root causes: In-transit route delays, heavy pallet restrictions, tight turnarounds
     • Computes mathematical Feature Attributions (XAI) quantifying each risk factor
         │
@@ -65,7 +66,29 @@ The system operates on a closed-loop **Sense $\to$ Think $\to$ Act** architectur
 
 ---
 
-## 📊 2. Machine Learning Model Evaluation (Engine A)
+## ⚡ 2. Intelligent Order Deduplication & Daily Caching
+
+To ensure fast and realistic daily runs, the agent implements persistent prediction caching:
+
+- **Automatic Skipping (Default Behavior):** On every daily cycle, the agent queries SQLite table `ml_predictions`. Any order ID already predicted in previous runs is **automatically skipped**, processing only **new, incoming unpredicted orders**:
+  ```text
+  ⚡ Order Caching: 3,118 orders already predicted in database (skipping).
+  📦 Found 3 NEW unpredicted order(s) to process.
+  ```
+- **Force Re-Evaluation (`--repredict` / `repredict=True`):** If you wish to re-evaluate all orders (e.g. following updated weather alerts or revised contract terms), passing `--repredict` forces the agent to re-score every order in the dataset.
+
+---
+
+## 🌤️ 3. Resilient Real-Time Weather Ingestion
+
+The external ingestion layer in [`modules/weather_service.py`](file:///d:/Progamming/O2C_AI/modules/weather_service.py) provides bulletproof resilience:
+- **Primary:** OpenWeatherMap API (using `OPENWEATHER_API_KEY` from environment or config).
+- **Automatic Fallback:** If `OPENWEATHER_API_KEY` is missing, expired, or returns `401 Unauthorized`, the service immediately switches to **Open-Meteo Global Current Forecast API** (`https://api.open-meteo.com/v1/forecast`), which is 100% free and requires **zero API keys**.
+- Monitors 10 Indian logistics hubs: Mumbai, Delhi, Bangalore, Chennai, Kolkata, Hyderabad, Pune, Ahmedabad, Jaipur, Lucknow.
+
+---
+
+## 📊 4. Machine Learning Model Evaluation (Engine A)
 
 ### Out-of-Sample Holdout Evaluation (20% Holdout = 12,460 Unseen Rows)
 
@@ -81,8 +104,8 @@ The system operates on a closed-loop **Sense $\to$ Think $\to$ Act** architectur
      - DELAYED Orders (Class 1): 11,917 (19.1%)
 
 2. OUT-OF-SAMPLE TEST SET EVALUATION (12,460 rows):
-   • Overall Classifier Accuracy: 96.3%
-   • Regressor Mean Absolute Error (MAE): 8.09 hours
+   • Overall Classifier Accuracy: 96.4%
+   • Regressor Mean Absolute Error (MAE): 7.8 hours
 
    • Confusion Matrix:
      ┌────────────────────────┬──────────────────────┐
@@ -102,7 +125,7 @@ The system operates on a closed-loop **Sense $\to$ Think $\to$ Act** architectur
 
 ---
 
-## 📚 3. Engine B: Hybrid RAG Benchmark Results
+## 📚 5. Engine B: Hybrid RAG Benchmark Results
 
 Tested with [`evaluation/rag_comprehensive_test.py`](file:///d:/Progamming/O2C_AI/evaluation/rag_comprehensive_test.py) across all 78 documents in the corpus:
 
@@ -116,7 +139,7 @@ Tested with [`evaluation/rag_comprehensive_test.py`](file:///d:/Progamming/O2C_A
 
 ---
 
-## 🧠 4. LLM Legal Reasoning & Multi-Provider Integration
+## 🧠 6. LLM Legal Reasoning & Multi-Provider Integration
 
 The system includes a zero-cost **Deterministic Local Expert Legal Engine** that runs offline with $<50\text{ms}$ latency, plus plug-and-play connectors for:
 - **Databricks Foundation Models** (`databricks-meta-llama-3-70b-instruct` / `dbrx-instruct` via `DATABRICKS_HOST` & `DATABRICKS_TOKEN`)
@@ -126,7 +149,7 @@ The system includes a zero-cost **Deterministic Local Expert Legal Engine** that
 
 ---
 
-## 📦 5. Sample Consolidated Daily Decision Output
+## 📦 7. Sample Consolidated Daily Decision Output
 
 ```json
 {
@@ -142,7 +165,7 @@ The system includes a zero-cost **Deterministic Local Expert Legal Engine** that
     "shipping_mode": "Road (FTL)"
   },
   "engine_a_ml_prediction": {
-    "delay_probability": 0.833,
+    "delay_probability": 0.817,
     "is_delayed": true,
     "predicted_delay_hours": 195.2,
     "predicted_eta": "2026-10-06 03:11",
@@ -187,35 +210,44 @@ The system includes a zero-cost **Deterministic Local Expert Legal Engine** that
     "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx",
     "WEATHER-MANDATED MODE SHIFT (ROAD TO RAIL) POLICY.docx"
   ],
-  "executive_decision_brief": "Order 800000000000001 destined for Thrive Pet Healthcare (Gold Tier) via JB Hunt is predicted to be DELAYED by 195.2 hrs (ETA: 2026-10-06 03:11) (Delay Probability: 83.3%). Contractual SLA Exposure: $0.00. Total Carrier Chargeback: $0.00. Force Majeure Status: GRANTED_72H_WAIVER. Action Taken: EMERGENCY_AIR_FREIGHT ($1,000). QA Quarantine: Short-Dated Shelf Life Breach (<6 mos). Governance Status: DIRECTOR_APPROVAL_REQUIRED (2-Hour SLA)."
+  "executive_decision_brief": "Order 800000000000001 destined for Thrive Pet Healthcare (Gold Tier) via JB Hunt is predicted to be DELAYED by 195.2 hrs (ETA: 2026-10-06 03:11) (Delay Probability: 81.7%). Contractual SLA Exposure: $0.00. Total Carrier Chargeback: $0.00. Force Majeure Status: GRANTED_72H_WAIVER. Action Taken: EMERGENCY_AIR_FREIGHT ($1,000). QA Quarantine: Short-Dated Shelf Life Breach (<6 mos). Governance Status: DIRECTOR_APPROVAL_REQUIRED (2-Hour SLA)."
 }
 ```
 
 ---
 
-## 🛠️ 6. How to Run
+## 🛠️ 8. How to Run
 
-### 1. Process All Active Orders in Batch Mode:
+### 1. Process New / Unpredicted Orders (Default Daily Run):
 ```bash
 python main_pipeline.py --all-orders
 ```
+*(Automatically skips already predicted orders in SQLite).*
 
-### 2. Process a Single Specific Order:
+### 2. Force Re-Evaluate All Orders in Dataset:
+```bash
+python main_pipeline.py --all-orders --repredict
+```
+
+### 3. Process a Single Specific Order:
 ```bash
 python main_pipeline.py --order 800000000000001
 ```
 
-### 3. Run on Databricks Runtime (Job or Notebook):
+### 4. Run on Databricks Runtime (Job Runner):
 ```bash
 python databricks_daily_job.py --all-orders
 ```
-*Or in a Databricks Notebook cell:*
-```python
-%run ./databricks_daily_job
+*Or with force re-prediction:*
+```bash
+python databricks_daily_job.py --all-orders --repredict
 ```
 
-### 4. Run System Validation Test Suite:
+### 5. Run Standalone Single-Sheet Databricks Notebook:
+Open [`O2C_AI_Databricks_Master.ipynb`](file:///d:/Progamming/O2C_AI/O2C_AI_Databricks_Master.ipynb) in Databricks and click **"Run All"**.
+
+### 6. Run System Validation Test Suite:
 ```bash
 python validate_modules.py
 ```
-*(Confirms 0 errors across all 15 core classes and database tables).*
+*(Validates all 12 core modules, database tables, RAG index, and ML training with 0 errors).*
