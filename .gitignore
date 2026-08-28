@@ -51,6 +51,7 @@ india_monitor_data/models/*.pkl
 india_monitor_data/logs/*
 scratch/
 check_ml_evaluation.py
+PREDICTIONS_REPORT.md
 
 # Environment variables
 .env
