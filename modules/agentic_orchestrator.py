@@ -344,7 +344,7 @@ class AgenticOrchestrator:
             for idx, ord_id in enumerate(orders_to_process, 1):
                 # Predict via Engine A + retrieve Engine B RAG context
                 order_data = self.ml_db.get_order_details(ord_id) or {}
-                pred_result = self.predictive_engine.predict_delivery_delay(ord_id)
+                pred_result = self.predictive_engine.predict_delivery_delay(ord_id, order_data=order_data)
                 
                 # Record prediction into SQLite to enable skipping on future runs
                 self.ml_db.record_prediction(pred_result)

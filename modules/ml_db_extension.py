@@ -43,6 +43,13 @@ class MLDatabaseExtension:
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self.conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
+        try:
+            self.conn.execute("PRAGMA journal_mode=WAL;")
+            self.conn.execute("PRAGMA synchronous=NORMAL;")
+        except Exception:
+            pass
+        self._cached_ml_df = None
+        self._order_lookup_dict = {}
         self._build_sap_schema()
 
     def _build_sap_schema(self):
@@ -223,13 +230,18 @@ class MLDatabaseExtension:
             stats[table_name] = len(df)
 
         self.conn.commit()
+        self._cached_ml_df = None
+        self._order_lookup_dict = {}
         return stats
 
-    def get_ml_ready_dataset(self) -> pd.DataFrame:
+    def get_ml_ready_dataset(self, force_refresh: bool = False) -> pd.DataFrame:
         """
         Execute full relational join across all SAP tables and apply
         feature engineering for Engine A ML models.
+        Results are cached in-memory for sub-millisecond lookups.
         """
+        if self._cached_ml_df is not None and not force_refresh:
+            return self._cached_ml_df
         sql = """
         SELECT 
             vbak.vbeln AS order_id,
@@ -407,19 +419,30 @@ class MLDatabaseExtension:
         df['delay_hours'] = np.round(base_delay_hours, 1)
         df['order_value_usd'] = df['order_value'].fillna(2500.0)
 
+        # Cache dataset and pre-index dictionary for O(1) instantaneous lookups
+        self._cached_ml_df = df
+        try:
+            self._order_lookup_dict = {str(row['order_id']): row for row in df.to_dict(orient='records')}
+        except Exception:
+            self._order_lookup_dict = {}
+
         return df
 
     def get_order_details(self, order_id: str) -> Optional[Dict[str, Any]]:
-        """Retrieve full joined record for a specific sales order"""
-        df = self.get_ml_ready_dataset()
-        if df.empty:
-            return None
-        match = df[df['order_id'].astype(str) == str(order_id)]
-        if match.empty:
-            match = df[df['order_id'].astype(str).str.endswith(str(order_id))]
-            if match.empty:
-                return None
-        return match.iloc[0].to_dict()
+        """Retrieve full joined record for a specific sales order in O(1) time"""
+        if not self._order_lookup_dict:
+            self.get_ml_ready_dataset()
+
+        ord_key = str(order_id).strip()
+        if ord_key in self._order_lookup_dict:
+            return self._order_lookup_dict[ord_key]
+
+        # Suffix matching fallback if short ID passed
+        for k, v in self._order_lookup_dict.items():
+            if k.endswith(ord_key):
+                return v
+
+        return None
 
     def record_prediction(self, prediction: Dict[str, Any]) -> int:
         """Store an Engine A prediction in ml_predictions table"""
@@ -446,6 +469,39 @@ class MLDatabaseExtension:
         ))
         self.conn.commit()
         return cursor.lastrowid
+
+    def record_predictions_batch(self, predictions: List[Dict[str, Any]]) -> int:
+        """Store multiple Engine A predictions in a single high-performance SQLite transaction"""
+        if not predictions:
+            return 0
+        cursor = self.conn.cursor()
+        now_str = datetime.now().isoformat()
+        rows = [
+            (
+                str(p.get("order_id")),
+                str(p.get("delivery_id", "")),
+                str(p.get("shipment_id", "")),
+                str(p.get("customer_name", "")),
+                str(p.get("carrier_name", "")),
+                str(p.get("predicted_eta", "")),
+                float(p.get("delay_probability", 0.0)),
+                float(p.get("delay_hours", 0.0)),
+                1 if p.get("will_be_delayed") else 0,
+                str(p.get("root_cause", "")),
+                float(p.get("financial_risk_usd", 0.0)),
+                now_str
+            )
+            for p in predictions
+        ]
+        cursor.executemany("""
+            INSERT INTO ml_predictions (
+                order_id, delivery_id, shipment_id, customer_name, carrier_name,
+                predicted_eta, delay_probability, delay_hours, will_be_delayed,
+                root_cause, financial_risk_usd, predicted_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, rows)
+        self.conn.commit()
+        return len(rows)
 
     def get_predicted_order_ids(self) -> set:
         """Return a set of order_id strings that have already been predicted in ml_predictions"""

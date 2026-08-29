@@ -388,6 +388,8 @@ class VectorStore:
         self.index = None
         self.metadata = []
         self.bm25 = BM25Index()
+        self._chunk_id_to_idx = {}
+        self._query_cache = {}
         print(f"✅ Model loaded | Embedding dimension: {self.dim}")
 
     def build_index(self, chunks: List[Dict]):
@@ -403,6 +405,8 @@ class VectorStore:
         self.index = faiss.IndexFlatIP(dim)
         self.index.add(embeddings.astype("float32"))
         self.metadata = chunks
+        self._chunk_id_to_idx = {c.get("chunk_id", i): i for i, c in enumerate(chunks)}
+        self._query_cache = {}
         
         print("   Building Okapi BM25 sparse index...")
         self.bm25.build_index(chunks)
@@ -427,6 +431,8 @@ class VectorStore:
         self.index = faiss.read_index(str(self.INDEX_FILE))
         with open(self.META_FILE, "rb") as f:
             self.metadata = pickle.load(f)
+        self._chunk_id_to_idx = {c.get("chunk_id", i): i for i, c in enumerate(self.metadata)}
+        self._query_cache = {}
         if self.BM25_FILE.exists():
             with open(self.BM25_FILE, "rb") as f:
                 self.bm25 = pickle.load(f)
@@ -439,9 +445,14 @@ class VectorStore:
         """
         Execute Hybrid Search combining Dense Vector Cosine Similarity
         and Sparse BM25 Keyword Matching via Reciprocal Rank Fusion (RRF).
+        Results are cached in-memory for instant sub-millisecond retrieval.
         """
         if self.index is None:
             return []
+
+        cache_key = (query.strip(), int(top_k), str(category))
+        if cache_key in self._query_cache:
+            return self._query_cache[cache_key]
         
         # 1. Dense Vector Search
         query_vec = self.model.encode([query], normalize_embeddings=True)
@@ -461,8 +472,8 @@ class VectorStore:
         bm25_matches = self.bm25.search(query, top_k=top_k * 3, category=category)
         bm25_results = {}
         for b in bm25_matches:
-            # find index in metadata
-            idx = next((i for i, c in enumerate(self.metadata) if c["chunk_id"] == b["chunk_id"]), None)
+            # O(1) chunk lookup
+            idx = self._chunk_id_to_idx.get(b["chunk_id"])
             if idx is not None:
                 bm25_results[idx] = {
                     "rank": b["bm25_rank"],
@@ -497,7 +508,9 @@ class VectorStore:
 
         # Sort by RRF rank score
         rrf_scored.sort(key=lambda x: x["rrf_score"], reverse=True)
-        return rrf_scored[:top_k]
+        top_results = rrf_scored[:top_k]
+        self._query_cache[cache_key] = top_results
+        return top_results
 
     def search(self, query: str, top_k: int = TOP_K_RESULTS, category: str = None) -> List[Dict]:
         """Search interface - uses Hybrid Search by default"""

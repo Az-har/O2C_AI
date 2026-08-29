@@ -206,7 +206,7 @@ class PredictiveEngine:
             print(f"❌ Error during model training: {e}")
             return False
 
-    def predict_delivery_delay(self, order_id: str) -> Dict[str, Any]:
+    def predict_delivery_delay(self, order_id: str, order_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Execute prediction pipeline for a single order:
         1. Query ERP features
@@ -215,10 +215,11 @@ class PredictiveEngine:
         4. Calculate Financial Risk & Penalties
         5. Retrieve SLA & Policy context via RAG (Engine B)
         """
-        if self.ml_db is None:
-            raise ValueError("MLDatabaseExtension instance required for prediction.")
+        if order_data is None:
+            if self.ml_db is None:
+                raise ValueError("MLDatabaseExtension instance required for prediction.")
+            order_data = self.ml_db.get_order_details(order_id)
 
-        order_data = self.ml_db.get_order_details(order_id)
         if not order_data:
             return {"error": f"Order ID {order_id} not found in SAP database."}
 
