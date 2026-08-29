@@ -341,24 +341,28 @@ class AgenticOrchestrator:
                     print(f"   🔄 Force Re-Predict Active: Processing {len(orders_to_process):,} order(s)...")
 
             synthesized_decisions = []
-            for idx, ord_id in enumerate(orders_to_process, 1):
-                # Predict via Engine A + retrieve Engine B RAG context
-                order_data = self.ml_db.get_order_details(ord_id) or {}
-                pred_result = self.predictive_engine.predict_delivery_delay(ord_id, order_data=order_data)
-                
-                # Record prediction into SQLite to enable skipping on future runs
-                self.ml_db.record_prediction(pred_result)
-                
-                # Synthesize via Phase 4 Multi-Agent Specialists & Phase 5 Executors
-                decision = self.llm_synthesizer.synthesize(pred_result, order_data=order_data)
-                synthesized_decisions.append(decision)
+            predictions_to_record = []
 
-                if idx <= 10 or idx % 500 == 0 or idx == len(orders_to_process):
-                    print(f"\n   [{idx}/{len(orders_to_process)}] Order {ord_id} -> "
-                          f"Status: {'❌ DELAYED' if decision['engine_a_ml_prediction']['is_delayed'] else '✅ ON TIME'} "
-                          f"({decision['engine_a_ml_prediction']['delay_probability']:.1%}) | "
-                          f"Penalty: ${decision['legal_and_sla_adjudication']['sla_delay_penalty_usd']:.2f} | "
-                          f"Approval: {decision['emergency_mitigation']['approval_status']}")
+            if orders_to_process:
+                print(f"   ⚡ Executing high-performance vectorized prediction across {len(orders_to_process):,} orders...")
+                orders_data = [self.ml_db.get_order_details(oid) for oid in orders_to_process]
+                pred_results = self.predictive_engine.predict_batch(orders_to_process, orders_data=orders_data)
+
+                for idx, (ord_id, od, pred_result) in enumerate(zip(orders_to_process, orders_data, pred_results), 1):
+                    predictions_to_record.append(pred_result)
+                    decision = self.llm_synthesizer.synthesize(pred_result, order_data=od or {})
+                    synthesized_decisions.append(decision)
+
+                    if idx <= 10 or idx % 500 == 0 or idx == len(orders_to_process):
+                        print(f"\n   [{idx}/{len(orders_to_process)}] Order {ord_id} -> "
+                              f"Status: {'❌ DELAYED' if decision['engine_a_ml_prediction']['is_delayed'] else '✅ ON TIME'} "
+                              f"({decision['engine_a_ml_prediction']['delay_probability']:.1%}) | "
+                              f"Penalty: ${decision['legal_and_sla_adjudication']['sla_delay_penalty_usd']:.2f} | "
+                              f"Approval: {decision['emergency_mitigation']['approval_status']}")
+
+                # Commit all predictions in a single SQLite transaction
+                saved_count = self.ml_db.record_predictions_batch(predictions_to_record)
+                print(f"\n   💾 Committed {saved_count:,} prediction records to SQLite in a single transaction.")
 
             # ── STEP 6: EXPORT DAILY REPORT & SUMMARY ──────────────────────
             print("\n[Step 5/6] 📊 GENERATING DAILY AGENTIC DECISION REPORT")
