@@ -154,12 +154,16 @@ class StrikeIntelligenceGenerator:
 
         # 1.1 AI-Generated Dynamic Analysis (Local Qwen2.5 via Ollama)
         if self.ollama and self.ollama.is_available():
-            sample_titles = [f"- {a.get('title', '')} ({a.get('published', '')})" for a in articles[:5]]
+            sample_titles = [f"- [{a.get('published', 'N/A')}] {a.get('title', '')} (Source: {a.get('source', 'News Wire')})" for a in articles[:5]]
             prompt = (
-                f"You are an expert supply chain risk consultant. Analyze these recent transportation strike events in {city}, India:\n"
+                f"Analyze these verified transportation disruption incidents for {city}, India:\n"
                 + "\n".join(sample_titles) + "\n\n"
-                f"Provide a 2-paragraph strategic risk advisory for freight logistics routing in {city}. "
-                "Include risk level, key bottleneck risks, and concrete mitigation recommendations for dispatch planners."
+                f"TASK: Author a factual, 2-paragraph strategic logistics risk advisory for dispatch planners in {city}.\n"
+                "STRICT GROUNDING GUIDELINES:\n"
+                "1. Base your analysis STRICTLY on the exact incident headlines and sources listed above.\n"
+                "2. Directly reference the specific disruption types (e.g. truck, rail, bandh) present in the data.\n"
+                "3. Provide concrete logistics mitigation: highway buffer times (+12h to +24h), carrier notification, and regional bypass recommendations.\n"
+                "4. Do NOT invent fictional events, imaginary highways, or speculate beyond the provided records."
             )
             try:
                 ai_analysis = self.ollama.generate(prompt)

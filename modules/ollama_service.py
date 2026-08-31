@@ -46,9 +46,19 @@ class OllamaService:
             self._is_available = False
             return False
 
+    STRICT_SYSTEM_PROMPT = (
+        "You are an enterprise Order-to-Cash (O2C) logistics risk compliance auditor. "
+        "STRICT ANTI-HALLUCINATION RULES:\n"
+        "1. You MUST ONLY use the facts, telemetry, headlines, and metrics explicitly provided in the user prompt.\n"
+        "2. NEVER fabricate dates, imaginary highway names, unverified strike numbers, or fictional government orders.\n"
+        "3. NEVER make speculative claims. If data is limited, state facts plainly and conservatively.\n"
+        "4. Standard operational recommendations must strictly adhere to Indian logistics constraints (e.g. NH corridors, state border checks, GST e-way bills).\n"
+        "5. Output must be objective, factual, concise, and professional."
+    )
+
     def generate(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]:
         """
-        Generate text completion via Ollama.
+        Generate text completion via Ollama with strict anti-hallucination guardrails.
         Returns generated string or None on failure/timeout.
         """
         if not self.is_available():
@@ -58,15 +68,15 @@ class OllamaService:
         payload = {
             "model": self.model,
             "prompt": prompt,
+            "system": system_prompt or self.STRICT_SYSTEM_PROMPT,
             "stream": False,
             "options": {
-                "temperature": 0.2,
-                "top_p": 0.9,
+                "temperature": 0.1,  # Low temperature to suppress creative hallucination
+                "top_p": 0.85,
+                "repeat_penalty": 1.15,
                 "num_predict": 1024
             }
         }
-        if system_prompt:
-            payload["system"] = system_prompt
 
         try:
             r = requests.post(url, json=payload, timeout=self.timeout)

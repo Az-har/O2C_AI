@@ -136,13 +136,17 @@ class WeatherPolicyGenerator:
 
         # AI-Generated Synthesis if Ollama is available
         if self.ollama and self.ollama.is_available():
-            alert_summary = [f"- {a.get('description', '')}: Temp={a.get('temp_c')}C, Rain={a.get('rain_mm')}mm/h, Wind={a.get('wind_ms')}m/s" for a in alerts[:5]]
+            alert_summary = [f"- Sensor Reading: Condition={a.get('description', 'Alert')}, Temp={a.get('temp_c')}°C, Rain={a.get('rain_mm')}mm/h, Wind={a.get('wind_ms')}m/s, Visibility={a.get('visibility_km')}km" for a in alerts[:5]]
             prompt = (
-                f"You are a veterinary pharmaceutical and cold-chain logistics risk specialist. "
-                f"Analyze these severe weather alerts recorded in {city}, India:\n"
+                f"Analyze these verified meteorological sensor readings for {city}, India:\n"
                 + "\n".join(alert_summary) + "\n\n"
-                f"Provide a 2-paragraph cold-chain and fleet safety operational directive for {city}. "
-                "Specify temperature degradation risks, cargo QA hold protocols, and carrier SLA Force Majeure eligibility."
+                f"TASK: Author a 2-paragraph operational and QA directive for veterinary cold-chain and freight transit in {city}.\n"
+                "STRICT GROUNDING GUIDELINES:\n"
+                "1. Cite the exact peak temperature, rainfall rate, or wind speed values present in the telemetry above.\n"
+                "2. Apply binding QA rules: HPLC assay and 20% shelf-life reduction if ambient heat >40°C exceeds 4 hours without active reefer logging.\n"
+                "3. Enforce carrier safety rules: High-cube trailer suspension if wind >15 m/s; secondary 80-gauge pallet wrapping if rain >20 mm/hr.\n"
+                "4. Cite Carrier Master Agreement Section 4.2 for Force Majeure penalty waiver eligibility.\n"
+                "5. Do NOT invent fictional sensor readings or extraneous regulatory agencies."
             )
             try:
                 ai_analysis = self.ollama.generate(prompt)
