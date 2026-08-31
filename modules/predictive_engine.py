@@ -205,30 +205,43 @@ class PredictiveEngine:
         try:
             if len(df) >= 10:
                 X_train, X_test, y_train_cls, y_test_cls, y_train_reg, y_test_reg = train_test_split(
-                    X, y_cls, y_reg, train_size=train_size, random_state=42
+                    X, y_cls, y_reg, train_size=train_size, random_state=42, stratify=y_cls
                 )
             else:
                 X_train, X_test = X, X
                 y_train_cls, y_test_cls = y_cls, y_cls
                 y_train_reg, y_test_reg = y_reg, y_reg
 
-            # 1. Classification model
-            self.clf_model = RandomForestClassifier(n_estimators=50, max_depth=5, random_state=42)
+            # --- Stage 1: Classification Model (Full Population) ---
+            self.clf_model = RandomForestClassifier(n_estimators=100, max_depth=6, random_state=42)
             self.clf_model.fit(X_train, y_train_cls)
-            acc = accuracy_score(y_test_cls, self.clf_model.predict(X_test))
+            
+            y_prob_test = self.clf_model.predict_proba(X_test)[:, 1]
+            y_pred_cls = (y_prob_test >= 0.40).astype(int)
+            acc = accuracy_score(y_test_cls, y_pred_cls)
 
-            # 2. Regression model
-            self.reg_model = GradientBoostingRegressor(n_estimators=50, max_depth=4, random_state=42)
-            self.reg_model.fit(X_train, y_train_reg)
-            mae = mean_absolute_error(y_test_reg, self.reg_model.predict(X_test))
+            # --- Stage 2: Conditional Hurdle Regressor (Trained STRICTLY on Delayed Population) ---
+            delayed_mask_train = (y_train_cls == 1)
+            X_train_delayed = X_train[delayed_mask_train]
+            y_train_reg_delayed = y_train_reg[delayed_mask_train]
 
-            # Feature importance mapping
+            self.reg_model = GradientBoostingRegressor(
+                loss='huber', n_estimators=100, max_depth=5, learning_rate=0.08, random_state=42
+            )
+            self.reg_model.fit(X_train_delayed, y_train_reg_delayed)
+
+            # Two-Stage Gated Test Evaluation
+            y_pred_reg_conditional = self.reg_model.predict(X_test)
+            y_pred_reg_twostage = np.where(y_pred_cls == 1, np.maximum(12.0, y_pred_reg_conditional), 0.0)
+            mae = mean_absolute_error(y_test_reg, y_pred_reg_twostage)
+
+            # Feature importance mapping from Stage 1 Classifier
             importances = self.clf_model.feature_importances_
             self.feature_importances = {col: float(imp) for col, imp in zip(valid_cols, importances)}
 
             self.is_trained = True
             self.save_models()
-            print(f"✅ Models trained & persisted successfully! (Classifier Accuracy: {acc:.1%}, Regressor MAE: {mae:.1f} hrs)")
+            print(f"✅ Two-Stage Hurdle Models trained & persisted successfully! (Classifier Accuracy: {acc:.1%}, Two-Stage MAE: {mae:.1f} hrs)")
             return True
         except Exception as e:
             print(f"❌ Error during model training: {e}")
@@ -236,12 +249,13 @@ class PredictiveEngine:
 
     def predict_delivery_delay(self, order_id: str, order_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Execute prediction pipeline for a single order:
+        Execute prediction pipeline for a single order using Two-Stage Hurdle architecture:
         1. Query ERP features
-        2. Predict Delay Probability and Delay Hours (Engine A)
-        3. Determine Root Cause
-        4. Calculate Financial Risk & Penalties
-        5. Retrieve SLA & Policy context via RAG (Engine B)
+        2. Stage 1: Predict Delay Probability (Engine A Classifier)
+        3. Stage 2: Predict Delay Hours if gated as delayed (Engine A Conditional Regressor)
+        4. Determine Root Cause & XAI feature attributions
+        5. Calculate Financial Risk & Contractual SLA Penalties
+        6. Retrieve SLA & Policy context via RAG (Engine B)
         """
         if order_data is None:
             if self.ml_db is None:
@@ -255,11 +269,15 @@ class PredictiveEngine:
         feat_dict = {col: [float(order_data.get(col, 0.0))] for col in self.FEATURE_COLS}
         X_single = pd.DataFrame(feat_dict)
 
-        # --- Engine A: Mathematical ML Prediction ---
+        # --- Engine A: Two-Stage Hurdle ML Prediction ---
         if self.is_trained and self.clf_model is not None and self.reg_model is not None:
             delay_prob = float(self.clf_model.predict_proba(X_single)[0][1])
-            will_delayed = bool(delay_prob >= 0.50)
-            delay_hours = float(np.maximum(0.0, self.reg_model.predict(X_single)[0]))
+            will_delayed = bool(delay_prob >= 0.40)
+            if will_delayed:
+                raw_delay_hours = float(self.reg_model.predict(X_single)[0])
+                delay_hours = float(np.maximum(12.0, round(raw_delay_hours, 1)))
+            else:
+                delay_hours = 0.0
         else:
             # Rule-based fallback
             status = str(order_data.get('shipment_status', '')).lower()
@@ -274,8 +292,8 @@ class PredictiveEngine:
                 base_prob += 0.15
             
             delay_prob = min(0.98, max(0.02, base_prob))
-            will_delayed = delay_prob >= 0.50
-            delay_hours = (24.0 + delay_prob * 36.0) if will_delayed else max(0.0, float(order_data.get('delay_hours', 1.0)))
+            will_delayed = delay_prob >= 0.40
+            delay_hours = (24.0 + delay_prob * 36.0) if will_delayed else 0.0
 
         # ETA Calculation
         now = datetime.now()
