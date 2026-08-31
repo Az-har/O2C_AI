@@ -121,26 +121,79 @@ class StrikeIntelligenceGenerator:
     
     def _create_city_strike_brief(self, city: str, articles: List[Dict]) -> Path:
         doc = Document()
-        title = doc.add_heading(f'{city} Transportation Disruption Intelligence', 0)
+        
+        # Header
+        title = doc.add_heading(f'{city} Transportation Disruption Intelligence & Routing Protocol', 0)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
-        doc.add_paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        doc.add_paragraph(f"Total Incidents Analyzed: {len(articles)}")
+        doc.add_paragraph(f"Report Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        doc.add_paragraph(f"Monitored Geographic Hub: {city} Logistics Cluster")
+        doc.add_paragraph(f"Total Disruption Events Analyzed: {len(articles)}")
         
-        doc.add_heading('Copilot Automated Response', 1)
-        doc.add_paragraph(f"When {city} disruption is detected, Copilot:")
+        # 1. Executive Summary
+        doc.add_heading('1. Executive Regional Disruption Assessment', 1)
+        high_sev = [a for a in articles if 'HIGH' in str(a.get('severity', '')).upper()]
+        med_sev = [a for a in articles if 'MEDIUM' in str(a.get('severity', '')).upper()]
+        types = Counter([a.get('category', 'general') for a in articles])
         
-        actions = [
-            "1. Identifies all active shipments routing through affected city",
-            "2. Calculates delay probability based on disruption scale",
-            "3. Retrieves alternative routing from regional logistics matrix",
-            "4. Assesses SLA impact for affected deliveries",
-            "5. Notifies planners with rerouting recommendations",
+        doc.add_paragraph(
+            f"This intelligence brief evaluates active and historical transportation strikes, roadway blockades, "
+            f"and labor disruptions impacting freight transit in the {city} commercial logistics corridor. "
+            f"Of the {len(articles)} analyzed disruption records, {len(high_sev)} are classified as HIGH severity "
+            f"(e.g., indefinite strikes, complete bandhs) and {len(med_sev)} as MEDIUM severity. "
+            f"Dominant disruption modalities: {', '.join(f'{k.title()} ({v})' for k, v in types.items())}."
+        )
+        
+        # 2. Key Logistics Corridors & Bottlenecks
+        doc.add_heading('2. Critical Corridors & Choke Points', 1)
+        corridor_info = {
+            "Mumbai": "NH-48 (Mumbai-Pune / Mumbai-Gujarat Corridor), JNPT Port Container Freight Stations, Bhiwandi Warehouse Cluster.",
+            "Delhi": "NH-44 (Delhi-Agra / Delhi-Chandigarh), Kundli-Manesar-Palwal (KMP) Expressway, Sanjay Gandhi Transport Nagar.",
+            "Bangalore": "NH-44 (Hosur Road / Chennai Link), Nelamangala Logistics Hub, Electronic City toll junction.",
+            "Chennai": "NH-16 (Chennai-Kolkata corridor), Sriperumbudur Industrial Corridor, Chennai Port Trust gates.",
+            "Kolkata": "NH-19 (Durgapur Expressway), Dankuni Freight Terminal, Vidyasagar Setu approach.",
+            "Hyderabad": "NH-65 (Hyderabad-Vijayawada), Outer Ring Road (ORR) logistics exits, Shamshabad cargo terminal.",
+            "Pune": "Pune-Bangalore Highway (NH-48), Chakan Industrial Belt, Talegaon Logistics Park.",
+            "Ahmedabad": "Ahmedabad-Vadodara Expressway (NE-1), Changodar Industrial Estate, Sanand GIDC corridor.",
+            "Jaipur": "NH-48 (Jaipur-Delhi Highway), Vishwakarma Industrial Area, Transport Nagar bypass.",
+            "Lucknow": "Lucknow-Agra Expressway, Transport Nagar Kanpur Road, Shaheed Path logistics junctions."
+        }
+        corridor_desc = corridor_info.get(city, f"{city} primary national highway entry points and regional transshipment yards.")
+        doc.add_paragraph(f"Primary Inbound/Outbound Transit Routes: {corridor_desc}")
+        doc.add_paragraph(
+            "Impact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls "
+            "and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals."
+        )
+        
+        # 3. Incident Registry
+        doc.add_heading('3. Chronological Disruption Incidents & Intelligence Registry', 1)
+        for idx, art in enumerate(articles[:15], 1):
+            p = doc.add_paragraph()
+            p.add_run(f"Incident #{idx}: {art.get('title', 'Unknown Title')}\n").bold = True
+            p.add_run(f"• Published Date: {art.get('published', 'N/A')} | Source: {art.get('source', 'News Wire')}\n")
+            p.add_run(f"• Modality: {art.get('category', 'general').title()} | Severity: {art.get('severity', 'LOW')}\n")
+            if art.get('description'):
+                clean_desc = art.get('description', '').replace('<a', '').replace('</a>', '').replace('&nbsp;', ' ')
+                p.add_run(f"• Intelligence Summary: {clean_desc[:300]}...\n")
+        
+        # 4. Autonomous Copilot Operational Playbook
+        doc.add_heading('4. Autonomous Copilot Operational & Legal Rules', 1)
+        doc.add_paragraph(
+            f"When active transit strikes or civil disruptions are detected in {city}, the O2C Copilot "
+            f"applies the following deterministic decision rules:"
+        )
+        
+        rules = [
+            f"Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in {city} delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+            f"Dynamic Transit Buffer: For any order scheduled to pass through {city} with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA.",
+            f"Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through {city} with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+            f"Receiving Window Compliance: If transit delays push delivery past clinic receiving hours (after 17:00), automatically reschedule delivery to 09:00 next business morning and trigger carrier redelivery fee waiver ($150 cap).",
+            f"Proactive Stakeholder Notification: Send automated Microsoft Teams escalation card to Regional Logistics Director when order financial risk exceeds $500 threshold."
         ]
-        for action in actions:
-            doc.add_paragraph(action, style='List Bullet')
+        for rule in rules:
+            doc.add_paragraph(f"• {rule}")
         
-        # Sanitize city name for filename (replace / with -)
+        # Sanitize city name for filename
         safe_city = city.replace('/', '-').replace('\\', '-')
         filename = f"{safe_city}_Strike_Intelligence.docx"
         doc_path = self.output_dir / filename
@@ -150,20 +203,76 @@ class StrikeIntelligenceGenerator:
     def _create_category_strike_brief(self, category: str, articles: List[Dict]) -> Path:
         doc = Document()
         cat_name = category.replace('_', ' ').title()
-        title = doc.add_heading(f'{cat_name} Disruption Pattern Analysis', 0)
+        title = doc.add_heading(f'{cat_name} Transportation Disruption Pattern & Risk Analysis', 0)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
-        doc.add_paragraph(f"Total {cat_name} Incidents: {len(articles)}")
+        doc.add_paragraph(f"Report Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        doc.add_paragraph(f"Transit Modality Category: {cat_name} Logistics Operations")
+        doc.add_paragraph(f"Total Sector Incidents Analyzed: {len(articles)}")
         
+        # 1. Modality Profile
+        doc.add_heading('1. Sector Disruption Profile & Vulnerability', 1)
+        doc.add_paragraph(
+            f"This operational brief outlines systemic risk patterns, union actions, and transit vulnerabilities "
+            f"specific to {cat_name} transportation across India. Disruptions in this sector typically stem from "
+            f"toll tariff revisions, fuel price volatility, regulatory compliance enforcement (e.g. e-way bill disputes), "
+            f"and driver union strikes."
+        )
+        
+        # 2. Geographic Distribution
         all_cities = []
         for article in articles:
             all_cities.extend(article.get('matched_cities', []))
         city_impacts = Counter(all_cities)
         
-        doc.add_heading('Most Affected Cities', 2)
+        doc.add_heading('2. Geographic Impact Distribution', 1)
         for city, count in city_impacts.most_common(10):
-            doc.add_paragraph(f"{city}: {count} incidents", style='List Bullet')
+            doc.add_paragraph(f"• {city}: {count} recorded incident(s)")
+            
+        # 3. Selected Real-World Incident Case Studies
+        doc.add_heading('3. Key Sector Incidents & Historical Evidence', 1)
+        for idx, art in enumerate(articles[:10], 1):
+            p = doc.add_paragraph()
+            p.add_run(f"Case #{idx}: {art.get('title', 'Unknown')}\n").bold = True
+            p.add_run(f"• Date: {art.get('published', 'N/A')} | Source: {art.get('source', 'Unknown')}\n")
+            if art.get('description'):
+                clean_desc = art.get('description', '').replace('<a', '').replace('</a>', '').replace('&nbsp;', ' ')
+                p.add_run(f"• Context: {clean_desc[:250]}...\n")
         
+        # 4. Carrier Contract Adjudication & Mitigation
+        doc.add_heading('4. Carrier SLA Adjudication & Operational Directives', 1)
+        doc.add_paragraph(
+            f"Standard operating procedures when {cat_name} disruptions impact Order-to-Cash deliveries:"
+        )
+        
+        modality_guidance = {
+            "truck": [
+                "FTL Freight Rerouting: If primary highway corridor is blocked by truck strikes, carriers must attempt approved secondary state highway bypasses within 4 hours.",
+                "Demurrage & Detention Caps: Carrier detention claims during nationwide truck strikes are capped at $100/day and require GPS geofence verification.",
+                "Short-Dated Inventory Protection: For products with <60 days shelf-life stuck in highway transit, trigger Quality QA hold if transit exceeds 48 hours."
+            ],
+            "railway": [
+                "Rail Yard Demurrage Rules: Rail container demurrage incurred due to labor strikes at inland container depots (ICDs) is reimbursable up to $500 per container upon railway receipt submission.",
+                "Intermodal Drayage Shift: Transfer stranded rail cargo to dedicated road linehauls within 24 hours of rail stoppage."
+            ],
+            "bandh": [
+                "Total Force Majeure Exemption: Complete Bharat Bandh or State Bandhs automatically activate Force Majeure Section 8.2 across all transit modes.",
+                "Warehouse Dispatch Lockdown: No outbound shipments may be tendered during active bandh curfew hours to prevent en-route cargo damage or looting."
+            ],
+            "bus": [
+                "Commuter Spillover Effect: State transport bus strikes cause heavy arterial road congestion (+2 to +4 hours linehaul delay). Planners should adjust dispatch times."
+            ]
+        }
+        
+        guidelines = modality_guidance.get(category.lower(), [
+            "Assess transit delay duration against contractual delivery grace period (24 hours).",
+            "Verify whether disruption is recognized by local transport authority as Force Majeure.",
+            "Proactively notify destination clinics of revised ETA window."
+        ])
+        
+        for g in guidelines:
+            doc.add_paragraph(f"• {g}")
+            
         # Sanitize category name for filename
         safe_cat = cat_name.replace('/', '-').replace('\\', '-')
         filename = f"{safe_cat}_Pattern_Analysis.docx"
@@ -173,23 +282,37 @@ class StrikeIntelligenceGenerator:
     
     def _create_master_disruption_intelligence(self, all_articles: List[Dict]) -> Path:
         doc = Document()
-        title = doc.add_heading('Master Transportation Disruption Intelligence', 0)
+        title = doc.add_heading('Master Transportation Disruption Intelligence & National Playbook', 0)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
-        doc.add_heading('Purpose', 1)
+        doc.add_paragraph(f"Report Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        doc.add_paragraph(f"National Scope: India Logistics Network & Veterinary Supply Chain")
+        doc.add_paragraph(f"Total National Disruption Records Analyzed: {len(all_articles)}")
+        
+        doc.add_heading('1. National Supply Chain Risk Overview', 1)
         doc.add_paragraph(
-            "National-level guidance for O2C Delivery Risk Copilot on transportation "
-            "strikes and disruptions across India's veterinary food supply chain."
+            "This master intelligence brief synthesizes nationwide transportation labor disruptions, strike trends, "
+            "and highway bottlenecks across India. It serves as the primary ground-truth knowledge base for the "
+            "O2C Autonomous Delivery Risk Copilot (Phases 2, 4, and 5)."
         )
         
-        doc.add_heading('Copilot Automated Actions', 1)
+        # High Severity Summary
+        high_sev = [a for a in all_articles if 'HIGH' in str(a.get('severity', '')).upper()]
+        doc.add_heading('2. Critical National Disruptions (High Severity)', 1)
+        doc.add_paragraph(f"Identified {len(high_sev)} major nationwide or state-wide disruption events:")
+        
+        for idx, art in enumerate(high_sev[:10], 1):
+            p = doc.add_paragraph()
+            p.add_run(f"• [{art.get('published', 'N/A')}] {art.get('title', 'Unknown')}\n").bold = True
+            p.add_run(f"  Source: {art.get('source', 'Unknown')} | Region: {art.get('matched_cities', ['National'])[0]}\n")
+            
+        doc.add_heading('3. Autonomous AI Orchestration Decision Matrix', 1)
         actions = [
-            "1. Cross-reference shipment routes with disruption zones",
-            "2. Calculate delay probability and revised ETA",
-            "3. Identify alternative routing options",
-            "4. Assess Force Majeure applicability",
-            "5. Notify planners and affected clinics proactively",
-            "6. Update SAP with revised delivery dates",
+            "Phase 1 Ingestion Integration: Automatically query live weather and strike news on daily schedule; populate SQLite database and update vector knowledge base.",
+            "Phase 2 RAG Retrieval: When an order risk is evaluated, retrieve matching city and modality intelligence to adjudicate Force Majeure eligibility and transit delay buffers.",
+            "Phase 3 ML Synergy: Combine strike severity alerts with historical transit velocity to adjust predicted delay hours and probability.",
+            "Phase 4 Multi-Agent Adjudication: Route Supervisor verifies alternative corridors; Contract Adjudicator calculates carrier chargebacks and SLA penalties ($500/day vs 5%/day); Quality Mitigation agent enforces cold-chain holds.",
+            "Phase 5 ERP & Teams Action: Update SAP ERP delivery block / date (VDATU); dispatch Actionable Adaptive Card to Regional Logistics Director for approvals exceeding $500."
         ]
         for action in actions:
             doc.add_paragraph(action, style='List Bullet')

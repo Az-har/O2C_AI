@@ -153,47 +153,51 @@ class WeatherPolicyGenerator:
         visibility_alerts = [a for a in alerts if a['visibility_km'] < 1]
         
         if heat_alerts:
-            doc.add_heading('Extreme Heat Events', 2)
+            doc.add_heading('Extreme Heat Events & Cold-Chain Protocol', 2)
             doc.add_paragraph(
                 f"🌡️  {len(heat_alerts)} extreme heat events recorded. "
-                f"Peak: {max(a['temp_c'] for a in heat_alerts):.1f}°C"
+                f"Peak: {max(a['temp_c'] for a in heat_alerts):.1f}°C in {city}."
             )
             doc.add_paragraph(
-                "Action: Cold-chain shipments require expedited delivery. "
-                "Shelf-life reduced by 20% per QA Policy 2024-03."
+                "• Product Impact: Ambient temperature exceeding 40.0°C degrades lipid stability in premium therapeutic wet pet food and denatures active enzymes in veterinary probiotics.\n"
+                "• Mandatory Quality Action: Any shipment in transit through this zone exceeding 4.0 hours without active reefer logging must undergo HPLC stability testing and human organoleptic evaluation upon arrival. Reduce nominal shelf-life by 20% per QA Policy 2024-03.\n"
+                "• Cold-Chain Expedited Transit: Automatically prioritize refrigerated FTL carriers and dispatch reefer unit data logger logs."
             )
         
         if wind_alerts:
-            doc.add_heading('High Wind Events', 2)
+            doc.add_heading('High Wind & Gale Warning Protocol', 2)
             doc.add_paragraph(
                 f"💨 {len(wind_alerts)} high wind events recorded. "
-                f"Peak: {max(a['wind_ms'] for a in wind_alerts):.1f} m/s"
+                f"Peak: {max(a['wind_ms'] for a in wind_alerts):.1f} m/s in {city}."
             )
             doc.add_paragraph(
-                "Action: Suspend tall vehicle (>3m) routing. "
-                "Force Majeure clause applicable per Carrier Master Agreement Section 4.2."
+                "• Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).\n"
+                "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks.\n"
+                "• Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs."
             )
         
         if rain_alerts:
-            doc.add_heading('Heavy Rain Events', 2)
+            doc.add_heading('Heavy Precipitation & Flood Advisory', 2)
             doc.add_paragraph(
                 f"🌧️  {len(rain_alerts)} heavy rain events recorded. "
-                f"Peak: {max(a['rain_mm'] for a in rain_alerts):.1f} mm/hr"
+                f"Peak: {max(a['rain_mm'] for a in rain_alerts):.1f} mm/hr in {city}."
             )
             doc.add_paragraph(
-                "Action: Inspect packaging for moisture damage. "
-                "QA hold required if transit delay >24hrs during heavy rain."
+                "• Packaging & Moisture Risk: Rainfall exceeding 20.0 mm/hr creates severe corrugated box crush hazards and corrugated carton moisture saturation.\n"
+                "• Mandatory Warehouse Action: All pallets exiting the warehouse during active heavy rain advisories must receive secondary 80-gauge poly-stretch film wrapping.\n"
+                "• QA Inspection Block: Any shipment incurring transit delays >24.0 hours during monsoon flood conditions must be placed on SAP QA Hold (Stock Type 'S') pending moisture probe inspection (threshold: >12% carton moisture content = 100% rejection)."
             )
         
         if visibility_alerts:
-            doc.add_heading('Low Visibility Events', 2)
+            doc.add_heading('Dense Fog & Low Visibility Protocol', 2)
             doc.add_paragraph(
                 f"🌫️  {len(visibility_alerts)} low visibility events recorded. "
-                f"Minimum: {min(a['visibility_km'] for a in visibility_alerts):.2f} km"
+                f"Minimum Visibility: {min(a['visibility_km'] for a in visibility_alerts):.2f} km in {city}."
             )
             doc.add_paragraph(
-                "Action: Automatic 4-hour delay buffer added to ETA. "
-                "Notify receiving clinics proactively."
+                "• Highway Speed Restriction: Dense fog reduces safe highway transit velocity below 30 km/h on national corridors.\n"
+                "• Copilot Action: Automatically inject a +4.0 to +8.0 hour dynamic buffer into predicted arrival time (PDD).\n"
+                "• Proactive Clinic Rescheduling: Notify receiving veterinary clinics before 14:00 if night-shift linehaul is fog-delayed, preventing after-hours dock lockouts ($150 redelivery fee waiver applied)."
             )
         
         # Mitigation Actions
