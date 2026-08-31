@@ -113,146 +113,151 @@ class WeatherPolicyGenerator:
         return by_city
     
     def _create_city_weather_policy(self, city: str, alerts: List[Dict]) -> Path:
-        """Create a weather policy document for a specific city"""
+        """Create a structured, high-density weather policy document for a specific city"""
         doc = Document()
         
-        # Title
-        title = doc.add_heading(f'{city} Severe Weather Protocol', 0)
-        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        
-        # Metadata
-        doc.add_paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        doc.add_paragraph(f"Total Alerts Analyzed: {len(alerts)}")
-        doc.add_paragraph()
-        
-        # Executive Summary
-        doc.add_heading('Executive Summary', 1)
-        summary = doc.add_paragraph(
-            f"This document outlines severe weather protocols for {city} based on "
-            f"historical weather alert patterns. It provides guidance for the O2C Delivery "
-            f"Risk Copilot on when to apply Force Majeure clauses, reroute shipments, "
-            f"and notify stakeholders."
-        )
-
-        # AI-Generated Synthesis if Ollama is available
-        if self.ollama and self.ollama.is_available():
-            alert_summary = [f"- Sensor Reading: Condition={a.get('description', 'Alert')}, Temp={a.get('temp_c')}°C, Rain={a.get('rain_mm')}mm/h, Wind={a.get('wind_ms')}m/s, Visibility={a.get('visibility_km')}km" for a in alerts[:5]]
-            prompt = (
-                f"Analyze these verified meteorological sensor readings for {city}, India:\n"
-                + "\n".join(alert_summary) + "\n\n"
-                f"TASK: Author a 2-paragraph operational and QA directive for veterinary cold-chain and freight transit in {city}.\n"
-                "STRICT GROUNDING GUIDELINES:\n"
-                "1. Cite the exact peak temperature, rainfall rate, or wind speed values present in the telemetry above.\n"
-                "2. Apply binding QA rules: HPLC assay and 20% shelf-life reduction if ambient heat >40°C exceeds 4 hours without active reefer logging.\n"
-                "3. Enforce carrier safety rules: High-cube trailer suspension if wind >15 m/s; secondary 80-gauge pallet wrapping if rain >20 mm/hr.\n"
-                "4. Cite Carrier Master Agreement Section 4.2 for Force Majeure penalty waiver eligibility.\n"
-                "5. Do NOT invent fictional sensor readings or extraneous regulatory agencies."
-            )
-            try:
-                ai_analysis = self.ollama.generate(prompt)
-                if ai_analysis:
-                    doc.add_heading('AI Cold-Chain & Severe Weather Risk Directive (Qwen2.5 Synthesized)', 2)
-                    doc.add_paragraph(ai_analysis)
-            except Exception:
-                pass
-        
-        # Weather Thresholds
-        doc.add_heading('Severe Weather Thresholds', 1)
-        doc.add_paragraph("The following conditions trigger automatic Copilot alerts:")
-        
-        thresholds = doc.add_paragraph()
-        thresholds.add_run("🌡️  Extreme Heat: ").bold = True
-        thresholds.add_run("Temperature > 40°C\n")
-        
-        thresholds.add_run("💨 High Wind: ").bold = True
-        thresholds.add_run("Wind Speed > 15 m/s\n")
-        
-        thresholds.add_run("🌧️  Heavy Rain: ").bold = True
-        thresholds.add_run("Rainfall > 20mm/hr\n")
-        
-        thresholds.add_run("🌫️  Low Visibility: ").bold = True
-        thresholds.add_run("Visibility < 1km")
-        
-        # Alert History
-        doc.add_heading(f'Recent {city} Weather Alerts', 1)
-        
-        # Categorize alerts
+        # Telemetry Aggregation
         heat_alerts = [a for a in alerts if a['temp_c'] > 40]
         wind_alerts = [a for a in alerts if a['wind_ms'] > 15]
         rain_alerts = [a for a in alerts if a['rain_mm'] > 20]
-        visibility_alerts = [a for a in alerts if a['visibility_km'] < 1]
+        vis_alerts = [a for a in alerts if a['visibility_km'] < 1]
         
-        if heat_alerts:
-            doc.add_heading('Extreme Heat Events & Cold-Chain Protocol', 2)
-            doc.add_paragraph(
-                f"🌡️  {len(heat_alerts)} extreme heat events recorded. "
-                f"Peak: {max(a['temp_c'] for a in heat_alerts):.1f}°C in {city}."
-            )
-            doc.add_paragraph(
-                "• Product Impact: Ambient temperature exceeding 40.0°C degrades lipid stability in premium therapeutic wet pet food and denatures active enzymes in veterinary probiotics.\n"
-                "• Mandatory Quality Action: Any shipment in transit through this zone exceeding 4.0 hours without active reefer logging must undergo HPLC stability testing and human organoleptic evaluation upon arrival. Reduce nominal shelf-life by 20% per QA Policy 2024-03.\n"
-                "• Cold-Chain Expedited Transit: Automatically prioritize refrigerated FTL carriers and dispatch reefer unit data logger logs."
-            )
+        peak_temp = max([a['temp_c'] for a in alerts]) if alerts else 30.0
+        peak_wind = max([a['wind_ms'] for a in alerts]) if alerts else 5.0
+        peak_rain = max([a['rain_mm'] for a in alerts]) if alerts else 0.0
+        min_vis = min([a['visibility_km'] for a in alerts]) if alerts else 10.0
         
-        if wind_alerts:
-            doc.add_heading('High Wind & Gale Warning Protocol', 2)
-            doc.add_paragraph(
-                f"💨 {len(wind_alerts)} high wind events recorded. "
-                f"Peak: {max(a['wind_ms'] for a in wind_alerts):.1f} m/s in {city}."
-            )
-            doc.add_paragraph(
-                "• Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).\n"
-                "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks.\n"
-                "• Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs."
-            )
+        # Title & Metadata Block
+        title = doc.add_heading(f'{city.upper()} SEVERE WEATHER PROTOCOL & FREIGHT ADJUDICATION MATRIX', 0)
+        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
-        if rain_alerts:
-            doc.add_heading('Heavy Precipitation & Flood Advisory', 2)
-            doc.add_paragraph(
-                f"🌧️  {len(rain_alerts)} heavy rain events recorded. "
-                f"Peak: {max(a['rain_mm'] for a in rain_alerts):.1f} mm/hr in {city}."
-            )
-            doc.add_paragraph(
-                "• Packaging & Moisture Risk: Rainfall exceeding 20.0 mm/hr creates severe corrugated box crush hazards and corrugated carton moisture saturation.\n"
-                "• Mandatory Warehouse Action: All pallets exiting the warehouse during active heavy rain advisories must receive secondary 80-gauge poly-stretch film wrapping.\n"
-                "• QA Inspection Block: Any shipment incurring transit delays >24.0 hours during monsoon flood conditions must be placed on SAP QA Hold (Stock Type 'S') pending moisture probe inspection (threshold: >12% carton moisture content = 100% rejection)."
-            )
-        
-        if visibility_alerts:
-            doc.add_heading('Dense Fog & Low Visibility Protocol', 2)
-            doc.add_paragraph(
-                f"🌫️  {len(visibility_alerts)} low visibility events recorded. "
-                f"Minimum Visibility: {min(a['visibility_km'] for a in visibility_alerts):.2f} km in {city}."
-            )
-            doc.add_paragraph(
-                "• Highway Speed Restriction: Dense fog reduces safe highway transit velocity below 30 km/h on national corridors.\n"
-                "• Copilot Action: Automatically inject a +4.0 to +8.0 hour dynamic buffer into predicted arrival time (PDD).\n"
-                "• Proactive Clinic Rescheduling: Notify receiving veterinary clinics before 14:00 if night-shift linehaul is fog-delayed, preventing after-hours dock lockouts ($150 redelivery fee waiver applied)."
-            )
-        
-        # Mitigation Actions
-        doc.add_heading('Automated Copilot Actions', 1)
         doc.add_paragraph(
-            "When severe weather is detected, the Copilot automatically:"
+            f"Monitored Logistics Hub: {city} Commercial Logistics Corridor\n"
+            f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | Total Telemetry Events Analyzed: {len(alerts)}\n"
+            f"Observed Telemetry Extremes: Peak Temp: {peak_temp:.1f}°C | Peak Wind: {peak_wind:.1f} m/s | Peak Rain: {peak_rain:.1f} mm/h | Min Visibility: {min_vis:.2f} km"
         )
         
-        actions = [
-            "1. Cross-references carrier location with weather alert zone",
-            "2. Calculates delay probability and revised ETA",
-            "3. Retrieves applicable Force Majeure clauses from vendor contracts",
-            "4. Assesses QA inspection requirements based on cargo type and delay duration",
-            "5. Notifies logistics planners via MS Teams with recommended mitigation",
-            "6. Updates SAP delivery date (VDATU) if delay confirmed",
+        # 1. Extracted Meteorological Insights
+        doc.add_heading('1. EXTRACTED METEOROLOGICAL INSIGHTS & EXPOSURE PROFILE', 1)
+        
+        ai_extracted = False
+        if self.ollama and self.ollama.is_available():
+            alert_summary = [f"- Temp={a.get('temp_c')}C, Wind={a.get('wind_ms')}m/s, Rain={a.get('rain_mm')}mm/h, Cond={a.get('description', '')}" for a in alerts[:5]]
+            prompt = (
+                f"Analyze these verified meteorological sensor readings for {city}, India:\n"
+                + "\n".join(alert_summary) + "\n\n"
+                f"TASK: Extract exactly 3 concise, factual insight bullets for freight linehauls in {city}:\n"
+                "• Primary Hazard Vector: (State primary hazard e.g. severe crosswind shear, extreme heatwave, or heavy downpour with peak number)\n"
+                "• Secondary Hazard Vector: (State secondary atmospheric stress e.g. humidity, slick roads, or visibility drop)\n"
+                "• Critical Risk Window: (State freight impact on vehicle stability, linehaul speed reduction, or reefer cooling load)"
+            )
+            try:
+                ai_analysis = self.ollama.generate(prompt)
+                if ai_analysis and "Primary Hazard Vector" in ai_analysis:
+                    doc.add_paragraph(ai_analysis.strip())
+                    ai_extracted = True
+            except Exception:
+                pass
+        
+        if not ai_extracted:
+            # Deterministic Fallback Insights
+            primary_hazard = f"Extreme Heatwave ({peak_temp:.1f}°C)" if peak_temp > 40 else (f"Gale Force Crosswinds ({peak_wind:.1f} m/s)" if peak_wind > 15 else f"Heavy Rain ({peak_rain:.1f} mm/h)")
+            doc.add_paragraph(
+                f"• Primary Hazard Vector: {primary_hazard} recorded in {city} logistics cluster.\n"
+                f"• Secondary Hazard Vector: Ambient atmospheric stress causing transit velocity degradation and cargo vulnerability.\n"
+                f"• Critical Risk Window: Elevated highway exposure, linehaul velocity reduction (-25% to -40%), and thermal/moisture packaging stress."
+            )
+        
+        # 2. Logistics Corridor Risk Matrix Table
+        doc.add_heading('2. LOGISTICS CORRIDOR & CHOKE POINT RISK MATRIX', 1)
+        
+        corridors_by_city = {
+            "Hyderabad": [
+                ("Hyderabad Outer Ring Road (ORR)", f"🔴 HIGH ({peak_wind:.1f} m/s wind)" if peak_wind > 15 else "🟢 LOW", "High-cube trailer rollover hazard", "Enforce 40 km/h speed cap; divert high-cube trailers (>3.0m) to ground arterials."),
+                ("Shamshabad Air Cargo Terminal", "🟡 MODERATE", "Crosswind shear & ramp transfer dwell", "Inject +4.0h buffer on air-to-road freight transfers."),
+                ("NH-65 (Hyderabad-Vijayawada)", "🟡 MODERATE", "Pavement slickness / heavy linehaul traffic", "Mandatory secondary 80-gauge poly-stretch pallet wrapping."),
+                ("Medchal Industrial Logistics Park", "🟢 LOW", "Warehouse staging operations", "Standard operating procedures apply.")
+            ],
+            "Mumbai": [
+                ("NH-48 (Mumbai-Pune Expressway)", f"🔴 SEVERE ({peak_temp:.1f}°C heat / rain)" if peak_temp > 38 else "🟡 MODERATE", "Ghat incline thermal load & engine overheating", "Enforce mandatory reefer pre-cooling to 4°C prior to departure."),
+                ("JNPT Port Container Terminal", "🟡 MODERATE", "CFS terminal gate congestion & trailer dwell", "Authorize intermodal drayage bypass if gate queue >4 hours."),
+                ("Bhiwandi Central Warehouse Cluster", "🔴 HIGH", "Corrugated carton moisture saturation", "Apply mandatory secondary pallet shrink wrapping; inspect dock seals."),
+                ("Western Express Highway Corridor", "🟡 MODERATE", "Urban transit curfew hours (after 08:00)", "Route linehauls via Eastern Freeway or night dispatch windows.")
+            ],
+            "Bangalore": [
+                ("NH-44 (Hosur Road / Electronic City)", "🔴 HIGH", "Arterial toll plaza bottlenecks & gridlock", "Inject +6.0h safety buffer for linehauls connecting to Tamil Nadu."),
+                ("Nelamangala Transshipment Yard", "🟡 MODERATE", "Multi-stop LTL consolidation queue", "Enforce FTL direct routing for critical veterinary diets."),
+                ("Devanahalli Airport Logistics Belt", "🟢 LOW", "Air freight cold-chain staging", "Standard pre-conditioned reefer transfer protocol.")
+            ],
+            "Chennai": [
+                ("NH-16 (Chennai-Kolkata Corridor)", f"🔴 SEVERE ({peak_rain:.1f} mm/h)" if peak_rain > 15 else "🟡 MODERATE", "Coastal monsoon flooding & road submergence", "Divert linehauls to elevated bypass; enforce SAP QA Hold Stock 'S'."),
+                ("Sriperumbudur Industrial Hub", "🟡 MODERATE", "Heavy commercial container traffic", "Schedule dispatch during off-peak windows (22:00-06:00)."),
+                ("Chennai Port Trust Terminal Gates", "🟡 MODERATE", "Coastal high humidity & container salt spray", "Mandatory desiccants inside shipping containers.")
+            ],
+            "Pune": [
+                ("NH-48 (Pune-Bangalore Highway)", "🟡 MODERATE", "Chakan belt linehaul congestion", "Add +4.0h dynamic buffer to predicted delivery time."),
+                ("Talegaon Logistics Park", "🟢 LOW", "Warehouse consolidation staging", "Standard operating procedures apply.")
+            ]
+        }
+        
+        city_corridors = corridors_by_city.get(city, [
+            (f"{city} Primary National Highway Corridor", "🟡 MODERATE", "Severe weather exposure & linehaul velocity drop", "Enforce dynamic transit safety buffers and driver weather advisories."),
+            (f"{city} Regional Transshipment Hub", "🟢 LOW", "Freight cross-docking operations", "Standard operating procedures apply.")
+        ])
+        
+        table = doc.add_table(rows=1, cols=4)
+        table.style = 'Table Grid'
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = 'Logistics Corridor / Choke Point'
+        hdr_cells[1].text = 'Hazard Level'
+        hdr_cells[2].text = 'Vulnerability Profile'
+        hdr_cells[3].text = 'Mandatory Fleet Directive'
+        
+        for corridor, haz, vuln, directive in city_corridors:
+            row_cells = table.add_row().cells
+            row_cells[0].text = corridor
+            row_cells[1].text = haz
+            row_cells[2].text = vuln
+            row_cells[3].text = directive
+            
+        doc.add_paragraph()  # Spacing
+        
+        # 3. Binding Operational & QA Directives (Discrete Rules)
+        doc.add_heading('3. BINDING OPERATIONAL & QUALITY ASSURANCE (QA) DIRECTIVES', 1)
+        
+        city_code = city[:3].upper()
+        rules = [
+            f"[RULE-W-{city_code}-01] TRAILER EQUIPMENT & FLEET RESTRICTION:\n"
+            f"  Wind speed >= 15.0 m/s or heavy rain >= 20.0 mm/h mandates immediate suspension of high-cube curtain-sided trailers (>3.0m height). Dispatch must substitute low-profile rigid trucks.",
+            
+            f"[RULE-W-{city_code}-02] FORCE MAJEURE & SLA ADJUDICATION (CLAUSE 4.2):\n"
+            f"  Weather conditions exceeding official alert thresholds qualify as IMD-recognized Severe Meteorological Events. Carrier delay penalties ($500/day -> $0.00) are waived upon submission of verified telematics logs.",
+            
+            f"[RULE-W-{city_code}-03] COLD-CHAIN & MOISTURE INTEGRITY PROTOCOL:\n"
+            f"  Ambient temperature >40.0°C exceeding 4.0 hours without active reefer logging mandates HPLC stability assay and 20% shelf-life reduction (QA Policy 2024-03). Carton moisture >12% mandates 100% rejection.",
+            
+            f"[RULE-W-{city_code}-04] DYNAMIC ETA BUFFER & REDELIVERY FEE WAIVER:\n"
+            f"  Automatically inject a +4.0h to +8.0h dynamic safety buffer into predicted arrival time (PDD). If delay pushes arrival past clinic closing time (17:00), reschedule to 09:00 next business day with $150 redelivery fee waiver."
         ]
         
-        for action in actions:
-            doc.add_paragraph(action, style='List Bullet')
-        
-        # Save document
+        for r in rules:
+            doc.add_paragraph(r)
+            
+        # 4. Copilot Deterministic Action Checklist
+        doc.add_heading('4. COPILOT DETERMINISTIC ACTION CHECKLIST', 1)
+        checklist = [
+            f"[x] Step 1: Query live weather telemetry in {city} against alert thresholds (Temp >40°C, Wind >15m/s, Rain >20mm/h).",
+            f"[x] Step 2: Cross-reference active SAP linehauls (sap_vttk) entering {city} and check carrier equipment profile.",
+            f"[x] Step 3: Apply [RULE-W-{city_code}-02] Force Majeure relief to waive SLA penalties if alert conditions verified.",
+            f"[x] Step 4: Dispatch automated Actionable Adaptive Card to Regional Logistics Director for approvals exceeding $500."
+        ]
+        for item in checklist:
+            doc.add_paragraph(item)
+            
+        # Save Document
         filename = f"{city}_Weather_Protocol.docx"
         doc_path = self.output_dir / filename
         doc.save(str(doc_path))
-        
         return doc_path
     
     def _create_master_weather_protocol(self, all_alerts: List[Dict]) -> Path:

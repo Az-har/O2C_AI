@@ -130,99 +130,123 @@ class StrikeIntelligenceGenerator:
     def _create_city_strike_brief(self, city: str, articles: List[Dict]) -> Path:
         doc = Document()
         
-        # Header
-        title = doc.add_heading(f'{city} Transportation Disruption Intelligence & Routing Protocol', 0)
-        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        
-        doc.add_paragraph(f"Report Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        doc.add_paragraph(f"Monitored Geographic Hub: {city} Logistics Cluster")
-        doc.add_paragraph(f"Total Disruption Events Analyzed: {len(articles)}")
-        
-        # 1. Executive Summary
-        doc.add_heading('1. Executive Regional Disruption Assessment', 1)
+        # Telemetry & Incident Aggregation
         high_sev = [a for a in articles if 'HIGH' in str(a.get('severity', '')).upper()]
         med_sev = [a for a in articles if 'MEDIUM' in str(a.get('severity', '')).upper()]
-        types = Counter([a.get('category', 'general') for a in articles])
+        low_sev = [a for a in articles if 'LOW' in str(a.get('severity', '')).upper() or not a.get('severity')]
+        city_code = city[:3].upper()
+        
+        # Title & Metadata Block
+        title = doc.add_heading(f'{city.upper()} TRANSPORTATION DISRUPTION INTELLIGENCE & ROUTING PLAYBOOK', 0)
+        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
         doc.add_paragraph(
-            f"This intelligence brief evaluates active and historical transportation strikes, roadway blockades, "
-            f"and labor disruptions impacting freight transit in the {city} commercial logistics corridor. "
-            f"Of the {len(articles)} analyzed disruption records, {len(high_sev)} are classified as HIGH severity "
-            f"(e.g., indefinite strikes, complete bandhs) and {len(med_sev)} as MEDIUM severity. "
-            f"Dominant disruption modalities: {', '.join(f'{k.title()} ({v})' for k, v in types.items())}."
+            f"Monitored Freight Hub: {city} Logistics Cluster\n"
+            f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | Total Disruption Incidents Analyzed: {len(articles)}\n"
+            f"Disruption Severity Breakdown: 🔴 HIGH: {len(high_sev)} | 🟡 MEDIUM: {len(med_sev)} | 🟢 LOW: {len(low_sev)}"
         )
-
-        # 1.1 AI-Generated Dynamic Analysis (Local Qwen2.5 via Ollama)
-        if self.ollama and self.ollama.is_available():
-            sample_titles = [f"- [{a.get('published', 'N/A')}] {a.get('title', '')} (Source: {a.get('source', 'News Wire')})" for a in articles[:5]]
-            prompt = (
-                f"Analyze these verified transportation disruption incidents for {city}, India:\n"
-                + "\n".join(sample_titles) + "\n\n"
-                f"TASK: Author a factual, 2-paragraph strategic logistics risk advisory for dispatch planners in {city}.\n"
-                "STRICT GROUNDING GUIDELINES:\n"
-                "1. Base your analysis STRICTLY on the exact incident headlines and sources listed above.\n"
-                "2. Directly reference the specific disruption types (e.g. truck, rail, bandh) present in the data.\n"
-                "3. Provide concrete logistics mitigation: highway buffer times (+12h to +24h), carrier notification, and regional bypass recommendations.\n"
-                "4. Do NOT invent fictional events, imaginary highways, or speculate beyond the provided records."
-            )
-            try:
-                ai_analysis = self.ollama.generate(prompt)
-                if ai_analysis:
-                    doc.add_heading('1.1 AI Strategic Risk Assessment (Qwen2.5 Synthesized)', 2)
-                    doc.add_paragraph(ai_analysis)
-            except Exception:
-                pass
         
-        # 2. Key Logistics Corridors & Bottlenecks
-        doc.add_heading('2. Critical Corridors & Choke Points', 1)
+        # 1. Extracted Disruption Incident Registry (Table)
+        doc.add_heading('1. EXTRACTED DISRUPTION INCIDENT REGISTRY', 1)
+        
+        table = doc.add_table(rows=1, cols=5)
+        table.style = 'Table Grid'
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = 'Incident ID & Date'
+        hdr_cells[1].text = 'Source'
+        hdr_cells[2].text = 'Disruption Modality'
+        hdr_cells[3].text = 'Stated Trigger / Demand'
+        hdr_cells[4].text = 'Freight Impact Severity'
+        
+        for idx, art in enumerate(articles[:10], 1):
+            row_cells = table.add_row().cells
+            row_cells[0].text = f"INC-{city_code}-{idx:02d}\n({art.get('published', 'N/A')})"
+            row_cells[1].text = art.get('source', 'News Wire')
+            row_cells[2].text = art.get('category', 'General').title()
+            
+            # Extract clean trigger
+            clean_title = art.get('title', 'Transport Strike')
+            if ' - ' in clean_title:
+                clean_title = clean_title.split(' - ')[0]
+            row_cells[3].text = clean_title[:90]
+            
+            sev = art.get('severity', 'LOW')
+            row_cells[4].text = f"🔴 HIGH" if 'HIGH' in str(sev).upper() else (f"🟡 MEDIUM" if 'MEDIUM' in str(sev).upper() else f"🟢 LOW")
+            
+        doc.add_paragraph()  # Spacing
+        
+        # 2. Critical Bottlenecks & Highway Bypass Directives
+        doc.add_heading('2. CRITICAL BOTTLENECKS & HIGHWAY BYPASS DIRECTIVES', 1)
+        
         corridor_info = {
-            "Mumbai": "NH-48 (Mumbai-Pune / Mumbai-Gujarat Corridor), JNPT Port Container Freight Stations, Bhiwandi Warehouse Cluster.",
-            "Delhi": "NH-44 (Delhi-Agra / Delhi-Chandigarh), Kundli-Manesar-Palwal (KMP) Expressway, Sanjay Gandhi Transport Nagar.",
-            "Bangalore": "NH-44 (Hosur Road / Chennai Link), Nelamangala Logistics Hub, Electronic City toll junction.",
-            "Chennai": "NH-16 (Chennai-Kolkata corridor), Sriperumbudur Industrial Corridor, Chennai Port Trust gates.",
-            "Kolkata": "NH-19 (Durgapur Expressway), Dankuni Freight Terminal, Vidyasagar Setu approach.",
-            "Hyderabad": "NH-65 (Hyderabad-Vijayawada), Outer Ring Road (ORR) logistics exits, Shamshabad cargo terminal.",
-            "Pune": "Pune-Bangalore Highway (NH-48), Chakan Industrial Belt, Talegaon Logistics Park.",
-            "Ahmedabad": "Ahmedabad-Vadodara Expressway (NE-1), Changodar Industrial Estate, Sanand GIDC corridor.",
-            "Jaipur": "NH-48 (Jaipur-Delhi Highway), Vishwakarma Industrial Area, Transport Nagar bypass.",
-            "Lucknow": "Lucknow-Agra Expressway, Transport Nagar Kanpur Road, Shaheed Path logistics junctions."
+            "Mumbai": (
+                "• Primary Choke Points: NH-48 (Mumbai-Pune Expressway), JNPT Port Container Freight Stations, Bhiwandi Central Warehouse Cluster.\n"
+                "• Recommended FTL Bypass: Divert long-haul freight via Eastern Freeway & JNPT coastal corridor; utilize rail container drayage."
+            ),
+            "Delhi": (
+                "• Primary Choke Points: NH-44 Kundli Border (Delhi-Haryana entry), Sanjay Gandhi Transport Nagar (SGTN), DND Flyway.\n"
+                "• Recommended FTL Bypass: Utilize Kundli-Manesar-Palwal (KMP) Expressway to bypass inner Delhi urban commercial vehicle restrictions."
+            ),
+            "Bangalore": (
+                "• Primary Choke Points: NH-44 (Hosur Road / Electronic City toll), Nelamangala Logistics Hub, Peenya Industrial Gate.\n"
+                "• Recommended FTL Bypass: Route southern linehauls via NICE Road ring bypass; avoid inner Ring Road during peak hours (08:00-20:00)."
+            ),
+            "Chennai": (
+                "• Primary Choke Points: NH-16 (Chennai-Kolkata corridor), Sriperumbudur Industrial Corridor, Chennai Port Trust Gates.\n"
+                "• Recommended FTL Bypass: Divert northern freight via Chennai Outer Ring Road (CORR) and Minjur bypass."
+            ),
+            "Kolkata": (
+                "• Primary Choke Points: NH-19 (Durgapur Expressway), Dankuni Freight Terminal, Vidyasagar Setu approach.\n"
+                "• Recommended FTL Bypass: Route heavy commercial vehicles via Kona Expressway and Belghoria bypass."
+            ),
+            "Hyderabad": (
+                "• Primary Choke Points: NH-65 (Hyderabad-Vijayawada), Outer Ring Road (ORR) exits 11-14, Shamshabad cargo terminal.\n"
+                "• Recommended FTL Bypass: Utilize full ORR loop bypass; avoid inner arterial corridors during daytime transit curfews."
+            ),
+            "Pune": (
+                "• Primary Choke Points: NH-48 (Pune-Bangalore Highway), Chakan Industrial Belt, Talegaon Logistics Park.\n"
+                "• Recommended FTL Bypass: Route via Pune Outer Ring corridor and Talegaon-Chakan road off-peak."
+            )
         }
-        corridor_desc = corridor_info.get(city, f"{city} primary national highway entry points and regional transshipment yards.")
-        doc.add_paragraph(f"Primary Inbound/Outbound Transit Routes: {corridor_desc}")
-        doc.add_paragraph(
-            "Impact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls "
-            "and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals."
-        )
         
-        # 3. Incident Registry
-        doc.add_heading('3. Chronological Disruption Incidents & Intelligence Registry', 1)
-        for idx, art in enumerate(articles[:15], 1):
-            p = doc.add_paragraph()
-            p.add_run(f"Incident #{idx}: {art.get('title', 'Unknown Title')}\n").bold = True
-            p.add_run(f"• Published Date: {art.get('published', 'N/A')} | Source: {art.get('source', 'News Wire')}\n")
-            p.add_run(f"• Modality: {art.get('category', 'general').title()} | Severity: {art.get('severity', 'LOW')}\n")
-            if art.get('description'):
-                clean_desc = art.get('description', '').replace('<a', '').replace('</a>', '').replace('&nbsp;', ' ')
-                p.add_run(f"• Intelligence Summary: {clean_desc[:300]}...\n")
+        bypass_desc = corridor_info.get(city, (
+            f"• Primary Choke Points: {city} primary national highway arterial entry gates and regional transshipment yards.\n"
+            f"• Recommended FTL Bypass: Reroute freight via state highway ring corridors; enforce night dispatch schedules."
+        ))
+        doc.add_paragraph(bypass_desc)
         
-        # 4. Autonomous Copilot Operational Playbook
-        doc.add_heading('4. Autonomous Copilot Operational & Legal Rules', 1)
-        doc.add_paragraph(
-            f"When active transit strikes or civil disruptions are detected in {city}, the O2C Copilot "
-            f"applies the following deterministic decision rules:"
-        )
+        # 3. Autonomous Copilot Adjudication & Legal Rules (Discrete Rules)
+        doc.add_heading('3. AUTONOMOUS COPILOT ADJUDICATION & LEGAL RULES', 1)
         
         rules = [
-            f"Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in {city} delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
-            f"Dynamic Transit Buffer: For any order scheduled to pass through {city} with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA.",
-            f"Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through {city} with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
-            f"Receiving Window Compliance: If transit delays push delivery past clinic receiving hours (after 17:00), automatically reschedule delivery to 09:00 next business morning and trigger carrier redelivery fee waiver ($150 cap).",
-            f"Proactive Stakeholder Notification: Send automated Microsoft Teams escalation card to Regional Logistics Director when order financial risk exceeds $500 threshold."
+            f"[RULE-S-{city_code}-01] FORCE MAJEURE & SLA PENALTY WAIVER (SECTION 8.4):\n"
+            f"  Government-declared bandhs or verified labor road blockades >12h in {city} grant 100% carrier SLA delay penalty waiver ($500/day -> $0.00) upon submission of GPS telematics or police traffic advisory.",
+            
+            f"[RULE-S-{city_code}-02] EMERGENCY AIR FREIGHT & MODE SHIFT (CLAUSE 2.3):\n"
+            f"  For life-critical veterinary diets and urgent pharmaceuticals (sap_mara.specialty_diet_flag = 1) stranded >24h in {city}, authorize immediate $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+            
+            f"[RULE-S-{city_code}-03] TRUCK DETENTION & DEMURRAGE LIABILITY CAP:\n"
+            f"  Carrier demurrage and truck detention claims during labor strikes are strictly capped at $100.00/day per vehicle, requiring verified GPS geofence timestamps.",
+            
+            f"[RULE-S-{city_code}-04] DYNAMIC TRANSIT BUFFER & CLINIC RESCHEDULING:\n"
+            f"  Automatically inject a +12.0h to +24.0h dynamic safety buffer into predicted arrival time (PDD). If delay pushes arrival past clinic closing time (17:00), reschedule to 09:00 next business morning and trigger carrier redelivery fee waiver ($150 cap)."
         ]
-        for rule in rules:
-            doc.add_paragraph(f"• {rule}")
         
-        # Sanitize city name for filename
+        for r in rules:
+            doc.add_paragraph(r)
+            
+        # 4. Copilot Deterministic Action Checklist
+        doc.add_heading('4. COPILOT DETERMINISTIC ACTION CHECKLIST', 1)
+        checklist = [
+            f"[x] Step 1: Scan active SAP linehauls (sap_vttk) scheduled to pass through {city} disruption zone.",
+            f"[x] Step 2: Calculate revised ETA with [RULE-S-{city_code}-04] dynamic buffer (+12h to +24h).",
+            f"[x] Step 3: If delay >24h for specialty diets, trigger [RULE-S-{city_code}-02] $1,000 Air Freight replacement.",
+            f"[x] Step 4: Dispatch automated Actionable Adaptive Card to Regional Logistics Director for financial risk >$500."
+        ]
+        for item in checklist:
+            doc.add_paragraph(item)
+            
+        # Save Document
         safe_city = city.replace('/', '-').replace('\\', '-')
         filename = f"{safe_city}_Strike_Intelligence.docx"
         doc_path = self.output_dir / filename
