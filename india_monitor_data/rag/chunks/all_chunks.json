@@ -4748,7 +4748,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Auto_Pattern_Analysis.docx",
-    "text": "Auto Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:08:20\nTransit Modality Category: Auto Logistics Operations\nTotal Sector Incidents Analyzed: 32",
+    "text": "Auto Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:25:59\nTransit Modality Category: Auto Logistics Operations\nTotal Sector Incidents Analyzed: 32",
     "doc_title": "Auto_Pattern_Analysis"
   },
   {
@@ -4811,7 +4811,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Bandh_Pattern_Analysis.docx",
-    "text": "Bandh Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:08:20\nTransit Modality Category: Bandh Logistics Operations\nTotal Sector Incidents Analyzed: 75",
+    "text": "Bandh Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:25:59\nTransit Modality Category: Bandh Logistics Operations\nTotal Sector Incidents Analyzed: 75",
     "doc_title": "Bandh_Pattern_Analysis"
   },
   {
@@ -4874,7 +4874,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx",
-    "text": "Bhubaneswar Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:08:19\nMonitored Geographic Hub: Bhubaneswar Logistics Cluster\nTotal Disruption Events Analyzed: 3",
+    "text": "Bhubaneswar Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:24:15\nMonitored Geographic Hub: Bhubaneswar Logistics Cluster\nTotal Disruption Events Analyzed: 3",
     "doc_title": "Bhubaneswar_Strike_Intelligence"
   },
   {
@@ -4892,7 +4892,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx",
-    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: Bhubaneswar primary national highway entry points and regional transshipment yards.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
+    "text": "1.1 AI Strategic Risk Assessment (Qwen2.5 Synthesized)\nGiven the recent transportation strikes and protests in Bhubaneswar, India, the risk level for freight logistics operations is currently high. The incidents of violence, including stone-throwing and vandalism, indicate a volatile environment that could disrupt normal operations. Key bottleneck risks include potential road closures, delays, and increased security costs.",
     "doc_title": "Bhubaneswar_Strike_Intelligence"
   },
   {
@@ -4901,7 +4901,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx",
-    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Bhubaneswar Taxi Drivers Protest: 80 Arrested, 13 Cops Injured In Violence - NDTV\n• Published Date: 2026-08-20 | Source: NDTV\n• Modality: Taxi | Severity: LOW\n\nIncident #2: Bhubaneswar Cab Drivers’ Protest Turns Violent, Over 30 Detained - Outlook India\n• Published Date: 2026-08-19 | Source: Outlook India\n• Modality: Taxi | Severity: LOW",
+    "text": "These events pose significant challenges for dispatch planners, who must navigate an unpredictable and potentially dangerous landscape.",
     "doc_title": "Bhubaneswar_Strike_Intelligence"
   },
   {
@@ -4910,7 +4910,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx",
-    "text": "Incident #3: Protesters hurl stones at police, vandalise buses as app cab, bike strike turns violent in Bhubaneswar - The Times of India\n• Published Date: 2026-08-19 | Source: The Times of India\n• Modality: Bus | Severity: LOW",
+    "text": "To mitigate these risks, dispatch planners should implement a multi-faceted strategy. First, diversify routes and transportation modes to avoid areas of conflict. Real-time traffic and incident updates should be integrated into routing software to dynamically adjust delivery plans. Second, establish contingency plans for rerouting and alternative suppliers or carriers. Third, engage with local law enforcement and transportation authorities to gain insights and support.",
     "doc_title": "Bhubaneswar_Strike_Intelligence"
   },
   {
@@ -4919,7 +4919,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx",
-    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Bhubaneswar, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Bhubaneswar delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "text": "Finally, ensure all drivers are equipped with safety gear and are trained in emergency procedures. By proactively addressing these risks, logistics operations can minimize disruptions and maintain service levels during periods of unrest.",
     "doc_title": "Bhubaneswar_Strike_Intelligence"
   },
   {
@@ -4928,11 +4928,47 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx",
-    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Bhubaneswar with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Bhubaneswar with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: Bhubaneswar primary national highway entry points and regional transshipment yards.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
     "doc_title": "Bhubaneswar_Strike_Intelligence"
   },
   {
     "chunk_id": "Bhubaneswar_Strike_Intelligence.docx_7",
+    "filename": "Bhubaneswar_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx",
+    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Bhubaneswar Taxi Drivers Protest: 80 Arrested, 13 Cops Injured In Violence - NDTV\n• Published Date: 2026-08-20 | Source: NDTV\n• Modality: Taxi | Severity: LOW\n\nIncident #2: Bhubaneswar Cab Drivers’ Protest Turns Violent, Over 30 Detained - Outlook India\n• Published Date: 2026-08-19 | Source: Outlook India\n• Modality: Taxi | Severity: LOW",
+    "doc_title": "Bhubaneswar_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Bhubaneswar_Strike_Intelligence.docx_8",
+    "filename": "Bhubaneswar_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx",
+    "text": "Incident #3: Protesters hurl stones at police, vandalise buses as app cab, bike strike turns violent in Bhubaneswar - The Times of India\n• Published Date: 2026-08-19 | Source: The Times of India\n• Modality: Bus | Severity: LOW",
+    "doc_title": "Bhubaneswar_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Bhubaneswar_Strike_Intelligence.docx_9",
+    "filename": "Bhubaneswar_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx",
+    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Bhubaneswar, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Bhubaneswar delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "doc_title": "Bhubaneswar_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Bhubaneswar_Strike_Intelligence.docx_10",
+    "filename": "Bhubaneswar_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Bhubaneswar_Strike_Intelligence.docx",
+    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Bhubaneswar with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Bhubaneswar with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "doc_title": "Bhubaneswar_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Bhubaneswar_Strike_Intelligence.docx_11",
     "filename": "Bhubaneswar_Strike_Intelligence.docx",
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
@@ -4946,7 +4982,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Bus_Pattern_Analysis.docx",
-    "text": "Bus Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:08:20\nTransit Modality Category: Bus Logistics Operations\nTotal Sector Incidents Analyzed: 80",
+    "text": "Bus Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:25:59\nTransit Modality Category: Bus Logistics Operations\nTotal Sector Incidents Analyzed: 80",
     "doc_title": "Bus_Pattern_Analysis"
   },
   {
@@ -5009,7 +5045,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Chennai_Strike_Intelligence.docx",
-    "text": "Chennai Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:08:20\nMonitored Geographic Hub: Chennai Logistics Cluster\nTotal Disruption Events Analyzed: 4",
+    "text": "Chennai Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:25:45\nMonitored Geographic Hub: Chennai Logistics Cluster\nTotal Disruption Events Analyzed: 4",
     "doc_title": "Chennai_Strike_Intelligence"
   },
   {
@@ -5027,7 +5063,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Chennai_Strike_Intelligence.docx",
-    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: NH-16 (Chennai-Kolkata corridor), Sriperumbudur Industrial Corridor, Chennai Port Trust gates.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
+    "text": "1.1 AI Strategic Risk Assessment (Qwen2.5 Synthesized)\nGiven the recent transportation strike events in Chennai, India, freight logistics routing faces significant strategic risks that could disrupt supply chains and increase operational costs. The strikes, particularly those involving auto and cab drivers, trailer owners, and bus services, indicate a high risk level due to their potential to severely impact the movement of goods and people.",
     "doc_title": "Chennai_Strike_Intelligence"
   },
   {
@@ -5036,7 +5072,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Chennai_Strike_Intelligence.docx",
-    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Auto, cab drivers stage one-day strike in Chennai seeking fare revision - DT Next\n• Published Date: 2026-02-10 | Source: DT Next\n• Modality: Auto | Severity: LOW\n\nIncident #2: Strike by trailer owners disrupt movement of vehicles at Chennai, Katupalli and Ennore ports - BusinessLine\n• Published Date: 2025-12-12 | Source: BusinessLine\n• Modality: Bus | Severity: LOW",
+    "text": "Key bottleneck risks include delays in port operations, reduced public transportation options, and increased costs due to alternative transportation methods. For dispatch planners, these risks necessitate proactive and flexible routing strategies.",
     "doc_title": "Chennai_Strike_Intelligence"
   },
   {
@@ -5045,7 +5081,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Chennai_Strike_Intelligence.docx",
-    "text": "Incident #3: T.N. bus strike | Transport services not hit in Chennai, buses continue to operate in most districts - The Hindu\n• Published Date: 2024-01-09 | Source: The Hindu\n• Modality: Bus | Severity: LOW\n\nIncident #4: QChennai: TN Bus Strike Enters Sixth Day & More - The Quint\n• Published Date: 2018-01-09 | Source: The Quint\n• Modality: Bus | Severity: LOW",
+    "text": "To mitigate these risks, dispatch planners should implement a multi-modal transportation approach, diversifying routes and modes of transport to avoid single points of failure. Establishing contingency plans for each critical route, including alternative suppliers and modes of transport, is essential. Additionally, maintaining strong communication with local authorities and logistics partners can provide real-time updates on strike developments and help in adjusting routes promptly.",
     "doc_title": "Chennai_Strike_Intelligence"
   },
   {
@@ -5054,7 +5090,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Chennai_Strike_Intelligence.docx",
-    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Chennai, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Chennai delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "text": "Utilizing advanced logistics software for real-time tracking and optimization can further enhance operational resilience. Regularly updating the risk assessment and contingency plans based on the evolving situation will ensure that the supply chain remains robust and adaptable to future disruptions.",
     "doc_title": "Chennai_Strike_Intelligence"
   },
   {
@@ -5063,11 +5099,47 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Chennai_Strike_Intelligence.docx",
-    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Chennai with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Chennai with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: NH-16 (Chennai-Kolkata corridor), Sriperumbudur Industrial Corridor, Chennai Port Trust gates.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
     "doc_title": "Chennai_Strike_Intelligence"
   },
   {
     "chunk_id": "Chennai_Strike_Intelligence.docx_7",
+    "filename": "Chennai_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Chennai_Strike_Intelligence.docx",
+    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Auto, cab drivers stage one-day strike in Chennai seeking fare revision - DT Next\n• Published Date: 2026-02-10 | Source: DT Next\n• Modality: Auto | Severity: LOW\n\nIncident #2: Strike by trailer owners disrupt movement of vehicles at Chennai, Katupalli and Ennore ports - BusinessLine\n• Published Date: 2025-12-12 | Source: BusinessLine\n• Modality: Bus | Severity: LOW",
+    "doc_title": "Chennai_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Chennai_Strike_Intelligence.docx_8",
+    "filename": "Chennai_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Chennai_Strike_Intelligence.docx",
+    "text": "Incident #3: T.N. bus strike | Transport services not hit in Chennai, buses continue to operate in most districts - The Hindu\n• Published Date: 2024-01-09 | Source: The Hindu\n• Modality: Bus | Severity: LOW\n\nIncident #4: QChennai: TN Bus Strike Enters Sixth Day & More - The Quint\n• Published Date: 2018-01-09 | Source: The Quint\n• Modality: Bus | Severity: LOW",
+    "doc_title": "Chennai_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Chennai_Strike_Intelligence.docx_9",
+    "filename": "Chennai_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Chennai_Strike_Intelligence.docx",
+    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Chennai, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Chennai delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "doc_title": "Chennai_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Chennai_Strike_Intelligence.docx_10",
+    "filename": "Chennai_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Chennai_Strike_Intelligence.docx",
+    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Chennai with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Chennai with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "doc_title": "Chennai_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Chennai_Strike_Intelligence.docx_11",
     "filename": "Chennai_Strike_Intelligence.docx",
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
@@ -5081,7 +5153,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "Delhi Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:08:19\nMonitored Geographic Hub: Delhi Logistics Cluster\nTotal Disruption Events Analyzed: 59",
+    "text": "Delhi Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:23:58\nMonitored Geographic Hub: Delhi Logistics Cluster\nTotal Disruption Events Analyzed: 59",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
@@ -5099,7 +5171,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: NH-44 (Delhi-Agra / Delhi-Chandigarh), Kundli-Manesar-Palwal (KMP) Expressway, Sanjay Gandhi Transport Nagar.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
+    "text": "1.1 AI Strategic Risk Assessment (Qwen2.5 Synthesized)\nGiven the recent transportation strikes in Delhi, India, freight logistics routing in the region faces significant strategic risks. The strikes, particularly those involving taxis and auto unions, have led to disruptions in supply chains, with notable impacts on market accessibility and supply availability.",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
@@ -5108,7 +5180,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Delhi-NCR 3-Day Strike: Taxis, Auto Unions Start Protest From May 21-23; What Is Open & Closed Today? - Goodreturns\n• Published Date: 2026-08-20 | Source: Goodreturns\n• Modality: Auto | Severity: LOW\n\nIncident #2: Delhi transport unions plan ‘E-20’ protest march to Parliament on August 4 - The Hindu\n• Published Date: 2026-07-27 | Source: The Hindu\n• Modality: General | Severity: LOW",
+    "text": "For instance, the Delhi-NCR 3-day strike from May 21-23 resulted in the closure of mandis (wholesale markets) and a sharp drop in vegetable supply, highlighting the vulnerability of supply chains to such disruptions. Additionally, the planned 'E-20' protest march to Parliament on August 4 and the march by the taxi and transporters association over ethanol-blended petrol further underscore the unpredictability and potential for prolonged disruptions.",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
@@ -5117,7 +5189,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "Incident #3: Delhi taxi, transporters association to march to Parliament over ethanol-blended petrol - The Indian Express\n• Published Date: 2026-07-24 | Source: The Indian Express\n• Modality: Taxi | Severity: LOW\n\nIncident #4: Transport Strike Day 2 Hits Delhi-NCR Mandis, Vegetable Supply Drops Sharply - ETV Bharat\n• Published Date: 2026-05-22 | Source: ETV Bharat\n• Modality: General | Severity: LOW",
+    "text": "To mitigate these risks, dispatch planners should implement a multi-layered strategy. Firstly, diversify transportation modes and routes to reduce dependency on any single mode or route. For example, integrating rail and road transport can provide alternative pathways, thereby minimizing the impact of strikes. Secondly, establish real-time monitoring and communication systems with local transport unions and authorities to stay informed about strike schedules and potential impacts.",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
@@ -5126,7 +5198,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "Incident #5: Delhi-NCR Taxi Strike Enters Day 2 as Drivers Demand Fare Hike Amid Rising Fuel Costs - Open Magazine\n• Published Date: 2026-05-22 | Source: Open Magazine\n• Modality: Taxi | Severity: LOW\n\nIncident #6: India: 3-Day Cab, Auto Strike in Delhi-NCR Begins | Firstpost Live | N18G - Firstpost\n• Published Date: 2026-05-22 | Source: Firstpost\n• Modality: Auto | Severity: LOW",
+    "text": "Thirdly, develop contingency plans that include pre-identified backup suppliers and alternate delivery routes. Lastly, consider implementing flexible scheduling and order batching to optimize resource utilization and reduce the overall impact of disruptions. By adopting these measures, logistics companies can enhance their resilience and ensure smoother operations during periods of strikes and other disruptions.",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
@@ -5135,7 +5207,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "Incident #7: Truckers' protest begins affecting supply of vegetables, grains in Delhi - India Today\n• Published Date: 2026-05-22 | Source: India Today\n• Modality: Truck | Severity: LOW\n\nIncident #8: Transporters launch 3-day strike, halt Delhi-bound trucks at border points - The Times of India\n• Published Date: 2026-05-22 | Source: The Times of India\n• Modality: Truck | Severity: LOW",
+    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: NH-44 (Delhi-Agra / Delhi-Chandigarh), Kundli-Manesar-Palwal (KMP) Expressway, Sanjay Gandhi Transport Nagar.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
@@ -5144,7 +5216,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "Incident #9: Transporters’ strike continues for second day across Delhi-NCR against ECC hike, fuel price rise - The Times of India\n• Published Date: 2026-05-22 | Source: The Times of India\n• Modality: General | Severity: LOW\n\nIncident #10: Lucknow geriatrician invited to address national workshop on care economy in Delhi - The Times of India\n• Published Date: 2026-05-21 | Source: The Times of India\n• Modality: General | Severity: LOW",
+    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Delhi-NCR 3-Day Strike: Taxis, Auto Unions Start Protest From May 21-23; What Is Open & Closed Today? - Goodreturns\n• Published Date: 2026-08-20 | Source: Goodreturns\n• Modality: Auto | Severity: LOW\n\nIncident #2: Delhi transport unions plan ‘E-20’ protest march to Parliament on August 4 - The Hindu\n• Published Date: 2026-07-27 | Source: The Hindu\n• Modality: General | Severity: LOW",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
@@ -5153,7 +5225,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "Incident #11: Delhi Auto-Rickshaw Unions Distance Themselves from May 21 Transport Strike in NCR - Daily Pioneer\n• Published Date: 2026-05-21 | Source: Daily Pioneer\n• Modality: Auto | Severity: LOW\n\nIncident #12: Delhi-NCR Transport Strike: Taxi, Truck and Commercial Vehicle Unions Shut Down - ACKO Drive\n• Published Date: 2026-05-21 | Source: ACKO Drive\n• Modality: Truck | Severity: LOW",
+    "text": "Incident #3: Delhi taxi, transporters association to march to Parliament over ethanol-blended petrol - The Indian Express\n• Published Date: 2026-07-24 | Source: The Indian Express\n• Modality: Taxi | Severity: LOW\n\nIncident #4: Transport Strike Day 2 Hits Delhi-NCR Mandis, Vegetable Supply Drops Sharply - ETV Bharat\n• Published Date: 2026-05-22 | Source: ETV Bharat\n• Modality: General | Severity: LOW",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
@@ -5162,7 +5234,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "Incident #13: Public braces for disruption as three-day ‘chakka jam’ protest begins in Delhi-NCR over fare hike... - Moneycontrol.com\n• Published Date: 2026-05-21 | Source: Moneycontrol.com\n• Modality: General | Severity: LOW\n\nIncident #14: Delhi Taxi Strike Today: What Commuters Need To Know About The 3-Day Protest - Open Magazine\n• Published Date: 2026-05-21 | Source: Open Magazine\n• Modality: Taxi | Severity: LOW",
+    "text": "Incident #5: Delhi-NCR Taxi Strike Enters Day 2 as Drivers Demand Fare Hike Amid Rising Fuel Costs - Open Magazine\n• Published Date: 2026-05-22 | Source: Open Magazine\n• Modality: Taxi | Severity: LOW\n\nIncident #6: India: 3-Day Cab, Auto Strike in Delhi-NCR Begins | Firstpost Live | N18G - Firstpost\n• Published Date: 2026-05-22 | Source: Firstpost\n• Modality: Auto | Severity: LOW",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
@@ -5171,7 +5243,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "Incident #15: Three-day strike by transporters, taxis and autos in Delhi-NCR begins today - The Indian Express\n• Published Date: 2026-05-21 | Source: The Indian Express\n• Modality: Auto | Severity: LOW",
+    "text": "Incident #7: Truckers' protest begins affecting supply of vegetables, grains in Delhi - India Today\n• Published Date: 2026-05-22 | Source: India Today\n• Modality: Truck | Severity: LOW\n\nIncident #8: Transporters launch 3-day strike, halt Delhi-bound trucks at border points - The Times of India\n• Published Date: 2026-05-22 | Source: The Times of India\n• Modality: Truck | Severity: LOW",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
@@ -5180,7 +5252,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Delhi, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Delhi delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "text": "Incident #9: Transporters’ strike continues for second day across Delhi-NCR against ECC hike, fuel price rise - The Times of India\n• Published Date: 2026-05-22 | Source: The Times of India\n• Modality: General | Severity: LOW\n\nIncident #10: Lucknow geriatrician invited to address national workshop on care economy in Delhi - The Times of India\n• Published Date: 2026-05-21 | Source: The Times of India\n• Modality: General | Severity: LOW",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
@@ -5189,11 +5261,47 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
-    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Delhi with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Delhi with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "text": "Incident #11: Delhi Auto-Rickshaw Unions Distance Themselves from May 21 Transport Strike in NCR - Daily Pioneer\n• Published Date: 2026-05-21 | Source: Daily Pioneer\n• Modality: Auto | Severity: LOW\n\nIncident #12: Delhi-NCR Transport Strike: Taxi, Truck and Commercial Vehicle Unions Shut Down - ACKO Drive\n• Published Date: 2026-05-21 | Source: ACKO Drive\n• Modality: Truck | Severity: LOW",
     "doc_title": "Delhi_Strike_Intelligence"
   },
   {
     "chunk_id": "Delhi_Strike_Intelligence.docx_13",
+    "filename": "Delhi_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
+    "text": "Incident #13: Public braces for disruption as three-day ‘chakka jam’ protest begins in Delhi-NCR over fare hike... - Moneycontrol.com\n• Published Date: 2026-05-21 | Source: Moneycontrol.com\n• Modality: General | Severity: LOW\n\nIncident #14: Delhi Taxi Strike Today: What Commuters Need To Know About The 3-Day Protest - Open Magazine\n• Published Date: 2026-05-21 | Source: Open Magazine\n• Modality: Taxi | Severity: LOW",
+    "doc_title": "Delhi_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Delhi_Strike_Intelligence.docx_14",
+    "filename": "Delhi_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
+    "text": "Incident #15: Three-day strike by transporters, taxis and autos in Delhi-NCR begins today - The Indian Express\n• Published Date: 2026-05-21 | Source: The Indian Express\n• Modality: Auto | Severity: LOW",
+    "doc_title": "Delhi_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Delhi_Strike_Intelligence.docx_15",
+    "filename": "Delhi_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
+    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Delhi, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Delhi delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "doc_title": "Delhi_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Delhi_Strike_Intelligence.docx_16",
+    "filename": "Delhi_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Delhi_Strike_Intelligence.docx",
+    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Delhi with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Delhi with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "doc_title": "Delhi_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Delhi_Strike_Intelligence.docx_17",
     "filename": "Delhi_Strike_Intelligence.docx",
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
@@ -5207,7 +5315,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\General_Pattern_Analysis.docx",
-    "text": "General Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:08:20\nTransit Modality Category: General Logistics Operations\nTotal Sector Incidents Analyzed: 116",
+    "text": "General Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:25:59\nTransit Modality Category: General Logistics Operations\nTotal Sector Incidents Analyzed: 116",
     "doc_title": "General_Pattern_Analysis"
   },
   {
@@ -5270,7 +5378,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Hyderabad_Strike_Intelligence.docx",
-    "text": "Hyderabad Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:08:20\nMonitored Geographic Hub: Hyderabad Logistics Cluster\nTotal Disruption Events Analyzed: 3",
+    "text": "Hyderabad Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:25:14\nMonitored Geographic Hub: Hyderabad Logistics Cluster\nTotal Disruption Events Analyzed: 3",
     "doc_title": "Hyderabad_Strike_Intelligence"
   },
   {
@@ -5288,7 +5396,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Hyderabad_Strike_Intelligence.docx",
-    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: NH-65 (Hyderabad-Vijayawada), Outer Ring Road (ORR) logistics exits, Shamshabad cargo terminal.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
+    "text": "1.1 AI Strategic Risk Assessment (Qwen2.5 Synthesized)\nGiven the recent transportation strikes in Hyderabad, India, particularly the gig workers' strike from August 8 and the flash strikes by Uber, Ola, and Rapido services, freight logistics routing in Hyderabad faces significant strategic risks. The strikes, involving a large number of drivers and delivery workers, have the potential to severely disrupt supply chains.",
     "doc_title": "Hyderabad_Strike_Intelligence"
   },
   {
@@ -5297,7 +5405,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Hyderabad_Strike_Intelligence.docx",
-    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Telangana Gig Workers Strike From Aug 8: 4 Lakh Drivers, Delivery Workers to Go Off Roads - Hyderabad Mail\n• Published Date: 2026-07-29 | Source: Hyderabad Mail\n• Modality: General | Severity: LOW\n\nIncident #2: Uber, Ola, Rapido services hit in Hyderabad as cab, auto drivers go on flash strike - BusinessLine\n• Published Date: 2026-07-22 | Source: BusinessLine\n• Modality: Bus | Severity: LOW",
+    "text": "For instance, the Telangana Gig Workers Strike, involving 4 lakh drivers and delivery workers, and the flash strikes by major ride-hailing services, indicate a high risk level, with the possibility of widespread service disruptions and delays. Additionally, the RTC strike, which has crippled the transport system and left hundreds of thousands of commuters stranded, further underscores the vulnerability of the transportation infrastructure in Hyderabad.",
     "doc_title": "Hyderabad_Strike_Intelligence"
   },
   {
@@ -5306,7 +5414,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Hyderabad_Strike_Intelligence.docx",
-    "text": "Incident #3: RTC strike cripples Hyderabad transport, leaves lakhs of commuters stranded - Telangana Today\n• Published Date: 2026-04-22 | Source: Telangana Today\n• Modality: Bus | Severity: LOW",
+    "text": "To mitigate these risks, dispatch planners should implement a multi-faceted strategy. First, diversify transportation modes and suppliers to reduce dependency on any single service provider. For example, integrating rail and road freight options can provide alternative routes and reduce the impact of strikes. Second, establish robust communication channels with local transport unions and authorities to receive early warnings and updates on potential strikes.",
     "doc_title": "Hyderabad_Strike_Intelligence"
   },
   {
@@ -5315,7 +5423,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Hyderabad_Strike_Intelligence.docx",
-    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Hyderabad, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Hyderabad delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "text": "Third, develop contingency plans that include pre-identified backup routes and alternative suppliers, ensuring that critical shipments can be rerouted or rescheduled without significant delays. Lastly, consider implementing real-time tracking and analytics tools to monitor transportation disruptions and adjust routes dynamically, thereby minimizing the impact on supply chain operations.",
     "doc_title": "Hyderabad_Strike_Intelligence"
   },
   {
@@ -5324,11 +5432,47 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Hyderabad_Strike_Intelligence.docx",
-    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Hyderabad with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Hyderabad with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: NH-65 (Hyderabad-Vijayawada), Outer Ring Road (ORR) logistics exits, Shamshabad cargo terminal.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
     "doc_title": "Hyderabad_Strike_Intelligence"
   },
   {
     "chunk_id": "Hyderabad_Strike_Intelligence.docx_7",
+    "filename": "Hyderabad_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Hyderabad_Strike_Intelligence.docx",
+    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Telangana Gig Workers Strike From Aug 8: 4 Lakh Drivers, Delivery Workers to Go Off Roads - Hyderabad Mail\n• Published Date: 2026-07-29 | Source: Hyderabad Mail\n• Modality: General | Severity: LOW\n\nIncident #2: Uber, Ola, Rapido services hit in Hyderabad as cab, auto drivers go on flash strike - BusinessLine\n• Published Date: 2026-07-22 | Source: BusinessLine\n• Modality: Bus | Severity: LOW",
+    "doc_title": "Hyderabad_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Hyderabad_Strike_Intelligence.docx_8",
+    "filename": "Hyderabad_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Hyderabad_Strike_Intelligence.docx",
+    "text": "Incident #3: RTC strike cripples Hyderabad transport, leaves lakhs of commuters stranded - Telangana Today\n• Published Date: 2026-04-22 | Source: Telangana Today\n• Modality: Bus | Severity: LOW",
+    "doc_title": "Hyderabad_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Hyderabad_Strike_Intelligence.docx_9",
+    "filename": "Hyderabad_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Hyderabad_Strike_Intelligence.docx",
+    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Hyderabad, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Hyderabad delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "doc_title": "Hyderabad_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Hyderabad_Strike_Intelligence.docx_10",
+    "filename": "Hyderabad_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Hyderabad_Strike_Intelligence.docx",
+    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Hyderabad with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Hyderabad with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "doc_title": "Hyderabad_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Hyderabad_Strike_Intelligence.docx_11",
     "filename": "Hyderabad_Strike_Intelligence.docx",
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
@@ -5342,7 +5486,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Kolkata_Strike_Intelligence.docx",
-    "text": "Kolkata Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:08:19\nMonitored Geographic Hub: Kolkata Logistics Cluster\nTotal Disruption Events Analyzed: 3",
+    "text": "Kolkata Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:24:42\nMonitored Geographic Hub: Kolkata Logistics Cluster\nTotal Disruption Events Analyzed: 3",
     "doc_title": "Kolkata_Strike_Intelligence"
   },
   {
@@ -5360,7 +5504,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Kolkata_Strike_Intelligence.docx",
-    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: NH-19 (Durgapur Expressway), Dankuni Freight Terminal, Vidyasagar Setu approach.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
+    "text": "1.1 AI Strategic Risk Assessment (Qwen2.5 Synthesized)\nIn the context of recent transportation strikes and operational disruptions in Kolkata, India, freight logistics routing faces significant strategic risks that could impact supply chain efficiency and reliability. The strikes, such as those involving cab drivers, highlight the vulnerability of logistics operations to labor unrest, which can lead to unpredictable service disruptions and increased costs.",
     "doc_title": "Kolkata_Strike_Intelligence"
   },
   {
@@ -5369,7 +5513,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Kolkata_Strike_Intelligence.docx",
-    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: At Kolkatas Cab Drivers Strike, Protesters Discuss the Green Burden Borne by Indias Gig Workers - TheWire.in\n• Published Date: 2026-08-12 | Source: TheWire.in\n• Modality: Taxi | Severity: LOW\n\nIncident #2: Poll duty keeps buses off roads in Kolkata, commuters face hardships - Rediff\n• Published Date: 2026-05-01 | Source: Rediff\n• Modality: Bus | Severity: LOW",
+    "text": "The poll duty, which has also caused buses to be off the roads, further exacerbates the situation by limiting alternative transportation modes, thereby creating a critical bottleneck in the city's transportation network. These events pose a medium to high risk level for logistics companies operating in or through Kolkata, as they can lead to delays, increased transportation costs, and potential service failures.",
     "doc_title": "Kolkata_Strike_Intelligence"
   },
   {
@@ -5378,7 +5522,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Kolkata_Strike_Intelligence.docx",
-    "text": "Incident #3: At Kolkatas Cab Drivers Strike, Protesters Discuss the Green Burden Borne by Indias Gig Workers - TheWire.in\n• Published Date: None | Source: Unknown\n• Modality: Taxi | Severity: LOW",
+    "text": "To mitigate these risks, dispatch planners should implement a multi-faceted strategy. Firstly, diversifying transportation modes and routes is crucial. By establishing partnerships with multiple carriers and utilizing a mix of road, rail, and air transport, logistics companies can reduce dependency on any single mode of transportation and minimize the impact of strikes or operational disruptions. Secondly, maintaining a robust contingency plan is essential.",
     "doc_title": "Kolkata_Strike_Intelligence"
   },
   {
@@ -5387,7 +5531,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Kolkata_Strike_Intelligence.docx",
-    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Kolkata, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Kolkata delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "text": "This should include pre-identified alternative routes, backup suppliers, and real-time monitoring of traffic and road conditions. Additionally, engaging with local authorities and community leaders to stay informed about potential strikes and other disruptions can provide early warning signals, allowing for proactive adjustments to routing and scheduling.",
     "doc_title": "Kolkata_Strike_Intelligence"
   },
   {
@@ -5396,11 +5540,56 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Kolkata_Strike_Intelligence.docx",
-    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Kolkata with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Kolkata with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "text": "Lastly, investing in technology solutions, such as advanced route optimization software, can help in dynamically adjusting routes based on real-time data, ensuring more efficient and resilient logistics operations in the face of unpredictable events.",
     "doc_title": "Kolkata_Strike_Intelligence"
   },
   {
     "chunk_id": "Kolkata_Strike_Intelligence.docx_7",
+    "filename": "Kolkata_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Kolkata_Strike_Intelligence.docx",
+    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: NH-19 (Durgapur Expressway), Dankuni Freight Terminal, Vidyasagar Setu approach.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
+    "doc_title": "Kolkata_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Kolkata_Strike_Intelligence.docx_8",
+    "filename": "Kolkata_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Kolkata_Strike_Intelligence.docx",
+    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: At Kolkatas Cab Drivers Strike, Protesters Discuss the Green Burden Borne by Indias Gig Workers - TheWire.in\n• Published Date: 2026-08-12 | Source: TheWire.in\n• Modality: Taxi | Severity: LOW\n\nIncident #2: Poll duty keeps buses off roads in Kolkata, commuters face hardships - Rediff\n• Published Date: 2026-05-01 | Source: Rediff\n• Modality: Bus | Severity: LOW",
+    "doc_title": "Kolkata_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Kolkata_Strike_Intelligence.docx_9",
+    "filename": "Kolkata_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Kolkata_Strike_Intelligence.docx",
+    "text": "Incident #3: At Kolkatas Cab Drivers Strike, Protesters Discuss the Green Burden Borne by Indias Gig Workers - TheWire.in\n• Published Date: None | Source: Unknown\n• Modality: Taxi | Severity: LOW",
+    "doc_title": "Kolkata_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Kolkata_Strike_Intelligence.docx_10",
+    "filename": "Kolkata_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Kolkata_Strike_Intelligence.docx",
+    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Kolkata, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Kolkata delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "doc_title": "Kolkata_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Kolkata_Strike_Intelligence.docx_11",
+    "filename": "Kolkata_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Kolkata_Strike_Intelligence.docx",
+    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Kolkata with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Kolkata with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "doc_title": "Kolkata_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Kolkata_Strike_Intelligence.docx_12",
     "filename": "Kolkata_Strike_Intelligence.docx",
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
@@ -5414,7 +5603,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Lucknow_Strike_Intelligence.docx",
-    "text": "Lucknow Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:08:20\nMonitored Geographic Hub: Lucknow Logistics Cluster\nTotal Disruption Events Analyzed: 6",
+    "text": "Lucknow Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:25:31\nMonitored Geographic Hub: Lucknow Logistics Cluster\nTotal Disruption Events Analyzed: 6",
     "doc_title": "Lucknow_Strike_Intelligence"
   },
   {
@@ -5432,7 +5621,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Lucknow_Strike_Intelligence.docx",
-    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: Lucknow-Agra Expressway, Transport Nagar Kanpur Road, Shaheed Path logistics junctions.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
+    "text": "1.1 AI Strategic Risk Assessment (Qwen2.5 Synthesized)\nIn analyzing recent transportation strike events in Lucknow, India, it is evident that the region faces significant supply chain disruptions. The strikes, such as the railway strike in 2025 and the ongoing road blockades by students and traders, indicate a high risk level for freight logistics operations.",
     "doc_title": "Lucknow_Strike_Intelligence"
   },
   {
@@ -5441,7 +5630,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Lucknow_Strike_Intelligence.docx",
-    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Lucknow–Sitapur NH tobe 6-laned; tender by Dec - The Times of India\n• Published Date: 2026-05-22 | Source: The Times of India\n• Modality: General | Severity: LOW\n\nIncident #2: Road to be taken: Pay Rs 275 to drive on 63km-long Lucknow-Kanpur e-way - The Times of India\n• Published Date: 2026-05-21 | Source: The Times of India\n• Modality: General | Severity: LOW",
+    "text": "These events not only affect immediate transportation but also create long-term uncertainties, impacting the reliability and efficiency of supply chains. Key bottleneck risks include unpredictable delays, increased costs due to alternate routing, and potential damage to goods during protests or strikes.",
     "doc_title": "Lucknow_Strike_Intelligence"
   },
   {
@@ -5450,7 +5639,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Lucknow_Strike_Intelligence.docx",
-    "text": "Incident #3: Medical stores across Lucknow shut as traders protest online medicine sales | Hindustan Times - Hindustan Times\n• Published Date: 2026-05-20 | Source: Hindustan Times\n• Modality: General | Severity: LOW\n\nIncident #4: 50 years of Emergency: How George Fernandes’ arrest in Lucknow ignited railway strike; united fractured o - The Times of India\n• Published Date: 2025-06-29 | Source: The Times of India\n• Modality: Railway | Severity: LOW",
+    "text": "To mitigate these risks, dispatch planners should implement a multi-faceted strategy. Firstly, diversifying transportation modes and routes is crucial. By establishing partnerships with multiple carriers and exploring alternative routes, companies can reduce dependency on any single mode of transport and minimize the impact of strikes. Secondly, maintaining real-time communication with local authorities and logistics partners is essential to quickly adapt to changing conditions.",
     "doc_title": "Lucknow_Strike_Intelligence"
   },
   {
@@ -5459,7 +5648,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Lucknow_Strike_Intelligence.docx",
-    "text": "Incident #5: Lucknow students block road over school woes, minister stuck in traffic steps in - The Indian Express\n• Published Date: None | Source: Unknown\n• Modality: General | Severity: LOW\n\nIncident #6: 50 years of Emergency: How George Fernandes’ arrest in Lucknow ignited railway strike; united fractured o - The Times of India\n• Published Date: None | Source: Unknown\n• Modality: Railway | Severity: LOW",
+    "text": "Thirdly, investing in technology for route optimization and predictive analytics can help in anticipating potential disruptions and planning accordingly. Lastly, engaging with local communities and stakeholders can foster better understanding and smoother operations during strikes, potentially reducing the intensity and duration of such events.",
     "doc_title": "Lucknow_Strike_Intelligence"
   },
   {
@@ -5468,7 +5657,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Lucknow_Strike_Intelligence.docx",
-    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Lucknow, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Lucknow delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: Lucknow-Agra Expressway, Transport Nagar Kanpur Road, Shaheed Path logistics junctions.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
     "doc_title": "Lucknow_Strike_Intelligence"
   },
   {
@@ -5477,11 +5666,47 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Lucknow_Strike_Intelligence.docx",
-    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Lucknow with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Lucknow with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Lucknow–Sitapur NH tobe 6-laned; tender by Dec - The Times of India\n• Published Date: 2026-05-22 | Source: The Times of India\n• Modality: General | Severity: LOW\n\nIncident #2: Road to be taken: Pay Rs 275 to drive on 63km-long Lucknow-Kanpur e-way - The Times of India\n• Published Date: 2026-05-21 | Source: The Times of India\n• Modality: General | Severity: LOW",
     "doc_title": "Lucknow_Strike_Intelligence"
   },
   {
     "chunk_id": "Lucknow_Strike_Intelligence.docx_8",
+    "filename": "Lucknow_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Lucknow_Strike_Intelligence.docx",
+    "text": "Incident #3: Medical stores across Lucknow shut as traders protest online medicine sales | Hindustan Times - Hindustan Times\n• Published Date: 2026-05-20 | Source: Hindustan Times\n• Modality: General | Severity: LOW\n\nIncident #4: 50 years of Emergency: How George Fernandes’ arrest in Lucknow ignited railway strike; united fractured o - The Times of India\n• Published Date: 2025-06-29 | Source: The Times of India\n• Modality: Railway | Severity: LOW",
+    "doc_title": "Lucknow_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Lucknow_Strike_Intelligence.docx_9",
+    "filename": "Lucknow_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Lucknow_Strike_Intelligence.docx",
+    "text": "Incident #5: Lucknow students block road over school woes, minister stuck in traffic steps in - The Indian Express\n• Published Date: None | Source: Unknown\n• Modality: General | Severity: LOW\n\nIncident #6: 50 years of Emergency: How George Fernandes’ arrest in Lucknow ignited railway strike; united fractured o - The Times of India\n• Published Date: None | Source: Unknown\n• Modality: Railway | Severity: LOW",
+    "doc_title": "Lucknow_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Lucknow_Strike_Intelligence.docx_10",
+    "filename": "Lucknow_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Lucknow_Strike_Intelligence.docx",
+    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Lucknow, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Lucknow delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "doc_title": "Lucknow_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Lucknow_Strike_Intelligence.docx_11",
+    "filename": "Lucknow_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Lucknow_Strike_Intelligence.docx",
+    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Lucknow with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Lucknow with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "doc_title": "Lucknow_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Lucknow_Strike_Intelligence.docx_12",
     "filename": "Lucknow_Strike_Intelligence.docx",
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
@@ -5495,7 +5720,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Master_Disruption_Intelligence.docx",
-    "text": "Master Transportation Disruption Intelligence & National Playbook\nReport Generated: 2026-08-31 20:08:20\nNational Scope: India Logistics Network & Veterinary Supply Chain\nTotal National Disruption Records Analyzed: 396",
+    "text": "Master Transportation Disruption Intelligence & National Playbook\nReport Generated: 2026-08-31 20:25:59\nNational Scope: India Logistics Network & Veterinary Supply Chain\nTotal National Disruption Records Analyzed: 396",
     "doc_title": "Master_Disruption_Intelligence"
   },
   {
@@ -5540,7 +5765,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "Mumbai Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:08:19\nMonitored Geographic Hub: Mumbai Logistics Cluster\nTotal Disruption Events Analyzed: 33",
+    "text": "Mumbai Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:24:27\nMonitored Geographic Hub: Mumbai Logistics Cluster\nTotal Disruption Events Analyzed: 33",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
@@ -5558,7 +5783,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: NH-48 (Mumbai-Pune / Mumbai-Gujarat Corridor), JNPT Port Container Freight Stations, Bhiwandi Warehouse Cluster.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
+    "text": "1.1 AI Strategic Risk Assessment (Qwen2.5 Synthesized)\nGiven the recent transportation strikes in Mumbai, India, particularly involving the Mumbai Electric Supply and Transport Undertaking (BEST), the risk level for freight logistics routing in the region is high. These strikes, driven by issues such as wage disputes and dissatisfaction with electronic challans, have led to significant disruptions in public transportation services.",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
@@ -5567,7 +5792,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Mumbai bus operators protest e-challans, to hold hunger strike on Thursday - Mid-Day\n• Published Date: 2026-08-19 | Source: Mid-Day\n• Modality: Bus | Severity: LOW\n\nIncident #2: Mumbai Transport Alert: BEST Employees Announce Indefinite Strike Starting Aug 18 - NDTV Profit\n• Published Date: 2026-08-17 | Source: NDTV Profit\n• Modality: General | Severity: LOW",
+    "text": "The indefinite nature of the strikes, coupled with the withdrawal of services only being partially restored, indicates a volatile and unpredictable operational environment. Key bottleneck risks include potential delays, route diversions, and increased operational costs due to alternative transportation methods.",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
@@ -5576,7 +5801,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "Incident #3: Mumbai BEST workers call indefinite strike from August 18 over wages, financial support - Moneycontrol.com\n• Published Date: 2026-08-17 | Source: Moneycontrol.com\n• Modality: General | Severity: LOW\n\nIncident #4: Mumbai BEST Bus Strike Withdrawn, Services Still Below Normal: Report - ACKO Drive\n• Published Date: 2026-06-23 | Source: ACKO Drive\n• Modality: Bus | Severity: LOW",
+    "text": "To mitigate these risks, dispatch planners should implement a multi-faceted strategy. First, establish a robust contingency plan that includes alternative transportation modes, such as private buses, trucks, and even rail services, to ensure continuous supply chain operations. Second, maintain a close relationship with local transportation authorities and unions to receive real-time updates and advisories.",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
@@ -5585,7 +5810,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "Incident #5: The BEST Strike: Years of unfulfilled promises, structural neglect and the future of public transport in Mumbai - SabrangIndia\n• Published Date: 2026-06-22 | Source: SabrangIndia\n• Modality: General | Severity: LOW\n\nIncident #6: BEST bus employees’ strike enters second day, disrupting public transport in Mumbai - News On AIR\n• Published Date: 2026-06-20 | Source: News On AIR\n• Modality: Bus | Severity: LOW",
+    "text": "Third, diversify supplier and customer locations to reduce dependency on any single route or mode of transport. Finally, consider implementing advanced logistics software that can dynamically reroute shipments based on real-time traffic and strike information, thereby minimizing disruptions and maintaining service levels.",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
@@ -5594,7 +5819,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "Incident #7: BEST strike cripples Mumbai buses as unions defy court orders - India Today\n• Published Date: 2026-06-19 | Source: India Today\n• Modality: Bus | Severity: LOW\n\nIncident #8: Mumbai Bus Services Hit As Transport Body Employees Go On Indefinite Strike - NDTV\n• Published Date: 2026-06-19 | Source: NDTV\n• Modality: Bus | Severity: LOW",
+    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: NH-48 (Mumbai-Pune / Mumbai-Gujarat Corridor), JNPT Port Container Freight Stations, Bhiwandi Warehouse Cluster.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
@@ -5603,7 +5828,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "Incident #9: Why did Mumbai’s train guards go on a ‘work-to-rule’ strike and delay your evening commute? - The Indian Express\n• Published Date: 2026-05-14 | Source: The Indian Express\n• Modality: Railway | Severity: LOW\n\nIncident #10: Mumbai: Railway unions commemorate 1974 strike anniversary - Mid-Day\n• Published Date: 2026-05-08 | Source: Mid-Day\n• Modality: Railway | Severity: LOW",
+    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Mumbai bus operators protest e-challans, to hold hunger strike on Thursday - Mid-Day\n• Published Date: 2026-08-19 | Source: Mid-Day\n• Modality: Bus | Severity: LOW\n\nIncident #2: Mumbai Transport Alert: BEST Employees Announce Indefinite Strike Starting Aug 18 - NDTV Profit\n• Published Date: 2026-08-17 | Source: NDTV Profit\n• Modality: General | Severity: LOW",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
@@ -5612,7 +5837,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "Incident #11: Maharashtra transport strike could hit Mumbai, Pune most | Explained in 5 points - India Today\n• Published Date: 2026-03-05 | Source: India Today\n• Modality: General | Severity: LOW\n\nIncident #12: Commuters face shortage of autos in Mumbai as drivers go on flash strike over ‘Marathi’ mandate - The Times of India\n• Published Date: None | Source: Unknown\n• Modality: Auto | Severity: LOW",
+    "text": "Incident #3: Mumbai BEST workers call indefinite strike from August 18 over wages, financial support - Moneycontrol.com\n• Published Date: 2026-08-17 | Source: Moneycontrol.com\n• Modality: General | Severity: LOW\n\nIncident #4: Mumbai BEST Bus Strike Withdrawn, Services Still Below Normal: Report - ACKO Drive\n• Published Date: 2026-06-23 | Source: ACKO Drive\n• Modality: Bus | Severity: LOW",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
@@ -5621,7 +5846,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "Incident #13: Mumbai water crisis worsens as tanker strike drags on; railways, housing societies bear the brunt - CNBC TV18\n• Published Date: None | Source: Unknown\n• Modality: Railway | Severity: LOW\n\nIncident #14: Marathi language rule sparks 3-day auto strike in Mumbai - India Today - India Today\n• Published Date: None | Source: Unknown\n• Modality: Auto | Severity: LOW",
+    "text": "Incident #5: The BEST Strike: Years of unfulfilled promises, structural neglect and the future of public transport in Mumbai - SabrangIndia\n• Published Date: 2026-06-22 | Source: SabrangIndia\n• Modality: General | Severity: LOW\n\nIncident #6: BEST bus employees’ strike enters second day, disrupting public transport in Mumbai - News On AIR\n• Published Date: 2026-06-20 | Source: News On AIR\n• Modality: Bus | Severity: LOW",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
@@ -5630,7 +5855,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "Incident #15: Over 4,700 RTO notices, one Marathi rule test: Mumbai auto and taxi drivers hit the brakes - CNBC TV18\n• Published Date: None | Source: Unknown\n• Modality: Auto | Severity: LOW",
+    "text": "Incident #7: BEST strike cripples Mumbai buses as unions defy court orders - India Today\n• Published Date: 2026-06-19 | Source: India Today\n• Modality: Bus | Severity: LOW\n\nIncident #8: Mumbai Bus Services Hit As Transport Body Employees Go On Indefinite Strike - NDTV\n• Published Date: 2026-06-19 | Source: NDTV\n• Modality: Bus | Severity: LOW",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
@@ -5639,7 +5864,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Mumbai, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Mumbai delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "text": "Incident #9: Why did Mumbai’s train guards go on a ‘work-to-rule’ strike and delay your evening commute? - The Indian Express\n• Published Date: 2026-05-14 | Source: The Indian Express\n• Modality: Railway | Severity: LOW\n\nIncident #10: Mumbai: Railway unions commemorate 1974 strike anniversary - Mid-Day\n• Published Date: 2026-05-08 | Source: Mid-Day\n• Modality: Railway | Severity: LOW",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
@@ -5648,11 +5873,47 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
-    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Mumbai with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Mumbai with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "text": "Incident #11: Maharashtra transport strike could hit Mumbai, Pune most | Explained in 5 points - India Today\n• Published Date: 2026-03-05 | Source: India Today\n• Modality: General | Severity: LOW\n\nIncident #12: Commuters face shortage of autos in Mumbai as drivers go on flash strike over ‘Marathi’ mandate - The Times of India\n• Published Date: None | Source: Unknown\n• Modality: Auto | Severity: LOW",
     "doc_title": "Mumbai_Strike_Intelligence"
   },
   {
     "chunk_id": "Mumbai_Strike_Intelligence.docx_13",
+    "filename": "Mumbai_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
+    "text": "Incident #13: Mumbai water crisis worsens as tanker strike drags on; railways, housing societies bear the brunt - CNBC TV18\n• Published Date: None | Source: Unknown\n• Modality: Railway | Severity: LOW\n\nIncident #14: Marathi language rule sparks 3-day auto strike in Mumbai - India Today - India Today\n• Published Date: None | Source: Unknown\n• Modality: Auto | Severity: LOW",
+    "doc_title": "Mumbai_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Mumbai_Strike_Intelligence.docx_14",
+    "filename": "Mumbai_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
+    "text": "Incident #15: Over 4,700 RTO notices, one Marathi rule test: Mumbai auto and taxi drivers hit the brakes - CNBC TV18\n• Published Date: None | Source: Unknown\n• Modality: Auto | Severity: LOW",
+    "doc_title": "Mumbai_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Mumbai_Strike_Intelligence.docx_15",
+    "filename": "Mumbai_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
+    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Mumbai, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Mumbai delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "doc_title": "Mumbai_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Mumbai_Strike_Intelligence.docx_16",
+    "filename": "Mumbai_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Mumbai_Strike_Intelligence.docx",
+    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Mumbai with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Mumbai with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "doc_title": "Mumbai_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Mumbai_Strike_Intelligence.docx_17",
     "filename": "Mumbai_Strike_Intelligence.docx",
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
@@ -5666,7 +5927,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "National/Unknown Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:08:19\nMonitored Geographic Hub: National/Unknown Logistics Cluster\nTotal Disruption Events Analyzed: 109",
+    "text": "National/Unknown Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:23:43\nMonitored Geographic Hub: National/Unknown Logistics Cluster\nTotal Disruption Events Analyzed: 109",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
@@ -5684,7 +5945,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: National/Unknown primary national highway entry points and regional transshipment yards.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
+    "text": "1.1 AI Strategic Risk Assessment (Qwen2.5 Synthesized)\nIn the context of recent transportation strikes and protests in National/Unknown, India, particularly the Punjab bandh and the Shillong violence, the risk level for freight logistics is high. These events are indicative of potential disruptions in transportation networks, which can significantly impact supply chain operations.",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
@@ -5693,7 +5954,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Punjab bandh: Shops shut, security tightened over demand for release of Sikh prisoners - The Economic Times\n• Published Date: 2026-08-21 | Source: The Economic Times\n• Modality: Bandh | Severity: LOW\n\nIncident #2: 'Bandi Singh' protesters call shutdown in Punjab; transport, markets to be hit - India Today\n• Published Date: 2026-08-21 | Source: India Today\n• Modality: General | Severity: LOW",
+    "text": "Key bottleneck risks include delays in delivery, increased costs due to alternative routing, and potential safety hazards for logistics personnel. The Shillong violence, in particular, poses a significant threat to the Assam-Meghalaya road network, which is a critical artery for regional trade and transportation.",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
@@ -5702,7 +5963,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "Incident #3: Shillong violence sparks Assam-Meghalaya road blockade - Rediff\n• Published Date: 2026-08-20 | Source: Rediff\n• Modality: General | Severity: LOW\n\nIncident #4: Today News Headlines for School Assembly, August 21, 2026: Punjab Bandh, Indian Railways launches Amrit Bharat Express, Google offering 1-year free AI subscription to college students - The Indian Express\n• Published Date: 2026-08-20 | Source: The Indian Express\n• Modality: Railway | Severity: LOW",
+    "text": "To mitigate these risks, dispatch planners should implement a multi-faceted strategy. First, diversify transportation routes to avoid areas of high risk, such as the affected regions in Punjab and the Shillong area. Second, establish real-time monitoring systems to quickly adapt to changing conditions, ensuring that alternative routes can be swiftly implemented.",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
@@ -5711,7 +5972,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "Incident #5: Indian Army Holds Medical Camp in Bishnupur Amid NRC Bandh - Ukhrul Times\n• Published Date: 2026-08-20 | Source: Ukhrul Times\n• Modality: Bandh | Severity: LOW\n\nIncident #6: Kalaburagi bandh call for drought tag turns into protest - Deccan Herald\n• Published Date: 2026-08-20 | Source: Deccan Herald\n• Modality: Bandh | Severity: LOW",
+    "text": "Third, engage with local authorities and community leaders to gain insights and support, which can help in navigating sensitive areas more effectively. Additionally, maintaining a buffer stock of critical goods and establishing contingency plans for sudden disruptions can provide a safety net. Lastly, investing in robust communication tools to keep all stakeholders informed and aligned is crucial for effective risk management in such volatile environments.",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
@@ -5720,7 +5981,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "Incident #7: Sikh bodies call for Punjab bandh on Aug 21 over release of Bandi Singhs - The Times of India\n• Published Date: 2026-08-20 | Source: The Times of India\n• Modality: Bandh | Severity: LOW\n\nIncident #8: Mixed response to bandh even as bus services are hit in Kalaburagi - The Hindu\n• Published Date: 2026-08-20 | Source: The Hindu\n• Modality: Bus | Severity: LOW",
+    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: National/Unknown primary national highway entry points and regional transshipment yards.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
@@ -5729,7 +5990,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "Incident #9: Punjab bandh tomorrow: Schools, markets, highways likely to be affected - The Indian Express\n• Published Date: 2026-08-20 | Source: The Indian Express\n• Modality: Bandh | Severity: LOW\n\nIncident #10: Punjab bandh on Friday: Will schools be closed? Govt clarifies | India News - Hindustan Times\n• Published Date: 2026-08-20 | Source: Hindustan Times\n• Modality: Bandh | Severity: LOW",
+    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Punjab bandh: Shops shut, security tightened over demand for release of Sikh prisoners - The Economic Times\n• Published Date: 2026-08-21 | Source: The Economic Times\n• Modality: Bandh | Severity: LOW\n\nIncident #2: 'Bandi Singh' protesters call shutdown in Punjab; transport, markets to be hit - India Today\n• Published Date: 2026-08-21 | Source: India Today\n• Modality: General | Severity: LOW",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
@@ -5738,7 +5999,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "Incident #11: Gen Alpha students block highway over bad roads in UP, allege police misconduct - India Today\n• Published Date: 2026-08-19 | Source: India Today\n• Modality: General | Severity: LOW\n\nIncident #12: ‘His Speech Was About Chakka Jam, Not Assam Secession’: Sharjeel Imam’s Brother Hits Back At Rijiju Over ‘Dimagi Naxal’ Remark - The Observer Post\n• Published Date: 2026-08-19 | Source: The Observer Post\n• Modality: General | Severity: LOW",
+    "text": "Incident #3: Shillong violence sparks Assam-Meghalaya road blockade - Rediff\n• Published Date: 2026-08-20 | Source: Rediff\n• Modality: General | Severity: LOW\n\nIncident #4: Today News Headlines for School Assembly, August 21, 2026: Punjab Bandh, Indian Railways launches Amrit Bharat Express, Google offering 1-year free AI subscription to college students - The Indian Express\n• Published Date: 2026-08-20 | Source: The Indian Express\n• Modality: Railway | Severity: LOW",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
@@ -5747,7 +6008,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "Incident #13: Passengers suffer as ride-app drivers’ strike enters day Two - The New Indian Express\n• Published Date: 2026-08-19 | Source: The New Indian Express\n• Modality: General | Severity: LOW\n\nIncident #14: Bharat Bandh 2026: Nationwide Strike by Trade Unions Disrupts Services Across India - The CSR Journal\n• Published Date: 2026-08-18 | Source: The CSR Journal\n• Modality: Bandh | Severity: LOW",
+    "text": "Incident #5: Indian Army Holds Medical Camp in Bishnupur Amid NRC Bandh - Ukhrul Times\n• Published Date: 2026-08-20 | Source: Ukhrul Times\n• Modality: Bandh | Severity: LOW\n\nIncident #6: Kalaburagi bandh call for drought tag turns into protest - Deccan Herald\n• Published Date: 2026-08-20 | Source: Deccan Herald\n• Modality: Bandh | Severity: LOW",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
@@ -5756,7 +6017,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "Incident #15: Kin block road, seek arrest of doctor blamed for lab technician’s death near Dharamsala - The Tribune\n• Published Date: 2026-08-17 | Source: The Tribune\n• Modality: General | Severity: LOW",
+    "text": "Incident #7: Sikh bodies call for Punjab bandh on Aug 21 over release of Bandi Singhs - The Times of India\n• Published Date: 2026-08-20 | Source: The Times of India\n• Modality: Bandh | Severity: LOW\n\nIncident #8: Mixed response to bandh even as bus services are hit in Kalaburagi - The Hindu\n• Published Date: 2026-08-20 | Source: The Hindu\n• Modality: Bus | Severity: LOW",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
@@ -5765,7 +6026,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in National/Unknown, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in National/Unknown delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "text": "Incident #9: Punjab bandh tomorrow: Schools, markets, highways likely to be affected - The Indian Express\n• Published Date: 2026-08-20 | Source: The Indian Express\n• Modality: Bandh | Severity: LOW\n\nIncident #10: Punjab bandh on Friday: Will schools be closed? Govt clarifies | India News - Hindustan Times\n• Published Date: 2026-08-20 | Source: Hindustan Times\n• Modality: Bandh | Severity: LOW",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
@@ -5774,11 +6035,47 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
-    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through National/Unknown with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through National/Unknown with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "text": "Incident #11: Gen Alpha students block highway over bad roads in UP, allege police misconduct - India Today\n• Published Date: 2026-08-19 | Source: India Today\n• Modality: General | Severity: LOW\n\nIncident #12: ‘His Speech Was About Chakka Jam, Not Assam Secession’: Sharjeel Imam’s Brother Hits Back At Rijiju Over ‘Dimagi Naxal’ Remark - The Observer Post\n• Published Date: 2026-08-19 | Source: The Observer Post\n• Modality: General | Severity: LOW",
     "doc_title": "National-Unknown_Strike_Intelligence"
   },
   {
     "chunk_id": "National-Unknown_Strike_Intelligence.docx_13",
+    "filename": "National-Unknown_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
+    "text": "Incident #13: Passengers suffer as ride-app drivers’ strike enters day Two - The New Indian Express\n• Published Date: 2026-08-19 | Source: The New Indian Express\n• Modality: General | Severity: LOW\n\nIncident #14: Bharat Bandh 2026: Nationwide Strike by Trade Unions Disrupts Services Across India - The CSR Journal\n• Published Date: 2026-08-18 | Source: The CSR Journal\n• Modality: Bandh | Severity: LOW",
+    "doc_title": "National-Unknown_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "National-Unknown_Strike_Intelligence.docx_14",
+    "filename": "National-Unknown_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
+    "text": "Incident #15: Kin block road, seek arrest of doctor blamed for lab technician’s death near Dharamsala - The Tribune\n• Published Date: 2026-08-17 | Source: The Tribune\n• Modality: General | Severity: LOW",
+    "doc_title": "National-Unknown_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "National-Unknown_Strike_Intelligence.docx_15",
+    "filename": "National-Unknown_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
+    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in National/Unknown, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in National/Unknown delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "doc_title": "National-Unknown_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "National-Unknown_Strike_Intelligence.docx_16",
+    "filename": "National-Unknown_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\National-Unknown_Strike_Intelligence.docx",
+    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through National/Unknown with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through National/Unknown with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "doc_title": "National-Unknown_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "National-Unknown_Strike_Intelligence.docx_17",
     "filename": "National-Unknown_Strike_Intelligence.docx",
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
@@ -5792,7 +6089,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Pune_Strike_Intelligence.docx",
-    "text": "Pune Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:08:20\nMonitored Geographic Hub: Pune Logistics Cluster\nTotal Disruption Events Analyzed: 4",
+    "text": "Pune Transportation Disruption Intelligence & Routing Protocol\nReport Generated: 2026-08-31 20:24:59\nMonitored Geographic Hub: Pune Logistics Cluster\nTotal Disruption Events Analyzed: 4",
     "doc_title": "Pune_Strike_Intelligence"
   },
   {
@@ -5810,7 +6107,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Pune_Strike_Intelligence.docx",
-    "text": "2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: Pune-Bangalore Highway (NH-48), Chakan Industrial Belt, Talegaon Logistics Park.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
+    "text": "1.1 AI Strategic Risk Assessment (Qwen2.5 Synthesized)\nGiven the recent transportation strike events in Pune, India, the risk level for freight logistics operations is high, particularly in terms of operational disruptions and delays. These strikes, including road blockades and service disruptions, are indicative of ongoing labor issues and political demands, which can lead to unpredictable and frequent disruptions.",
     "doc_title": "Pune_Strike_Intelligence"
   },
   {
@@ -5819,7 +6116,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Pune_Strike_Intelligence.docx",
-    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Thousands stage road blockades demanding original Pune-Nashik rail alignment - The Indian Express\n• Published Date: 2026-08-10 | Source: The Indian Express\n• Modality: Railway | Severity: LOW\n\nIncident #2: Pune RTO strike: Services hit as staff protest stalled restructuring - The Indian Express\n• Published Date: 2026-06-09 | Source: The Indian Express\n• Modality: General | Severity: LOW",
+    "text": "Key bottleneck risks include the potential for prolonged blockades, which can severely impact the flow of goods, and the unpredictability of strike durations, which can lead to significant delays and increased costs for logistics companies.",
     "doc_title": "Pune_Strike_Intelligence"
   },
   {
@@ -5828,7 +6125,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Pune_Strike_Intelligence.docx",
-    "text": "Incident #3: Statewide e-challan protest disrupts Pune; strike called off after govt intervention | Hindustan Times - Hindustan Times\n• Published Date: 2026-03-06 | Source: Hindustan Times\n• Modality: General | Severity: LOW\n\nIncident #4: Thousands stage road blockades demanding original Pune-Nashik rail alignment - The Indian Express\n• Published Date: None | Source: Unknown\n• Modality: Railway | Severity: LOW",
+    "text": "To mitigate these risks, dispatch planners should implement a multi-faceted strategy. First, diversify transportation routes and modes of transport to avoid over-reliance on any single route or mode. For instance, utilizing both road and rail transport can provide alternative paths when road blockades occur. Second, establish a robust communication system with local authorities and unions to receive early warnings and updates on strike activities.",
     "doc_title": "Pune_Strike_Intelligence"
   },
   {
@@ -5837,7 +6134,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Pune_Strike_Intelligence.docx",
-    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Pune, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Pune delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "text": "This proactive approach can help in adjusting routes and schedules in real-time. Third, maintain a contingency plan that includes pre-arranged temporary storage facilities and backup suppliers to ensure continuity of supply. Lastly, consider implementing technology solutions such as real-time tracking and predictive analytics to optimize routing and minimize the impact of disruptions.",
     "doc_title": "Pune_Strike_Intelligence"
   },
   {
@@ -5846,11 +6143,47 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Pune_Strike_Intelligence.docx",
-    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Pune with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Pune with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "text": "These measures will not only enhance operational resilience but also improve overall supply chain efficiency and reliability.\n\n2. Critical Corridors & Choke Points\nPrimary Inbound/Outbound Transit Routes: Pune-Bangalore Highway (NH-48), Chakan Industrial Belt, Talegaon Logistics Park.\nImpact Profile: Labor strikes and bandhs in this cluster directly impede primary FTL linehauls and disrupt secondary final-mile dispatch to veterinary clinics and regional animal hospitals.",
     "doc_title": "Pune_Strike_Intelligence"
   },
   {
     "chunk_id": "Pune_Strike_Intelligence.docx_7",
+    "filename": "Pune_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Pune_Strike_Intelligence.docx",
+    "text": "3. Chronological Disruption Incidents & Intelligence Registry\nIncident #1: Thousands stage road blockades demanding original Pune-Nashik rail alignment - The Indian Express\n• Published Date: 2026-08-10 | Source: The Indian Express\n• Modality: Railway | Severity: LOW\n\nIncident #2: Pune RTO strike: Services hit as staff protest stalled restructuring - The Indian Express\n• Published Date: 2026-06-09 | Source: The Indian Express\n• Modality: General | Severity: LOW",
+    "doc_title": "Pune_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Pune_Strike_Intelligence.docx_8",
+    "filename": "Pune_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Pune_Strike_Intelligence.docx",
+    "text": "Incident #3: Statewide e-challan protest disrupts Pune; strike called off after govt intervention | Hindustan Times - Hindustan Times\n• Published Date: 2026-03-06 | Source: Hindustan Times\n• Modality: General | Severity: LOW\n\nIncident #4: Thousands stage road blockades demanding original Pune-Nashik rail alignment - The Indian Express\n• Published Date: None | Source: Unknown\n• Modality: Railway | Severity: LOW",
+    "doc_title": "Pune_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Pune_Strike_Intelligence.docx_9",
+    "filename": "Pune_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Pune_Strike_Intelligence.docx",
+    "text": "4. Autonomous Copilot Operational & Legal Rules\nWhen active transit strikes or civil disruptions are detected in Pune, the O2C Copilot applies the following deterministic decision rules:\n• Force Majeure Adjudication (Clause 8.4): If a government-sanctioned bandh or total union road blockade in Pune delays transit by >12 hours, the carrier delay SLA penalty ($500/day) is waived upon submission of verified e-way bill telematics or police traffic advisory.",
+    "doc_title": "Pune_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Pune_Strike_Intelligence.docx_10",
+    "filename": "Pune_Strike_Intelligence.docx",
+    "folder": "Strike_Intelligence",
+    "category": "strike_intelligence",
+    "relative_path": "Strike_Intelligence\\Pune_Strike_Intelligence.docx",
+    "text": "• Dynamic Transit Buffer: For any order scheduled to pass through Pune with active strike news, automatically inject a +12.0 to +24.0 hour safety buffer into the predicted ETA. • Mode Shift Escalation: For life-critical veterinary diets and urgent pharmaceuticals routed through Pune with strike duration >24h, authorize emergency intermodal rail shift or $1,000 Air Freight replacement per Medical Stock-Out Policy 2024-04.",
+    "doc_title": "Pune_Strike_Intelligence"
+  },
+  {
+    "chunk_id": "Pune_Strike_Intelligence.docx_11",
     "filename": "Pune_Strike_Intelligence.docx",
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
@@ -5864,7 +6197,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Railway_Pattern_Analysis.docx",
-    "text": "Railway Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:08:20\nTransit Modality Category: Railway Logistics Operations\nTotal Sector Incidents Analyzed: 37",
+    "text": "Railway Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:25:59\nTransit Modality Category: Railway Logistics Operations\nTotal Sector Incidents Analyzed: 37",
     "doc_title": "Railway_Pattern_Analysis"
   },
   {
@@ -5927,7 +6260,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Taxi_Pattern_Analysis.docx",
-    "text": "Taxi Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:08:20\nTransit Modality Category: Taxi Logistics Operations\nTotal Sector Incidents Analyzed: 30",
+    "text": "Taxi Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:25:59\nTransit Modality Category: Taxi Logistics Operations\nTotal Sector Incidents Analyzed: 30",
     "doc_title": "Taxi_Pattern_Analysis"
   },
   {
@@ -5990,7 +6323,7 @@
     "folder": "Strike_Intelligence",
     "category": "strike_intelligence",
     "relative_path": "Strike_Intelligence\\Truck_Pattern_Analysis.docx",
-    "text": "Truck Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:08:20\nTransit Modality Category: Truck Logistics Operations\nTotal Sector Incidents Analyzed: 26",
+    "text": "Truck Transportation Disruption Pattern & Risk Analysis\nReport Generated: 2026-08-31 20:25:59\nTransit Modality Category: Truck Logistics Operations\nTotal Sector Incidents Analyzed: 26",
     "doc_title": "Truck_Pattern_Analysis"
   },
   {
@@ -7412,7 +7745,7 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Bangalore_Weather_Protocol.docx",
-    "text": "Bangalore Severe Weather Protocol\nGenerated: 2026-08-31 20:08:20\nTotal Alerts Analyzed: 3\nExecutive Summary\nThis document outlines severe weather protocols for Bangalore based on historical weather alert patterns. It provides guidance for the O2C Delivery Risk Copilot on when to apply Force Majeure clauses, reroute shipments, and notify stakeholders.",
+    "text": "Bangalore Severe Weather Protocol\nGenerated: 2026-08-31 20:26:01\nTotal Alerts Analyzed: 3\nExecutive Summary\nThis document outlines severe weather protocols for Bangalore based on historical weather alert patterns. It provides guidance for the O2C Delivery Risk Copilot on when to apply Force Majeure clauses, reroute shipments, and notify stakeholders.",
     "doc_title": "Bangalore_Weather_Protocol"
   },
   {
@@ -7421,7 +7754,7 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Bangalore_Weather_Protocol.docx",
-    "text": "Severe Weather Thresholds\nThe following conditions trigger automatic Copilot alerts:\n🌡️  Extreme Heat: Temperature > 40°C\n💨 High Wind: Wind Speed > 15 m/s\n🌧️  Heavy Rain: Rainfall > 20mm/hr\n🌫️  Low Visibility: Visibility < 1km\nRecent Bangalore Weather Alerts\nHigh Wind & Gale Warning Protocol\n💨 3 high wind events recorded. Peak: 19.7 m/s in Bangalore. • Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).",
+    "text": "AI Cold-Chain & Severe Weather Risk Directive (Qwen2.5 Synthesized)\nGiven the severe weather alerts in Bangalore, with overcast conditions and strong winds, there are significant risks to cold-chain logistics operations. The strong winds, particularly at 19.2-19.7 m/s, pose a threat to the integrity of cold storage units and refrigerated vehicles. These conditions can lead to temperature fluctuations, which may cause temperature degradation in sensitive pharmaceuticals and perishable goods.",
     "doc_title": "Bangalore_Weather_Protocol"
   },
   {
@@ -7430,11 +7763,56 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Bangalore_Weather_Protocol.docx",
-    "text": "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks. • Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs. Automated Copilot Actions\nWhen severe weather is detected, the Copilot automatically:\n\n1. Cross-references carrier location with weather alert zone",
+    "text": "To mitigate these risks, it is imperative to ensure that all cold storage units are securely anchored and that refrigerated vehicles are parked in sheltered areas or equipped with additional wind barriers. Regular monitoring of temperature and humidity levels should be conducted, and any deviations must be promptly addressed to maintain the quality and safety of the cargo.",
     "doc_title": "Bangalore_Weather_Protocol"
   },
   {
     "chunk_id": "Bangalore_Weather_Protocol.docx_3",
+    "filename": "Bangalore_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Bangalore_Weather_Protocol.docx",
+    "text": "For fleet safety, it is crucial to implement strict QA hold protocols. Vehicles should undergo a thorough inspection before and after each trip to ensure that refrigeration systems are functioning optimally. Any issues identified should be addressed immediately, and the vehicle should not be used until it meets the required standards.",
+    "doc_title": "Bangalore_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Bangalore_Weather_Protocol.docx_4",
+    "filename": "Bangalore_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Bangalore_Weather_Protocol.docx",
+    "text": "In the event of unavoidable delays due to the weather, carriers should document the situation and communicate with the relevant stakeholders to ensure compliance with service level agreements (SLA). Given the force majeure clause, it is advisable to document the weather conditions and their impact on operations.",
+    "doc_title": "Bangalore_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Bangalore_Weather_Protocol.docx_5",
+    "filename": "Bangalore_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Bangalore_Weather_Protocol.docx",
+    "text": "This documentation can be used to support claims for extended delivery times or other necessary adjustments, ensuring that the carrier's SLA is not breached and that the quality assurance of the cargo is maintained throughout the supply chain.",
+    "doc_title": "Bangalore_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Bangalore_Weather_Protocol.docx_6",
+    "filename": "Bangalore_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Bangalore_Weather_Protocol.docx",
+    "text": "Severe Weather Thresholds\nThe following conditions trigger automatic Copilot alerts:\n🌡️  Extreme Heat: Temperature > 40°C\n💨 High Wind: Wind Speed > 15 m/s\n🌧️  Heavy Rain: Rainfall > 20mm/hr\n🌫️  Low Visibility: Visibility < 1km\nRecent Bangalore Weather Alerts\nHigh Wind & Gale Warning Protocol\n💨 3 high wind events recorded. Peak: 19.7 m/s in Bangalore. • Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).",
+    "doc_title": "Bangalore_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Bangalore_Weather_Protocol.docx_7",
+    "filename": "Bangalore_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Bangalore_Weather_Protocol.docx",
+    "text": "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks. • Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs. Automated Copilot Actions\nWhen severe weather is detected, the Copilot automatically:\n\n1. Cross-references carrier location with weather alert zone",
+    "doc_title": "Bangalore_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Bangalore_Weather_Protocol.docx_8",
     "filename": "Bangalore_Weather_Protocol.docx",
     "folder": "Weather_Policies",
     "category": "weather_policies",
@@ -7448,7 +7826,7 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Chennai_Weather_Protocol.docx",
-    "text": "Chennai Severe Weather Protocol\nGenerated: 2026-08-31 20:08:20\nTotal Alerts Analyzed: 2\nExecutive Summary\nThis document outlines severe weather protocols for Chennai based on historical weather alert patterns. It provides guidance for the O2C Delivery Risk Copilot on when to apply Force Majeure clauses, reroute shipments, and notify stakeholders.",
+    "text": "Chennai Severe Weather Protocol\nGenerated: 2026-08-31 20:26:18\nTotal Alerts Analyzed: 2\nExecutive Summary\nThis document outlines severe weather protocols for Chennai based on historical weather alert patterns. It provides guidance for the O2C Delivery Risk Copilot on when to apply Force Majeure clauses, reroute shipments, and notify stakeholders.",
     "doc_title": "Chennai_Weather_Protocol"
   },
   {
@@ -7457,7 +7835,7 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Chennai_Weather_Protocol.docx",
-    "text": "Severe Weather Thresholds\nThe following conditions trigger automatic Copilot alerts:\n🌡️  Extreme Heat: Temperature > 40°C\n💨 High Wind: Wind Speed > 15 m/s\n🌧️  Heavy Rain: Rainfall > 20mm/hr\n🌫️  Low Visibility: Visibility < 1km\nRecent Chennai Weather Alerts\nHigh Wind & Gale Warning Protocol\n💨 2 high wind events recorded. Peak: 16.1 m/s in Chennai. • Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).",
+    "text": "AI Cold-Chain & Severe Weather Risk Directive (Qwen2.5 Synthesized)\nGiven the current weather conditions in Chennai, with temperatures around 35°C and strong winds, there are significant risks associated with temperature degradation for cold-chain logistics. The high ambient temperatures can lead to rapid temperature increases within the cargo, potentially compromising the integrity of temperature-sensitive pharmaceuticals and other perishable goods.",
     "doc_title": "Chennai_Weather_Protocol"
   },
   {
@@ -7466,11 +7844,47 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Chennai_Weather_Protocol.docx",
-    "text": "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks. • Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs. Automated Copilot Actions\nWhen severe weather is detected, the Copilot automatically:\n\n1. Cross-references carrier location with weather alert zone",
+    "text": "To mitigate these risks, it is imperative to ensure that all cold storage units and refrigerated vehicles are functioning optimally and that the temperature inside the vehicles is closely monitored. Any deviations from the required temperature ranges should be immediately addressed to prevent spoilage or degradation of the cargo.",
     "doc_title": "Chennai_Weather_Protocol"
   },
   {
     "chunk_id": "Chennai_Weather_Protocol.docx_3",
+    "filename": "Chennai_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Chennai_Weather_Protocol.docx",
+    "text": "For fleet safety, the strong winds pose a direct threat to the operation of refrigerated vehicles, particularly if they are not properly secured or if the cargo units are not adequately insulated. Operational directives should include a review of vehicle stability and securing measures to prevent any potential accidents. Additionally, all drivers should be briefed on the current weather conditions and advised to maintain a safe speed and distance from other vehicles.",
+    "doc_title": "Chennai_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Chennai_Weather_Protocol.docx_4",
+    "filename": "Chennai_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Chennai_Weather_Protocol.docx",
+    "text": "In the event of severe weather, the fleet should be prepared to implement a temporary hold protocol, where vehicles are parked in secure, sheltered areas to avoid damage. Carrier Service Level Agreements (SLAs) should be reviewed to determine the eligibility for force majeure in such conditions, ensuring that any delays or disruptions are documented and communicated transparently to all stakeholders.",
+    "doc_title": "Chennai_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Chennai_Weather_Protocol.docx_5",
+    "filename": "Chennai_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Chennai_Weather_Protocol.docx",
+    "text": "Severe Weather Thresholds\nThe following conditions trigger automatic Copilot alerts:\n🌡️  Extreme Heat: Temperature > 40°C\n💨 High Wind: Wind Speed > 15 m/s\n🌧️  Heavy Rain: Rainfall > 20mm/hr\n🌫️  Low Visibility: Visibility < 1km\nRecent Chennai Weather Alerts\nHigh Wind & Gale Warning Protocol\n💨 2 high wind events recorded. Peak: 16.1 m/s in Chennai. • Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).",
+    "doc_title": "Chennai_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Chennai_Weather_Protocol.docx_6",
+    "filename": "Chennai_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Chennai_Weather_Protocol.docx",
+    "text": "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks. • Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs. Automated Copilot Actions\nWhen severe weather is detected, the Copilot automatically:\n\n1. Cross-references carrier location with weather alert zone",
+    "doc_title": "Chennai_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Chennai_Weather_Protocol.docx_7",
     "filename": "Chennai_Weather_Protocol.docx",
     "folder": "Weather_Policies",
     "category": "weather_policies",
@@ -7484,7 +7898,7 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Hyderabad_Weather_Protocol.docx",
-    "text": "Hyderabad Severe Weather Protocol\nGenerated: 2026-08-31 20:08:20\nTotal Alerts Analyzed: 5\nExecutive Summary\nThis document outlines severe weather protocols for Hyderabad based on historical weather alert patterns. It provides guidance for the O2C Delivery Risk Copilot on when to apply Force Majeure clauses, reroute shipments, and notify stakeholders.",
+    "text": "Hyderabad Severe Weather Protocol\nGenerated: 2026-08-31 20:26:34\nTotal Alerts Analyzed: 5\nExecutive Summary\nThis document outlines severe weather protocols for Hyderabad based on historical weather alert patterns. It provides guidance for the O2C Delivery Risk Copilot on when to apply Force Majeure clauses, reroute shipments, and notify stakeholders.",
     "doc_title": "Hyderabad_Weather_Protocol"
   },
   {
@@ -7493,7 +7907,7 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Hyderabad_Weather_Protocol.docx",
-    "text": "Severe Weather Thresholds\nThe following conditions trigger automatic Copilot alerts:\n🌡️  Extreme Heat: Temperature > 40°C\n💨 High Wind: Wind Speed > 15 m/s\n🌧️  Heavy Rain: Rainfall > 20mm/hr\n🌫️  Low Visibility: Visibility < 1km\nRecent Hyderabad Weather Alerts\nHigh Wind & Gale Warning Protocol\n💨 5 high wind events recorded. Peak: 32.9 m/s in Hyderabad. • Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).",
+    "text": "AI Cold-Chain & Severe Weather Risk Directive (Qwen2.5 Synthesized)\nGiven the severe weather alerts in Hyderabad, India, with varying wind speeds and temperatures, it is crucial to implement robust cold-chain and fleet safety operational directives to mitigate risks associated with temperature degradation and ensure the quality and safety of pharmaceuticals and other temperature-sensitive cargo.",
     "doc_title": "Hyderabad_Weather_Protocol"
   },
   {
@@ -7502,11 +7916,65 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Hyderabad_Weather_Protocol.docx",
-    "text": "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks. • Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs. Automated Copilot Actions\nWhen severe weather is detected, the Copilot automatically:\n\n1. Cross-references carrier location with weather alert zone",
+    "text": "The current weather conditions, including overcast, light drizzle, and broken clouds, with temperatures ranging from 28.2°C to 31.13°C and wind speeds up to 32.88 m/s, pose significant challenges. To address these, it is imperative to monitor the external temperature and humidity levels closely, as even slight deviations can lead to temperature excursions that may compromise the integrity of the cargo.",
     "doc_title": "Hyderabad_Weather_Protocol"
   },
   {
     "chunk_id": "Hyderabad_Weather_Protocol.docx_3",
+    "filename": "Hyderabad_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Hyderabad_Weather_Protocol.docx",
+    "text": "For instance, the high wind speeds could potentially cause damage to cold storage units, while the overcast and broken clouds might lead to fluctuating temperatures, particularly during the transition periods.",
+    "doc_title": "Hyderabad_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Hyderabad_Weather_Protocol.docx_4",
+    "filename": "Hyderabad_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Hyderabad_Weather_Protocol.docx",
+    "text": "To safeguard the quality and safety of the cargo, a strict QA hold protocol should be enforced. This includes regular temperature monitoring and logging, with immediate action taken if any deviation from the specified temperature range is detected. For instance, if the temperature exceeds the acceptable range for more than 30 minutes, the cargo should be held until the temperature stabilizes or is brought back within the acceptable range.",
+    "doc_title": "Hyderabad_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Hyderabad_Weather_Protocol.docx_5",
+    "filename": "Hyderabad_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Hyderabad_Weather_Protocol.docx",
+    "text": "Additionally, carriers should be informed of the potential risks and provided with clear guidelines on how to handle the cargo during transit. In the event of force majeure conditions, such as extreme weather, carriers should document the situation and provide evidence of the conditions to their respective logistics partners.",
+    "doc_title": "Hyderabad_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Hyderabad_Weather_Protocol.docx_6",
+    "filename": "Hyderabad_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Hyderabad_Weather_Protocol.docx",
+    "text": "This documentation should include real-time weather reports, temperature logs, and any other relevant data to support the claim for force majeure, ensuring compliance with service level agreements (SLAs) and minimizing potential disputes.",
+    "doc_title": "Hyderabad_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Hyderabad_Weather_Protocol.docx_7",
+    "filename": "Hyderabad_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Hyderabad_Weather_Protocol.docx",
+    "text": "Severe Weather Thresholds\nThe following conditions trigger automatic Copilot alerts:\n🌡️  Extreme Heat: Temperature > 40°C\n💨 High Wind: Wind Speed > 15 m/s\n🌧️  Heavy Rain: Rainfall > 20mm/hr\n🌫️  Low Visibility: Visibility < 1km\nRecent Hyderabad Weather Alerts\nHigh Wind & Gale Warning Protocol\n💨 5 high wind events recorded. Peak: 32.9 m/s in Hyderabad. • Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).",
+    "doc_title": "Hyderabad_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Hyderabad_Weather_Protocol.docx_8",
+    "filename": "Hyderabad_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Hyderabad_Weather_Protocol.docx",
+    "text": "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks. • Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs. Automated Copilot Actions\nWhen severe weather is detected, the Copilot automatically:\n\n1. Cross-references carrier location with weather alert zone",
+    "doc_title": "Hyderabad_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Hyderabad_Weather_Protocol.docx_9",
     "filename": "Hyderabad_Weather_Protocol.docx",
     "folder": "Weather_Policies",
     "category": "weather_policies",
@@ -7547,7 +8015,7 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Mumbai_Weather_Protocol.docx",
-    "text": "Mumbai Severe Weather Protocol\nGenerated: 2026-08-31 20:08:20\nTotal Alerts Analyzed: 4\nExecutive Summary\nThis document outlines severe weather protocols for Mumbai based on historical weather alert patterns. It provides guidance for the O2C Delivery Risk Copilot on when to apply Force Majeure clauses, reroute shipments, and notify stakeholders.",
+    "text": "Mumbai Severe Weather Protocol\nGenerated: 2026-08-31 20:26:54\nTotal Alerts Analyzed: 4\nExecutive Summary\nThis document outlines severe weather protocols for Mumbai based on historical weather alert patterns. It provides guidance for the O2C Delivery Risk Copilot on when to apply Force Majeure clauses, reroute shipments, and notify stakeholders.",
     "doc_title": "Mumbai_Weather_Protocol"
   },
   {
@@ -7556,7 +8024,7 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Mumbai_Weather_Protocol.docx",
-    "text": "Severe Weather Thresholds\nThe following conditions trigger automatic Copilot alerts:\n🌡️  Extreme Heat: Temperature > 40°C\n💨 High Wind: Wind Speed > 15 m/s\n🌧️  Heavy Rain: Rainfall > 20mm/hr\n🌫️  Low Visibility: Visibility < 1km\nRecent Mumbai Weather Alerts\nHigh Wind & Gale Warning Protocol\n💨 4 high wind events recorded. Peak: 20.6 m/s in Mumbai. • Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).",
+    "text": "AI Cold-Chain & Severe Weather Risk Directive (Qwen2.5 Synthesized)\nGiven the current weather conditions in Mumbai, the main risks for cold-chain logistics operations are primarily related to temperature degradation and potential disruptions to fleet safety. The mainly clear weather with temperatures around 28°C and light drizzle with minimal rainfall do not pose significant direct threats to the integrity of temperature-sensitive pharmaceuticals.",
     "doc_title": "Mumbai_Weather_Protocol"
   },
   {
@@ -7565,11 +8033,65 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Mumbai_Weather_Protocol.docx",
-    "text": "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks. • Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs. Automated Copilot Actions\nWhen severe weather is detected, the Copilot automatically:\n\n1. Cross-references carrier location with weather alert zone",
+    "text": "However, the high wind speeds, particularly at 20.6 m/s, could lead to potential safety hazards for the fleet, including the risk of cargo shifting or damage to vehicles. Therefore, it is crucial to ensure that all vehicles are securely loaded and that the cargo is properly secured to prevent any movement during transit.",
     "doc_title": "Mumbai_Weather_Protocol"
   },
   {
     "chunk_id": "Mumbai_Weather_Protocol.docx_3",
+    "filename": "Mumbai_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Mumbai_Weather_Protocol.docx",
+    "text": "For Quality Assurance and Quality Control (QA/QC) protocols, it is recommended to conduct a thorough pre-departure inspection of all cold-chain units to ensure they are functioning correctly and maintaining the required temperature. If any unit is found to be malfunctioning, it should be immediately repaired or replaced to avoid any risk of temperature degradation. Additionally, all shipments should be accompanied by a detailed temperature log to monitor the integrity of the cargo during transit.",
+    "doc_title": "Mumbai_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Mumbai_Weather_Protocol.docx_4",
+    "filename": "Mumbai_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Mumbai_Weather_Protocol.docx",
+    "text": "In the event of any deviation from the expected temperature, immediate action should be taken to rectify the situation, and a report should be generated for further analysis and corrective measures.",
+    "doc_title": "Mumbai_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Mumbai_Weather_Protocol.docx_5",
+    "filename": "Mumbai_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Mumbai_Weather_Protocol.docx",
+    "text": "In terms of Service Level Agreement (SLA) Force Majeure eligibility, the current weather conditions do not typically qualify as force majeure events. However, if the weather conditions deteriorate significantly, leading to potential risks such as severe wind damage or extreme temperature fluctuations, it may be necessary to reassess the situation.",
+    "doc_title": "Mumbai_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Mumbai_Weather_Protocol.docx_6",
+    "filename": "Mumbai_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Mumbai_Weather_Protocol.docx",
+    "text": "It is advisable to maintain a flexible approach and have contingency plans in place, such as rerouting shipments or temporarily halting operations if necessary. Any claims for force majeure should be supported by documented evidence of the weather conditions and their impact on operations.",
+    "doc_title": "Mumbai_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Mumbai_Weather_Protocol.docx_7",
+    "filename": "Mumbai_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Mumbai_Weather_Protocol.docx",
+    "text": "Severe Weather Thresholds\nThe following conditions trigger automatic Copilot alerts:\n🌡️  Extreme Heat: Temperature > 40°C\n💨 High Wind: Wind Speed > 15 m/s\n🌧️  Heavy Rain: Rainfall > 20mm/hr\n🌫️  Low Visibility: Visibility < 1km\nRecent Mumbai Weather Alerts\nHigh Wind & Gale Warning Protocol\n💨 4 high wind events recorded. Peak: 20.6 m/s in Mumbai. • Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).",
+    "doc_title": "Mumbai_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Mumbai_Weather_Protocol.docx_8",
+    "filename": "Mumbai_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Mumbai_Weather_Protocol.docx",
+    "text": "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks. • Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs. Automated Copilot Actions\nWhen severe weather is detected, the Copilot automatically:\n\n1. Cross-references carrier location with weather alert zone",
+    "doc_title": "Mumbai_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Mumbai_Weather_Protocol.docx_9",
     "filename": "Mumbai_Weather_Protocol.docx",
     "folder": "Weather_Policies",
     "category": "weather_policies",
@@ -7583,7 +8105,7 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Pune_Weather_Protocol.docx",
-    "text": "Pune Severe Weather Protocol\nGenerated: 2026-08-31 20:08:20\nTotal Alerts Analyzed: 4\nExecutive Summary\nThis document outlines severe weather protocols for Pune based on historical weather alert patterns. It provides guidance for the O2C Delivery Risk Copilot on when to apply Force Majeure clauses, reroute shipments, and notify stakeholders.",
+    "text": "Pune Severe Weather Protocol\nGenerated: 2026-08-31 20:27:15\nTotal Alerts Analyzed: 4\nExecutive Summary\nThis document outlines severe weather protocols for Pune based on historical weather alert patterns. It provides guidance for the O2C Delivery Risk Copilot on when to apply Force Majeure clauses, reroute shipments, and notify stakeholders.",
     "doc_title": "Pune_Weather_Protocol"
   },
   {
@@ -7592,7 +8114,7 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Pune_Weather_Protocol.docx",
-    "text": "Severe Weather Thresholds\nThe following conditions trigger automatic Copilot alerts:\n🌡️  Extreme Heat: Temperature > 40°C\n💨 High Wind: Wind Speed > 15 m/s\n🌧️  Heavy Rain: Rainfall > 20mm/hr\n🌫️  Low Visibility: Visibility < 1km\nRecent Pune Weather Alerts\nHigh Wind & Gale Warning Protocol\n💨 4 high wind events recorded. Peak: 22.4 m/s in Pune. • Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).",
+    "text": "AI Cold-Chain & Severe Weather Risk Directive (Qwen2.5 Synthesized)\nGiven the current weather alerts in Pune, India, it is crucial to implement specific operational directives to ensure the safety and integrity of cold-chain logistics and the well-being of the fleet. The weather conditions, while not severe, include high wind speeds and occasional light drizzle, which could pose risks to the temperature stability of pharmaceuticals and other temperature-sensitive cargo.",
     "doc_title": "Pune_Weather_Protocol"
   },
   {
@@ -7601,11 +8123,56 @@
     "folder": "Weather_Policies",
     "category": "weather_policies",
     "relative_path": "Weather_Policies\\Pune_Weather_Protocol.docx",
-    "text": "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks. • Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs. Automated Copilot Actions\nWhen severe weather is detected, the Copilot automatically:\n\n1. Cross-references carrier location with weather alert zone",
+    "text": "For instance, the mainly clear and partly cloudy conditions with wind speeds up to 22.4 m/s could lead to temperature fluctuations, especially if the cargo is not properly insulated or if the vehicles are not equipped with adequate weatherproofing. To mitigate these risks, it is recommended to monitor the internal temperature of the cargo at regular intervals and ensure that the temperature does not deviate from the required range.",
     "doc_title": "Pune_Weather_Protocol"
   },
   {
     "chunk_id": "Pune_Weather_Protocol.docx_3",
+    "filename": "Pune_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Pune_Weather_Protocol.docx",
+    "text": "If any deviation is detected, immediate corrective actions should be taken, such as rerouting the vehicle to a more sheltered location or using auxiliary cooling systems.",
+    "doc_title": "Pune_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Pune_Weather_Protocol.docx_4",
+    "filename": "Pune_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Pune_Weather_Protocol.docx",
+    "text": "In terms of carrier service level agreements (SLAs), the current weather conditions may qualify as force majeure events, provided that the carrier can demonstrate that the weather conditions were unforeseeable and beyond their control. For instance, if the temperature inside the cargo is found to be outside the acceptable range due to the weather conditions, the carrier should document this and communicate it to the relevant parties.",
+    "doc_title": "Pune_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Pune_Weather_Protocol.docx_5",
+    "filename": "Pune_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Pune_Weather_Protocol.docx",
+    "text": "The QA hold protocols should be activated, and the cargo should be quarantined until the temperature can be stabilized. It is advisable for carriers to maintain a contingency plan that includes provisions for such events, ensuring that they can quickly address any issues that arise and minimize the impact on the cargo's quality and safety.",
+    "doc_title": "Pune_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Pune_Weather_Protocol.docx_6",
+    "filename": "Pune_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Pune_Weather_Protocol.docx",
+    "text": "Severe Weather Thresholds\nThe following conditions trigger automatic Copilot alerts:\n🌡️  Extreme Heat: Temperature > 40°C\n💨 High Wind: Wind Speed > 15 m/s\n🌧️  Heavy Rain: Rainfall > 20mm/hr\n🌫️  Low Visibility: Visibility < 1km\nRecent Pune Weather Alerts\nHigh Wind & Gale Warning Protocol\n💨 4 high wind events recorded. Peak: 22.4 m/s in Pune. • Transit Safety: High crosswinds exceeding 15.0 m/s pose rollover hazards for high-cube curtain-sided trailers (>3.0m height).",
+    "doc_title": "Pune_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Pune_Weather_Protocol.docx_7",
+    "filename": "Pune_Weather_Protocol.docx",
+    "folder": "Weather_Policies",
+    "category": "weather_policies",
+    "relative_path": "Weather_Policies\\Pune_Weather_Protocol.docx",
+    "text": "• Carrier Routing Directive: Suspend high-cube trailer routing over coastal bridges and elevated expressways; mandate low-profile rigid trucks. • Force Majeure Eligibility: Delays resulting from official IMD (India Meteorological Department) gale warnings qualify for Section 4.2 Force Majeure relief upon submission of toll camera timestamp logs. Automated Copilot Actions\nWhen severe weather is detected, the Copilot automatically:\n\n1. Cross-references carrier location with weather alert zone",
+    "doc_title": "Pune_Weather_Protocol"
+  },
+  {
+    "chunk_id": "Pune_Weather_Protocol.docx_8",
     "filename": "Pune_Weather_Protocol.docx",
     "folder": "Weather_Policies",
     "category": "weather_policies",

@@ -19,6 +19,11 @@ try:
 except ImportError:
     from config import DB_PATH, DOCS_DIR
 
+try:
+    from .ollama_service import OllamaService
+except ImportError:
+    from ollama_service import OllamaService
+
 
 class StrikeIntelligenceGenerator:
     """
@@ -37,6 +42,9 @@ class StrikeIntelligenceGenerator:
         self.db_path = db_path
         self.output_dir = output_dir or (DOCS_DIR / "Strike_Intelligence")
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.ollama = OllamaService()
+        if self.ollama.is_available():
+            print(f"🤖 Connected to Local Ollama LLM ({self.ollama.model}) for AI Intelligence Synthesis")
     
     def generate_all_intelligence(self) -> List[str]:
         """Generate strike intelligence documents from all news articles"""
@@ -143,6 +151,23 @@ class StrikeIntelligenceGenerator:
             f"(e.g., indefinite strikes, complete bandhs) and {len(med_sev)} as MEDIUM severity. "
             f"Dominant disruption modalities: {', '.join(f'{k.title()} ({v})' for k, v in types.items())}."
         )
+
+        # 1.1 AI-Generated Dynamic Analysis (Local Qwen2.5 via Ollama)
+        if self.ollama and self.ollama.is_available():
+            sample_titles = [f"- {a.get('title', '')} ({a.get('published', '')})" for a in articles[:5]]
+            prompt = (
+                f"You are an expert supply chain risk consultant. Analyze these recent transportation strike events in {city}, India:\n"
+                + "\n".join(sample_titles) + "\n\n"
+                f"Provide a 2-paragraph strategic risk advisory for freight logistics routing in {city}. "
+                "Include risk level, key bottleneck risks, and concrete mitigation recommendations for dispatch planners."
+            )
+            try:
+                ai_analysis = self.ollama.generate(prompt)
+                if ai_analysis:
+                    doc.add_heading('1.1 AI Strategic Risk Assessment (Qwen2.5 Synthesized)', 2)
+                    doc.add_paragraph(ai_analysis)
+            except Exception:
+                pass
         
         # 2. Key Logistics Corridors & Bottlenecks
         doc.add_heading('2. Critical Corridors & Choke Points', 1)

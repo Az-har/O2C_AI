@@ -17,6 +17,11 @@ try:
 except ImportError:
     from config import DB_PATH, DOCS_DIR
 
+try:
+    from .ollama_service import OllamaService
+except ImportError:
+    from ollama_service import OllamaService
+
 
 class WeatherPolicyGenerator:
     """
@@ -35,6 +40,9 @@ class WeatherPolicyGenerator:
         self.db_path = db_path
         self.output_dir = output_dir or (DOCS_DIR / "Weather_Policies")
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.ollama = OllamaService()
+        if self.ollama.is_available():
+            print(f"🤖 Connected to Local Ollama LLM ({self.ollama.model}) for Weather Policy Synthesis")
     
     def generate_all_policies(self) -> List[str]:
         """Generate weather policy documents from all weather alerts"""
@@ -125,6 +133,24 @@ class WeatherPolicyGenerator:
             f"Risk Copilot on when to apply Force Majeure clauses, reroute shipments, "
             f"and notify stakeholders."
         )
+
+        # AI-Generated Synthesis if Ollama is available
+        if self.ollama and self.ollama.is_available():
+            alert_summary = [f"- {a.get('description', '')}: Temp={a.get('temp_c')}C, Rain={a.get('rain_mm')}mm/h, Wind={a.get('wind_ms')}m/s" for a in alerts[:5]]
+            prompt = (
+                f"You are a veterinary pharmaceutical and cold-chain logistics risk specialist. "
+                f"Analyze these severe weather alerts recorded in {city}, India:\n"
+                + "\n".join(alert_summary) + "\n\n"
+                f"Provide a 2-paragraph cold-chain and fleet safety operational directive for {city}. "
+                "Specify temperature degradation risks, cargo QA hold protocols, and carrier SLA Force Majeure eligibility."
+            )
+            try:
+                ai_analysis = self.ollama.generate(prompt)
+                if ai_analysis:
+                    doc.add_heading('AI Cold-Chain & Severe Weather Risk Directive (Qwen2.5 Synthesized)', 2)
+                    doc.add_paragraph(ai_analysis)
+            except Exception:
+                pass
         
         # Weather Thresholds
         doc.add_heading('Severe Weather Thresholds', 1)
