@@ -407,22 +407,22 @@ graph TD
 ### Module 5: `modules/weather_policy_generator.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\weather_policy_generator.py`  
 **Class:** `WeatherPolicyGenerator`  
-**Purpose:** Transforms raw weather sensor readings into structured `.docx` regulatory policy documents that are indexed into the Engine B RAG vector store.
+**Purpose:** Transforms raw meteorological telemetry from SQLite into 6 comprehensive, legal-grade Word regulatory policy documents (`.docx`) that establish binding thermal, wind, precipitation, and visibility protocols indexed into the Engine B RAG vector store.
 
 #### Functions in `WeatherPolicyGenerator`:
 
 #### 1. `__init__(self, db_path=str(DB_PATH), output_dir=None)`
-- **Purpose:** Initializes generator, verifies `python-docx` availability, and ensures `india_monitor_data/rag/documents/Weather_Policies/` directory exists.
+- **Purpose:** Initializes the generator, verifies `python-docx` availability, and ensures target directory `india_monitor_data/rag/documents/Weather_Policies/` exists.
 - **Input Parameters:** `db_path (str | Path)`, `output_dir (Path | None)`.
 
 #### 2. `generate_all_policies(self) -> list[str]`
-- **Purpose:** Orchestrates the query of extreme weather events, groups them by city, generates individual city policy `.docx` files, creates a master severe weather protocol, and returns generated file paths.
+- **Purpose:** Queries all extreme weather alerts from the database, clusters them by city, generates 5 city-specific protocols (`Bangalore`, `Chennai`, `Hyderabad`, `Mumbai`, `Pune`), creates the national `Master_Weather_Protocol.docx`, and returns the absolute paths.
 - **Input Parameters:** None.
-- **Output Return Type:** `list[str]` (List of generated `.docx` file paths).
-- **How it helps the data:** Dynamically converts raw numeric temperature/wind/rain telemetry into authoritative legal and operational policy documents for LLM retrieval.
+- **Output Return Type:** `list[str]` (List of 6 generated `.docx` file paths).
+- **How it helps the data:** Converts raw numbers (e.g. 42°C, 25mm rain) into authoritative legal rules that the RAG engine can cite during agentic adjudication.
 
 #### 3. `_fetch_weather_alerts(self) -> list[dict]`
-- **Purpose:** Executes SQL query against `weather_readings` filtering for extreme conditions:
+- **Purpose:** Executes SQL query against `weather_readings` filtering for safety thresholds:
   ```sql
   WHERE temperature > 40 OR wind_speed > 15 OR rain_1h > 20 OR visibility_km < 1
   ```
@@ -435,10 +435,11 @@ graph TD
 - **Output Return Type:** `dict[str, list[dict]]`
 
 #### 5. `_create_city_weather_policy(self, city: str, alerts: list[dict]) -> Path`
-- **Purpose:** Compiles a formatted Word document (`{City}_Weather_Protocol.docx`) containing:
-  - Executive summary and severe weather trigger thresholds.
-  - Historical extreme heat, high wind, heavy rain, and fog events.
-  - Prescribed operational actions (e.g. cold-chain shelf life reduction by 20%, tall vehicle transit suspension, Force Majeure clauses).
+- **Purpose:** Compiles `{City}_Weather_Protocol.docx` containing:
+  - **Extreme Heat & Cold-Chain Protocol:** Product degradation risks for therapeutic wet pet foods and probiotics; mandatory HPLC stability testing and 20% shelf-life reduction for un-reefered cargo exposed $>4.0\text{h}$ to $>40.0^\circ\text{C}$.
+  - **High Wind Protocol:** Rollover hazard directives for high-cube trailers ($>3.0\text{m}$) exceeding $15.0\text{ m/s}$; IMD gale warning Force Majeure eligibility (Section 4.2).
+  - **Heavy Precipitation & Flood Advisory:** $>20.0\text{ mm/hr}$ packaging moisture rules; mandatory 80-gauge poly-stretch wrapping and SAP QA Hold (Stock Type 'S') moisture probe inspection ($>12\%$ carton moisture = 100% rejection).
+  - **Dense Fog Protocol:** Dynamic +4.0h to +8.0h ETA buffers and clinic proactive rescheduling to prevent $150 redelivery fees.
 - **Input Parameters:** `city (str)`, `alerts (list[dict])`.
 - **Output Return Type:** `pathlib.Path`
 
@@ -452,7 +453,7 @@ graph TD
 ### Module 6: `modules/strike_intelligence_generator.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\strike_intelligence_generator.py`  
 **Class:** `StrikeIntelligenceGenerator`  
-**Purpose:** Aggregates scraped transport strike news and compiles structured intelligence briefs in `.docx` format for RAG vectorization.
+**Purpose:** Aggregates scraped transportation strike news and compiles 17 human-grade intelligence briefs in `.docx` format containing real-world incident registries, national highway choke points, and autonomous copilot decision playbooks.
 
 #### Functions in `StrikeIntelligenceGenerator`:
 
@@ -461,10 +462,10 @@ graph TD
 - **Input Parameters:** `db_path (str | Path)`, `output_dir (Path | None)`.
 
 #### 2. `generate_all_intelligence(self) -> list[str]`
-- **Purpose:** Fetches all strike articles from SQLite, generates city-specific briefs (for cities with $\ge 3$ articles), category pattern analyses (for modalities with $\ge 5$ articles), and the national master brief (`Master_Disruption_Intelligence.docx`).
+- **Purpose:** Fetches all 396+ strike articles from SQLite, generates 9 city-specific briefs (for cities with $\ge 3$ articles), 7 modality pattern analyses (for categories with $\ge 5$ articles), and the national master brief (`Master_Disruption_Intelligence.docx`).
 - **Input Parameters:** None.
-- **Output Return Type:** `list[str]` (List of generated document paths).
-- **How it helps the data:** Synthesizes hundreds of isolated news reports into structured pattern analyses (e.g. `Truck_Pattern_Analysis.docx`, `Bandh_Pattern_Analysis.docx`, `Delhi_Strike_Intelligence.docx`) ready for semantic search.
+- **Output Return Type:** `list[str]` (List of 17 generated `.docx` document paths).
+- **How it helps the data:** Synthesizes hundreds of isolated web articles into actionable intelligence briefs indexed into FAISS and BM25.
 
 #### 3. `_fetch_strike_articles(self) -> list[dict]`
 - **Purpose:** Queries `strike_news` table for title, matched cities, category, published date, and source.
@@ -482,17 +483,21 @@ graph TD
 - **Output Return Type:** `dict[str, list[dict]]`
 
 #### 6. `_create_city_strike_brief(self, city: str, articles: list[dict]) -> Path`
-- **Purpose:** Compiles `{City}_Strike_Intelligence.docx` summarizing local route bottlenecks, affected transit modes, and contingency rerouting directives.
+- **Purpose:** Compiles `{City}_Strike_Intelligence.docx` containing:
+  - **Executive Assessment:** Disruption severity breakdown (High/Medium/Low) and modal breakdown.
+  - **Critical Highway Choke Points:** Details key national highway arteries per city (e.g. NH-48 Mumbai-Pune / Gujarat, NH-44 Delhi-Agra, NH-16 Chennai, Dankuni terminal Kolkata).
+  - **Chronological Incident Registry:** Real headlines, publication dates, wire sources, and summaries of the top 15 historical incidents.
+  - **Autonomous Copilot Decision Rules:** Clause 8.4 Force Majeure waiver criteria, +12h to +24h dynamic transit buffers, $1,000 Air Freight mode shift triggers for critical veterinary diets, and MS Teams escalation rules ($>$500 risk).
 - **Input Parameters:** `city (str)`, `articles (list[dict])`.
 - **Output Return Type:** `pathlib.Path`
 
 #### 7. `_create_category_strike_brief(self, category: str, articles: list[dict]) -> Path`
-- **Purpose:** Compiles `{Category}_Pattern_Analysis.docx` detailing strike frequencies, union actions, and modal vulnerability.
+- **Purpose:** Compiles `{Category}_Pattern_Analysis.docx` detailing modal vulnerability, geographic distribution, case studies, and carrier contract adjudication rules (demurrage caps $100/day for trucks, $500/container rail demurrage, warehouse bandh lockdown).
 - **Input Parameters:** `category (str)`, `articles (list[dict])`.
 - **Output Return Type:** `pathlib.Path`
 
 #### 8. `_create_master_disruption_intelligence(self, articles: list[dict]) -> Path`
-- **Purpose:** Generates `Master_Disruption_Intelligence.docx` summarizing nationwide supply chain disruption risks across all corridors.
+- **Purpose:** Generates `Master_Disruption_Intelligence.docx` summarizing nationwide disruption patterns and the 5-phase AI orchestration decision matrix.
 - **Input Parameters:** `articles (list[dict])`.
 - **Output Return Type:** `pathlib.Path`
 
@@ -502,12 +507,27 @@ graph TD
 
 | Component / Module | Input Data | Transformation / Function | Output Data Artifact | Downstream Consumer |
 |---|---|---|---|---|
-| **`modules/config.py`** | Environment Variables & OS paths | Dynamic platform resolution (`_resolve_project_root`) | Standardized `Path` objects | All 12 project modules |
+| **`modules/config.py`** | Environment Variables & OS paths | Dynamic platform resolution (`_resolve_project_root`) | Standardized `Path` objects & RAG constants | All 12 project modules |
 | **`modules/weather_service.py`** | Open-Meteo & OWM APIs | JSON payload normalization & WMO decoding | List of weather dictionaries | `DatabaseManager.write_weather` |
 | **`modules/news_service.py`** | Google News RSS XML | NLP entity extraction, severity & modality classification | List of enriched news dictionaries | `DatabaseManager.write_strikes` |
 | **`modules/database_manager.py`** | Sensor & News Dictionaries | ACID SQLite transactions with WAL concurrency | `india_monitor.db` tables | `MLDatabaseExtension` & `RAG Engine` |
 | **`modules/weather_policy_generator.py`** | SQLite `weather_readings` | Threshold filtering & Word document templating | 6 `.docx` Weather Protocols | `modules/rag_engine.py` (Hybrid RAG) |
 | **`modules/strike_intelligence_generator.py`** | SQLite `strike_news` | Regional & category aggregation into Word briefs | 17 `.docx` Strike Briefs | `modules/rag_engine.py` (Hybrid RAG) |
+
+---
+
+## 5. 🧠 Architectural Rationale: Why Operational & Legal Rules are Embedded in Generated Knowledge Documents
+
+A common question in enterprise AI architecture is:  
+*“Why embed operational playbooks and contract rules inside generated `.docx` files instead of hardcoding everything in Python code?”*
+
+### 5.1 The Ground-Truth Legal Authority Principle
+In an enterprise Order-to-Cash environment, an autonomous AI model (or Large Language Model) cannot make financial decisions (e.g. waiving a \$500 SLA penalty, triggering a \$1,000 emergency replacement air freight, or locking \$25,000 of inventory in a QA quarantine hold) based purely on black-box heuristics or hallucinated prompt weights.
+
+By structuring regulatory, operational, and contract rules directly into the RAG corpus:
+1. **Zero Hallucination:** When an order is evaluated (e.g. in Mumbai during a 42°C heatwave), Engine B RAG retrieves the exact excerpt from `Mumbai_Weather_Protocol.docx` and `Platinum Tier Delivery Framework.docx`.
+2. **Immutable Audit Trail:** Every daily decision exported to `daily_agent_report.json` contains explicit citations (`rag_sources`) that legal, financial, and logistics directors can inspect and verify.
+3. **Multi-Agent Dispute Resolution:** The 4 autonomous specialist agents (**Route Supervisor**, **Contract Adjudicator**, **Quality Mitigation**, and **ERP Action Executor**) use these retrieved clauses to resolve conflicting priorities (e.g. Contract Agent wants to fine the carrier, but the Policy Document proves the heatwave was a legally recognized *Act of God* under Section 4.2).
 
 ---
 *End of Part 1 Specification. Part 2 covers Knowledge Vectorization (Engine B Hybrid RAG) & Predictive Feature Store (Engine A ML).*
