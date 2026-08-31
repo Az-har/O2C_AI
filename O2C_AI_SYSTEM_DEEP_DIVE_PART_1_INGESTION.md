@@ -407,19 +407,19 @@ graph TD
 ### Module 5: `modules/weather_policy_generator.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\weather_policy_generator.py`  
 **Class:** `WeatherPolicyGenerator`  
-**Purpose:** Transforms raw meteorological telemetry from SQLite into 6 comprehensive, legal-grade Word regulatory policy documents (`.docx`) that establish binding thermal, wind, precipitation, and visibility protocols indexed into the Engine B RAG vector store.
+**Purpose:** Transforms raw meteorological telemetry from SQLite into 6 structured, high-density Word regulatory policy documents (`.docx`) using a Hybrid Rule + AI architecture (combining deterministic sensor metrics with Qwen2.5 hazard extraction) indexed into the Engine B RAG vector store.
 
 #### Functions in `WeatherPolicyGenerator`:
 
 #### 1. `__init__(self, db_path=str(DB_PATH), output_dir=None)`
-- **Purpose:** Initializes the generator, verifies `python-docx` availability, and ensures target directory `india_monitor_data/rag/documents/Weather_Policies/` exists.
+- **Purpose:** Initializes the generator, verifies `python-docx` availability, connects to local `OllamaService` (detecting `qwen2.5:7b`), and ensures target directory `india_monitor_data/rag/documents/Weather_Policies/` exists.
 - **Input Parameters:** `db_path (str | Path)`, `output_dir (Path | None)`.
 
 #### 2. `generate_all_policies(self) -> list[str]`
 - **Purpose:** Queries all extreme weather alerts from the database, clusters them by city, generates 5 city-specific protocols (`Bangalore`, `Chennai`, `Hyderabad`, `Mumbai`, `Pune`), creates the national `Master_Weather_Protocol.docx`, and returns the absolute paths.
 - **Input Parameters:** None.
 - **Output Return Type:** `list[str]` (List of 6 generated `.docx` file paths).
-- **How it helps the data:** Converts raw numbers (e.g. 42°C, 25mm rain) into authoritative legal rules that the RAG engine can cite during agentic adjudication.
+- **How it helps the data:** Converts raw numbers (e.g. 42°C, 32.9 m/s wind, 25mm rain) into high-density structured tables and discrete rule blocks that the RAG engine can cite during agentic adjudication.
 
 #### 3. `_fetch_weather_alerts(self) -> list[dict]`
 - **Purpose:** Executes SQL query against `weather_readings` filtering for safety thresholds:
@@ -435,11 +435,16 @@ graph TD
 - **Output Return Type:** `dict[str, list[dict]]`
 
 #### 5. `_create_city_weather_policy(self, city: str, alerts: list[dict]) -> Path`
-- **Purpose:** Compiles `{City}_Weather_Protocol.docx` containing:
-  - **Extreme Heat & Cold-Chain Protocol:** Product degradation risks for therapeutic wet pet foods and probiotics; mandatory HPLC stability testing and 20% shelf-life reduction for un-reefered cargo exposed $>4.0\text{h}$ to $>40.0^\circ\text{C}$.
-  - **High Wind Protocol:** Rollover hazard directives for high-cube trailers ($>3.0\text{m}$) exceeding $15.0\text{ m/s}$; IMD gale warning Force Majeure eligibility (Section 4.2).
-  - **Heavy Precipitation & Flood Advisory:** $>20.0\text{ mm/hr}$ packaging moisture rules; mandatory 80-gauge poly-stretch wrapping and SAP QA Hold (Stock Type 'S') moisture probe inspection ($>12\%$ carton moisture = 100% rejection).
-  - **Dense Fog Protocol:** Dynamic +4.0h to +8.0h ETA buffers and clinic proactive rescheduling to prevent $150 redelivery fees.
+- **Purpose:** Compiles `{City}_Weather_Protocol.docx` structured into 4 high-density operational sections:
+  - **Header & Telemetry Metadata:** Exact observed extremes (Peak Temp, Peak Wind, Peak Rain, Min Visibility).
+  - **Section 1: Extracted Hazard Profile (AI Synthesis):** Qwen2.5 extracts *Primary Hazard Vector* (e.g. Gale Force Crosswinds 32.9 m/s), *Secondary Hazard Vector* (ambient humidity/drizzle), and *Critical Risk Window* (linehaul speed reduction).
+  - **Section 2: Logistics Corridor & Choke Point Risk Matrix (Table):** Word Table detailing major freight arteries (e.g. Hyderabad ORR, Mumbai NH-48, Chennai NH-16) with specific hazard ratings and mandatory fleet directives.
+  - **Section 3: Binding Operational & QA Directives (Discrete Rules):**
+    - `[RULE-W-{CITY}-01]`: Trailer equipment suspension (wind $\ge 15\text{ m/s}$ / rain $\ge 20\text{ mm/h}$).
+    - `[RULE-W-{CITY}-02]`: Force Majeure Clause 4.2 penalty waiver (\$500/day $\to$ \$0.00).
+    - `[RULE-W-{CITY}-03]`: Cold-Chain HPLC testing ($>40^\circ\text{C}$ for $>4\text{h}$) and moisture probe threshold ($>12\%$).
+    - `[RULE-W-{CITY}-04]`: Dynamic ETA safety buffer (+4h to +8h) and \$150 redelivery fee waiver.
+  - **Section 4: Copilot Deterministic Action Checklist:** Step-by-step verification checklist for downstream agents.
 - **Input Parameters:** `city (str)`, `alerts (list[dict])`.
 - **Output Return Type:** `pathlib.Path`
 
@@ -453,19 +458,19 @@ graph TD
 ### Module 6: `modules/strike_intelligence_generator.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\strike_intelligence_generator.py`  
 **Class:** `StrikeIntelligenceGenerator`  
-**Purpose:** Aggregates scraped transportation strike news and compiles 17 human-grade intelligence briefs in `.docx` format containing real-world incident registries, national highway choke points, and autonomous copilot decision playbooks.
+**Purpose:** Aggregates scraped transportation strike news and compiles 17 structured intelligence briefs in `.docx` format using a Hybrid Rule + AI architecture (combining deterministic incident metrics with Qwen2.5 entity/trigger extraction).
 
 #### Functions in `StrikeIntelligenceGenerator`:
 
 #### 1. `__init__(self, db_path=str(DB_PATH), output_dir=None)`
-- **Purpose:** Initializes generator and creates `india_monitor_data/rag/documents/Strike_Intelligence/` directory.
+- **Purpose:** Initializes generator, connects to local `OllamaService`, and creates `india_monitor_data/rag/documents/Strike_Intelligence/` directory.
 - **Input Parameters:** `db_path (str | Path)`, `output_dir (Path | None)`.
 
 #### 2. `generate_all_intelligence(self) -> list[str]`
 - **Purpose:** Fetches all 396+ strike articles from SQLite, generates 9 city-specific briefs (for cities with $\ge 3$ articles), 7 modality pattern analyses (for categories with $\ge 5$ articles), and the national master brief (`Master_Disruption_Intelligence.docx`).
 - **Input Parameters:** None.
 - **Output Return Type:** `list[str]` (List of 17 generated `.docx` document paths).
-- **How it helps the data:** Synthesizes hundreds of isolated web articles into actionable intelligence briefs indexed into FAISS and BM25.
+- **How it helps the data:** Synthesizes hundreds of isolated web articles into actionable intelligence briefs with structured tables and discrete rule blocks.
 
 #### 3. `_fetch_strike_articles(self) -> list[dict]`
 - **Purpose:** Queries `strike_news` table for title, matched cities, category, published date, and source.
@@ -483,11 +488,16 @@ graph TD
 - **Output Return Type:** `dict[str, list[dict]]`
 
 #### 6. `_create_city_strike_brief(self, city: str, articles: list[dict]) -> Path`
-- **Purpose:** Compiles `{City}_Strike_Intelligence.docx` containing:
-  - **Executive Assessment:** Disruption severity breakdown (High/Medium/Low) and modal breakdown.
-  - **Critical Highway Choke Points:** Details key national highway arteries per city (e.g. NH-48 Mumbai-Pune / Gujarat, NH-44 Delhi-Agra, NH-16 Chennai, Dankuni terminal Kolkata).
-  - **Chronological Incident Registry:** Real headlines, publication dates, wire sources, and summaries of the top 15 historical incidents.
-  - **Autonomous Copilot Decision Rules:** Clause 8.4 Force Majeure waiver criteria, +12h to +24h dynamic transit buffers, $1,000 Air Freight mode shift triggers for critical veterinary diets, and MS Teams escalation rules ($>$500 risk).
+- **Purpose:** Compiles `{City}_Strike_Intelligence.docx` structured into 4 high-density operational sections:
+  - **Header & Severity Counts:** Exact incident count and severity breakdown (🔴 High / 🟡 Medium / 🟢 Low).
+  - **Section 1: Extracted Disruption Incident Registry (Table):** High-density Word Table with columns: `Incident ID & Date`, `Source`, `Disruption Modality`, `Stated Trigger / Demand`, `Freight Impact Severity`.
+  - **Section 2: Critical Bottlenecks & Highway Bypass Directives:** Primary national highway choke points (e.g. NH-44 Kundli Border, NH-48 Bhiwandi) and recommended FTL bypasses (e.g. KMP Expressway).
+  - **Section 3: Autonomous Copilot Adjudication & Legal Rules (Discrete Rules):**
+    - `[RULE-S-{CITY}-01]`: Force Majeure SLA penalty waiver (Section 8.4) for blockades $>12\text{h}$.
+    - `[RULE-S-{CITY}-02]`: Emergency \$1,000 Air Freight replacement for specialty diets (`sap_mara.specialty_diet_flag = 1`).
+    - `[RULE-S-{CITY}-03]`: Carrier truck detention liability cap (\$100.00/day per vehicle).
+    - `[RULE-S-{CITY}-04]`: Dynamic transit buffer (+12h to +24h) and clinic delivery rescheduling.
+  - **Section 4: Copilot Deterministic Action Checklist:** 4-step execution checklist for AI agents.
 - **Input Parameters:** `city (str)`, `articles (list[dict])`.
 - **Output Return Type:** `pathlib.Path`
 
@@ -511,8 +521,8 @@ graph TD
 | **`modules/weather_service.py`** | Open-Meteo & OWM APIs | JSON payload normalization & WMO decoding | List of weather dictionaries | `DatabaseManager.write_weather` |
 | **`modules/news_service.py`** | Google News RSS XML | NLP entity extraction, severity & modality classification | List of enriched news dictionaries | `DatabaseManager.write_strikes` |
 | **`modules/database_manager.py`** | Sensor & News Dictionaries | ACID SQLite transactions with WAL concurrency | `india_monitor.db` tables | `MLDatabaseExtension` & `RAG Engine` |
-| **`modules/weather_policy_generator.py`** | SQLite `weather_readings` | Threshold filtering & Word document templating | 6 `.docx` Weather Protocols | `modules/rag_engine.py` (Hybrid RAG) |
-| **`modules/strike_intelligence_generator.py`** | SQLite `strike_news` | Regional & category aggregation into Word briefs | 17 `.docx` Strike Briefs | `modules/rag_engine.py` (Hybrid RAG) |
+| **`modules/weather_policy_generator.py`** | SQLite `weather_readings` | Threshold filtering, Qwen2.5 hazard extraction & Word tables | 6 `.docx` Weather Protocols | `modules/rag_engine.py` (Hybrid RAG) |
+| **`modules/strike_intelligence_generator.py`** | SQLite `strike_news` | Regional aggregation, Qwen2.5 trigger extraction & Word tables | 17 `.docx` Strike Briefs | `modules/rag_engine.py` (Hybrid RAG) |
 
 ---
 
@@ -529,5 +539,18 @@ By structuring regulatory, operational, and contract rules directly into the RAG
 2. **Immutable Audit Trail:** Every daily decision exported to `daily_agent_report.json` contains explicit citations (`rag_sources`) that legal, financial, and logistics directors can inspect and verify.
 3. **Multi-Agent Dispute Resolution:** The 4 autonomous specialist agents (**Route Supervisor**, **Contract Adjudicator**, **Quality Mitigation**, and **ERP Action Executor**) use these retrieved clauses to resolve conflicting priorities (e.g. Contract Agent wants to fine the carrier, but the Policy Document proves the heatwave was a legally recognized *Act of God* under Section 4.2).
 
+### 5.2 The Hybrid Rule + AI Division of Labor
+
+To prevent narrative filler essays while eliminating manual document editing, the system divides responsibilities between deterministic rules and local AI (Qwen2.5):
+
+| Task / Document Component | Handled By | Why This Division is Used |
+|---|---|---|
+| **Telemetry Extremes & Peak Figures** | ⚙️ **Deterministic Rule Engine** | Queries SQLite directly (`Peak Temp: 31.1°C`, `Peak Wind: 32.9 m/s`). Guarantees 100% mathematical accuracy with zero AI drift. |
+| **Semantic Hazard Extraction** | 🤖 **AI (Qwen2.5 via Ollama)** | Evaluates combined telemetry and extracts the core hazard vectors (e.g. identifying $32.9\text{ m/s}$ as Gale Force crosswind shear). |
+| **Corridor Bottleneck Matrix Tables** | 🤖 **AI + ⚙️ Infrastructure Rules** | Correlates city topography (ORR, port CFS, elevated expressways) against the active hazard to formulate specific road directives. |
+| **Unstructured Incident Entity Extraction** | 🤖 **AI (Qwen2.5 via Ollama)** | Reads messy scraped web news descriptions and extracts clean *Stated Triggers / Demands* (e.g. *"Diesel VAT & E-Way Bill Dispute"*). |
+| **Binding Contract Caps & Discrete Rule IDs** | ⚙️ **Deterministic Rule Engine** | Injects exact financial caps (\$500/day, \$1,000 air freight, \$100/day detention) and discrete identifiers (`[RULE-W-HYD-01]`, `[RULE-S-DEL-02]`). |
+
 ---
 *End of Part 1 Specification. Part 2 covers Knowledge Vectorization (Engine B Hybrid RAG) & Predictive Feature Store (Engine A ML).*
+
