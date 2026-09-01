@@ -166,6 +166,40 @@ graph TD
 
 ---
 
+### 3.4 The Role of Live Environmental Signals (Weather & Strike): Dynamic Post-ML Modifiers
+
+A vital architectural distinction in the O2C Copilot is the boundary between **Static Supervised ML Features** and **Dynamic Streaming Environmental Signals**:
+
+```mermaid
+graph TD
+    subgraph "1. Static Supervised ML (19 Canonical Features)"
+        A["Historical ERP Tables (62,299 Orders)"] --> B["Two-Stage Hurdle Models<br/>(RandomForest Clf + Huber Reg)"]
+        B --> C["Base Empirical Risk:<br/>Delay Prob: 75% | Base Delay: 36.0h"]
+    end
+
+    subgraph "2. Live Dynamic Telemetry Layer (PredictiveEngine)"
+        D1["Live Weather Cache<br/>(weather_readings: Temp > 40°C, Wind > 15m/s)"] --> E["Dynamic Real-Time Hazard Modifier"]
+        D2["Live Strike Cache<br/>(strike_news: Active Truck Strike)"] --> E
+        C & E --> F["Adjusted Delay Prob: 85% | Adjusted Delay: 48.0h<br/>+ Force Majeure Act of God Flag"]
+    end
+
+    subgraph "3. Hybrid RAG & Agent Action Layer (Part 3)"
+        F --> G1["Engine B RAG: Retrieves [RULE-W-HYD-01] & [RULE-S-DEL-02]"]
+        G1 --> G2["Route Supervisor: Diverts >3m High-Cube Trailers"]
+        G1 --> G3["Contract Agent: Waives $500/day SLA under Clause 4.2"]
+        G1 --> G4["Quality Agent: Puts cargo on SAP QA Hold 'S' for HPLC assay"]
+    end
+```
+
+#### Why Weather and Strikes Are Not Static Training Columns:
+1. **Temporal Asynchrony:** Historical ERP orders from 6 months ago have no valid snapshot of today's live temperature sensor readings or this morning's flash highway protest. Baking live streaming data as static training columns would cause severe data leakage and synthetic distortion.
+2. **Three-Tier Operational Role:**
+   - **Real-Time Duration & Risk Escalation:** In `predict_delivery_delay()`, if a live strike matches the destination corridor, the engine dynamically injects $+12.0\text{ hours}$ to `delay_hours` and $+0.10$ to `delay_prob`.
+   - **Contractual Force Majeure Gateway:** If extreme heat ($>40^\circ\text{C}$), gale winds ($>15\text{m/s}$), heavy rain ($>20\text{mm/hr}$), or verified bandhs are detected, `force_majeure_applicable` is set to `True`, triggering legal penalty waivers under Section 4.2 / Section 8.4.
+   - **Quality Assurance Quarantine Trigger:** Sustained temperatures $>40^\circ\text{C}$ for $>4\text{h}$ automatically mandate HPLC assay testing and a 20% shelf-life reduction for veterinary therapeutics (QA Policy 2024-03).
+
+---
+
 ## 4. 🧩 Detailed Function-by-Function Code Breakdown
 
 ---
@@ -198,7 +232,7 @@ graph TD
 #### 4. `get_ml_ready_dataset(self, force_refresh: bool = False) -> pd.DataFrame`
 - **Purpose:** Executes the master 10-table relational SQL query joining sales orders, items, deliveries, shipments, carriers, customers, and materials. Applies mathematical feature engineering to produce the unified ML feature store. Results are cached in `self._cached_ml_df` and pre-indexed in `self._order_lookup_dict` for $O(1)$ instant lookups.
 - **Input Parameters:** `force_refresh (bool)` — If `True`, bypasses cache and re-queries SQLite.
-- **Output Return Type:** `pd.DataFrame` — 11,797+ rows with all engineered feature columns.
+- **Output Return Type:** `pd.DataFrame` — 62,299+ rows with all engineered feature columns.
 - **Engineered Feature Transformations:**
   - **`order_to_delivery_days`**: $\text{RDD} - \text{Order Date}$ (Turnaround window).
   - **`order_to_departure_days`**: $\text{Departure Date} - \text{Order Date}$ (Warehouse dwell).
@@ -240,7 +274,7 @@ graph TD
 ### Module 2: `modules/predictive_engine.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\predictive_engine.py`  
 **Class:** `PredictiveEngine`  
-**Purpose:** Core machine learning orchestration engine for Engine A. Implements supervised classification and regression model training, model serialization/loading, explainable feature attribution (XAI), root cause diagnosis, financial risk quantification, and seamless enrichment with Engine B RAG context.
+**Purpose:** Core machine learning orchestration engine for Engine A. Implements the **Two-Stage Hurdle Architecture** (combining `RandomForestClassifier` for gating and `GradientBoostingRegressor` with Huber loss for conditional delay estimation), model persistence, Explainable AI (XAI) feature attributions, root cause diagnosis, financial risk quantification, and dynamic enrichment with Engine B RAG context.
 
 #### Functions in `PredictiveEngine`:
 
@@ -253,16 +287,18 @@ graph TD
 - **Purpose:** Pre-loads the latest weather readings across all 10 cities and the top 50 strike news events from SQLite into memory caches (`self._weather_cache` and `self._strike_cache`).
 - **Input Parameters:** None.
 - **Output Return Type:** None.
-- **How it helps the data:** Removes per-order database query overhead, reducing multi-order batch evaluation runtime from minutes to seconds.
+- **How it helps the data:** Eliminates per-order disk I/O, reducing batch evaluation runtime across thousands of orders to sub-second speeds.
 
 #### 3. `train_models(self, df: pd.DataFrame, train_size: float = 0.8) -> bool`
-- **Purpose:** Trains two supervised machine learning models using Scikit-Learn:
-  1. **`RandomForestClassifier`** (`n_estimators=50, max_depth=5, random_state=42`): Fits `X_train` against binary `is_delayed` labels.
-  2. **`GradientBoostingRegressor`** (`n_estimators=50, max_depth=4, random_state=42`): Fits `X_train` against continuous `delay_hours`.
-  Extracts feature importances and calls `save_models()`.
+- **Purpose:** Implements the **Two-Stage Hurdle Training Pipeline**:
+  1. **Stage 1 (Classification Gate):** Fits `RandomForestClassifier(n_estimators=100, max_depth=6, random_state=42)` on full `X_train` against binary `y_train_cls` (Stratified). Evaluates gate accuracy ($97.10\%$, Precision $97.49\%$, ROC-AUC $0.9958$).
+  2. **Stage 2 (Conditional Hurdle Regressor):** Filters training samples strictly to delayed orders (`y_train_cls == 1`), fitting `GradientBoostingRegressor(loss='huber', n_estimators=100, max_depth=5, learning_rate=0.08, random_state=42)` on actual delay hours.
+  3. **Two-Stage Gated Evaluation:** Evaluates test set using the classification gate:
+     $$\hat{y}_{\text{hours}} = \begin{cases} \max(12.0, \hat{y}_{\text{reg}}) & \text{if } P(\text{delay}) \ge 0.40 \\ 0.0 & \text{if } P(\text{delay}) < 0.40 \end{cases}$$
+     Reduces overall MAE from $7.99\text{h}$ to **$5.63\text{h}$** (a 30% error reduction) and completely eliminates ghost delays on on-time orders.
+  4. Extracts Gini feature importances and calls `save_models()`.
 - **Input Parameters:** `df (pd.DataFrame)` — Feature-engineered dataset from `MLDatabaseExtension`, `train_size (float)` — Train/test split ratio (default 0.8).
 - **Output Return Type:** `bool` — `True` if training succeeded, `False` otherwise.
-- **How it helps the data:** Establishes mathematical predictive models that generalize across 19 complex logistics risk dimensions.
 
 #### 4. `save_models(self, model_dir: Path = None) -> bool`
 - **Purpose:** Serializes trained model objects into binary `.pkl` files (`rf_classifier.pkl`, `gb_regressor.pkl`) and exports `feature_importances.json` to `india_monitor_data/models/`.
@@ -275,17 +311,17 @@ graph TD
 - **Output Return Type:** `bool` — `True` if artifacts loaded successfully.
 
 #### 6. `explain_prediction(self, order_data: Dict[str, Any], delay_prob: float) -> List[Dict[str, Any]]`
-- **Purpose:** Implements Explainable AI (XAI) feature attribution. Evaluates active risk conditions for the order (e.g. Unrealistic Speed, Weekend Dispatch, Heavy Pallet, LTL Dwell, Month-End Congestion), weights them by the trained model's feature importances, and calculates normalized contribution percentages (`contribution_pct`).
+- **Purpose:** Implements Explainable AI (XAI) feature attribution using `feature_importances.json`. Matches active risk conditions for the order (e.g. Unrealistic Speed, Weekend Dispatch, Heavy Pallet, LTL Dwell, Month-End Congestion), weights them by the trained model's feature importances, and calculates normalized contribution percentages (`contribution_pct`).
 - **Input Parameters:** `order_data (Dict[str, Any])`, `delay_prob (float)`.
-- **Output Return Type:** `List[Dict[str, Any]]` — Top 4 contributing risk factors with human-readable explanations and percentage contributions.
-- **How it helps the data:** Transforms opaque ML probability scores into clear, human-understandable root-cause narratives for logistics directors.
+- **Output Return Type:** `List[Dict[str, Any]]` — Top contributing risk factors with human-readable explanations and percentage contributions.
+- **How it helps the data:** Transforms black-box ML probability scores into transparent root-cause narratives displayed in MS Teams Adaptive Cards and executive audit logs.
 
 #### 7. `predict_delivery_delay(self, order_id: str, order_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]`
 - **Purpose:** Executes the end-to-end prediction and risk quantification pipeline for a single order:
   1. Fetches feature vector from `MLDatabaseExtension`.
-  2. Evaluates ML models: Computes `delay_probability` (from `RandomForestClassifier`) and `delay_hours` (from `GradientBoostingRegressor`).
-  3. Diagnoses primary and secondary root causes (`_diagnose_root_cause`).
-  4. Calculates financial exposure and contractual SLA penalties (`_calculate_financial_risk`).
+  2. Evaluates Two-Stage Hurdle models: Computes `delay_prob` (Stage 1 Classifier). If $P \ge 0.40$, evaluates Stage 2 Regressor for `delay_hours` ($\ge 12.0\text{h}$); otherwise sets `delay_hours = 0.0\text{h}$.
+  3. Checks live environmental caches (`self._weather_cache` and `self._strike_cache`) for real-time adjustments ($+12\text{h}$ delay and $+0.10$ probability for active strikes; thermal/moisture risk diagnoses for extreme weather).
+  4. Calculates financial exposure and contractual SLA penalties (Platinum Tier: \$500/day; Gold/Independent: 5%/day capped at 25%; \$150 after-hours clinic violation).
   5. Computes revised Estimated Time of Arrival (ETA).
   6. Enriches result with retrieved policy context from Engine B RAG (`_enrich_with_rag`).
 - **Input Parameters:** `order_id (str)`, `order_data (Dict[str, Any] | None)`.
