@@ -305,7 +305,7 @@ graph TD
 
 ### Module 1: `modules/config.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\config.py`  
-**Purpose:** Centralized configuration, dynamic platform directory resolution (Databricks, Linux, Windows), environmental constants, alert thresholds, and RAG hyperparameters.
+**Purpose (The Central Control Room):** Acts as the central rulebook and settings hub for the entire system. It tells the software where all data folders live, sets standard safety limits (like heatwave temperatures and wind thresholds), and ensures the code runs smoothly whether it is hosted on cloud servers or a local office computer.
 
 #### Global Constants & Data Structures:
 - `INDIA_CITIES (dict)`: Coordinate dictionary of 10 key Indian supply chain hubs:
@@ -326,7 +326,7 @@ graph TD
 #### Functions in `config.py`:
 
 #### 1. `_resolve_project_root()`
-- **Purpose:** Dynamically determines the absolute project root across Databricks runtime clusters (`/Workspace/Users/...`), local developer machines, or CI/CD container environments.
+- **Purpose:** Acts as the system's internal GPS. It automatically detects where the software is running (in the cloud, on a remote server, or on a local laptop) so all folders and files are located seamlessly without requiring manual configuration.
 - **Input Parameters:** None (Inspects environment variables `O2C_PROJECT_ROOT`, `DATABRICKS_RUNTIME_VERSION`, and file system ancestry).
 - **Output Return Type:** `pathlib.Path`
 - **How it helps the data:** Guarantees that all paths (`india_monitor_data/`, `Input Files/`, `models/`) resolve to the exact absolute disk path regardless of whether the code is run via terminal CLI, Databricks job, or Jupyter notebook.
@@ -336,78 +336,78 @@ graph TD
 ### Module 2: `modules/database_manager.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\database_manager.py`  
 **Class:** `DatabaseManager`  
-**Purpose:** Single point of contact for SQLite database interactions. Handles ACID transactions, WAL mode concurrency, schema initialization, and CRUD operations for sensor feeds and RAG analyses.
+**Purpose (The Digital Filing Vault):** Serves as the system's secure electronic safe. It organizes and protects all incoming live weather reports, news articles, and audit logs, making sure records are saved cleanly and can be pulled up in milliseconds without crashing.
 
 #### Functions in `DatabaseManager`:
 
 #### 1. `__init__(self, db_path=str(DB_PATH))`
-- **Purpose:** Initializes database manager, sets up file logging, and executes schema creation.
+- **Purpose:** Prepares the database storage vault, sets up daily activity logbooks, and builds the necessary data tables so everything is ready to record incoming information safely.
 - **Input Parameters:** `db_path (str | Path)` — Path to SQLite `.db` file.
 - **Output Return Type:** None.
 - **How it helps the data:** Ensures tables and indices exist before any write operations occur.
 
 #### 2. `_make_logger(self)`
-- **Purpose:** Configures daily rotating file logger writing to `india_monitor_data/logs/monitor_YYYYMMDD.log`.
+- **Purpose:** Creates a daily activity journal that records every system action and error, giving managers a transparent, unalterable paper trail for system audits.
 - **Input Parameters:** None.
 - **Output Return Type:** `logging.Logger`
 - **How it helps the data:** Provides an immutable audit trail of data transactions and operational errors.
 
 #### 3. `connection(self)`
-- **Purpose:** Context manager (`@contextmanager`) providing a thread-safe connection with auto-commit on success and rollback on failure.
+- **Purpose:** Provides a safe, dedicated key to access the database vault, ensuring multiple processes can read and write data simultaneously without locking each other out or corrupting records.
 - **Input Parameters:** None.
 - **Output Return Type:** `Generator[sqlite3.Connection]`
 - **How it helps the data:** Enables `PRAGMA journal_mode=WAL` and `PRAGMA foreign_keys=ON`, preventing database locking during high-frequency concurrent operations.
 
 #### 4. `_build_schema(self)`
-- **Purpose:** Executes SQL DDL to create all 6 ingestion tables and B-Tree indexes (`idx_wr_city_date`, `idx_sn_date`, etc.).
+- **Purpose:** Builds the digital filing cabinets (database tables and lightning-fast search indexes) required to organize weather readings, news alerts, and legal analysis records.
 - **Input Parameters:** None.
 - **Output Return Type:** None.
 - **How it helps the data:** Establishes table structures, composite uniqueness constraints (`UNIQUE(city_name, date_only, hour_of_day)`), and index optimizations.
 
 #### 5. `session_start(self, session_type="full") -> int`
-- **Purpose:** Records the start of an ingestion session in `ingestion_sessions` table.
+- **Purpose:** Punches a digital timecard at the start of a data-collection run, stamping an official tracking ticket on every incoming piece of weather and news data.
 - **Input Parameters:** `session_type (str)` — Type of run (`"full"`, `"weather"`, or `"news"`).
 - **Output Return Type:** `int` — Auto-incremented `session_id`.
 - **How it helps the data:** Assigns a session ID to tag every incoming weather reading and news article for data lineage.
 
 #### 6. `session_end(self, sid: int, status="success", cities=0, articles=0, error=None)`
-- **Purpose:** Updates session record with completion timestamp, status, processed row counts, or error traces.
+- **Purpose:** Closes out the active tracking ticket when data collection finishes, recording how many rows were collected, whether the run succeeded, and any errors encountered.
 - **Input Parameters:** `sid (int)`, `status (str)`, `cities (int)`, `articles (int)`, `error (str | None)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Tracks ETL health and monitors API pipeline success rates.
 
 #### 7. `write_weather(self, records: list, session_id: int) -> tuple[int, int]`
-- **Purpose:** Executes batch upsert of weather observations into `weather_readings` table.
+- **Purpose:** Safely files away incoming city weather reports while automatically skipping duplicate entries so the database stays clean and organized.
 - **Input Parameters:** `records (list[dict])` — Cleaned weather dicts, `session_id (int)`.
 - **Output Return Type:** `tuple[int, int]` — `(inserted_count, skipped_duplicate_count)`.
 - **How it helps the data:** Deduplicates incoming weather readings so multiple runs on the same day/hour never create duplicate rows.
 
 #### 8. `write_strikes(self, articles: list, session_id: int) -> tuple[int, int]`
-- **Purpose:** Executes batch upsert of news articles into `strike_news` table.
+- **Purpose:** Saves incoming transport strike news and protest reports, automatically filtering out repeat articles so only fresh disruptions are logged.
 - **Input Parameters:** `articles (list[dict])` — Cleaned news dicts, `session_id (int)`.
 - **Output Return Type:** `tuple[int, int]` — `(inserted_count, skipped_duplicate_count)`.
 - **How it helps the data:** Deduplicates news by `UNIQUE(title, source_name)`, preserving historical transport disruption records.
 
 #### 9. `write_rag_analysis(self, news_id: int, strike_title: str, question: str, answer: str, sources: list, confidence: float = None) -> int`
-- **Purpose:** Persists Qwen2.5 Copilot analysis of a strike event in `rag_analysis_log`.
+- **Purpose:** Archives the AI's legal analysis of strike events, linking news headlines directly to the contractual clauses and policy rules cited.
 - **Input Parameters:** `news_id (int)`, `strike_title (str)`, `question (str)`, `answer (str)`, `sources (list)`, `confidence (float)`.
 - **Output Return Type:** `int` — `analysis_id`.
 - **How it helps the data:** Maintains traceability between live news events and Copilot legal/logistics interpretations.
 
 #### 10. `read_weather(self, date: str = None, city: str = None) -> pd.DataFrame`
-- **Purpose:** Reads weather data into a pandas DataFrame with optional date and city filters.
+- **Purpose:** Pulls historical weather records out of storage and formats them into clean, structured tables that the predictive machine learning models can study.
 - **Input Parameters:** `date (str | None)` (YYYY-MM-DD), `city (str | None)`.
 - **Output Return Type:** `pd.DataFrame`
 - **How it helps the data:** Converts SQL records into structured DataFrames for downstream feature engineering in Engine A.
 
 #### 11. `read_strikes(self, date: str = None, city: str = None) -> pd.DataFrame`
-- **Purpose:** Reads strike news into a pandas DataFrame with optional filters.
+- **Purpose:** Gathers historical strike and protest records from the database so the route planning agents can review ongoing road and rail disruptions.
 - **Input Parameters:** `date (str | None)`, `city (str | None)`.
 - **Output Return Type:** `pd.DataFrame`
 - **How it helps the data:** Supplies disruption intelligence to the Multi-Agent Route Supervisor.
 
 #### 12. `get_stats(self) -> dict`
-- **Purpose:** Queries table row counts, date ranges, and session health for monitoring dashboards.
+- **Purpose:** Summarizes total records, operational health, and system activity across all database tables for executive health-check dashboards.
 - **Input Parameters:** None.
 - **Output Return Type:** `dict` — High-level dataset summary metrics.
 - **How it helps the data:** Used by validation test suites and health-check monitoring dashboards.
@@ -417,7 +417,7 @@ graph TD
 ### Module 3: `modules/weather_service.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\weather_service.py`  
 **Class:** `WeatherService`  
-**Purpose:** Ingests live and historical meteorological observations across 10 major logistics hubs across India using OpenWeatherMap (OWM) and Open-Meteo APIs.
+**Purpose (24/7 Weather Radar):** Keeps an eye on the skies across India's 10 busiest shipping hubs. It continuously tracks extreme heat, downpours, high winds, and dense fog to warn logistics managers before storms delay shipments.
 
 #### Key Class Attributes:
 - `CITIES`: Dictionary mapping 10 major supply chain hubs (`Mumbai`, `Delhi`, `Bangalore`, `Chennai`, `Kolkata`, `Hyderabad`, `Ahmedabad`, `Pune`, `Jaipur`, `Lucknow`) to lat/long coordinates.
@@ -426,37 +426,37 @@ graph TD
 #### Functions in `WeatherService`:
 
 #### 1. `__init__(self, api_key: str, cities: dict)`
-- **Purpose:** Initializes weather service with API credentials and city coordinate mapping.
+- **Purpose:** Connects the application to commercial and open-source weather satellite networks, linking geographic coordinates for all 10 major logistics delivery cities.
 - **Input Parameters:** `api_key (str)` — OpenWeatherMap API key (optional), `cities (dict)` — Coordinate mapping dict.
 - **Output Return Type:** None.
 - **How it helps the data:** Establishes communication channels with external meteorological providers.
 
 #### 2. `fetch_current(self) -> list[dict]`
-- **Purpose:** Iterates across all 10 cities, querying OWM current weather API (with automatic fallback to Open-Meteo).
+- **Purpose:** Checks live weather conditions (temperature, rainfall, storm winds, and fog) across all 10 logistics hubs, automatically switching to a free backup provider if the primary service is unavailable.
 - **Input Parameters:** None.
 - **Output Return Type:** `list[dict]` — List of standardized weather dictionaries.
 - **How it helps the data:** Provides real-time weather readings for cold-chain temperature control and transit delay forecasting.
 
 #### 3. `fetch_historical(self, date: str) -> list[dict]`
-- **Purpose:** Fetches historical weather observations for all 10 cities for a past date from Open-Meteo Archive API.
+- **Purpose:** Pulls historical weather records for any past date so data scientists can test whether severe past storms explain delayed historical deliveries.
 - **Input Parameters:** `date (str)` — Target date in `YYYY-MM-DD` format.
 - **Output Return Type:** `list[dict]` — List of historical weather dictionaries.
 - **How it helps the data:** Enables backtesting ML models against historical weather events on specific dispatch dates.
 
 #### 4. `_owm_one(self, city: str, coords: dict) -> dict | None`
-- **Purpose:** Queries OpenWeatherMap API for a single city and normalizes JSON response.
+- **Purpose:** Contacts the primary commercial weather provider (OpenWeatherMap) for a single city, extracting exact measurements for wind speed, humidity, cloud cover, and atmospheric pressure.
 - **Input Parameters:** `city (str)`, `coords (dict)` — `{"lat": float, "lon": float}`.
 - **Output Return Type:** `dict | None` — Normalized weather reading dict or `None` on failure.
 - **How it helps the data:** Extracts exact visibility, pressure, and cloudiness metrics from primary commercial telemetry.
 
 #### 5. `_meteo_current_one(self, city: str, coords: dict) -> dict | None`
-- **Purpose:** Queries Open-Meteo Current Weather endpoint as an automatic fallback when OWM API key is exhausted or missing.
+- **Purpose:** Acts as an automatic safety net by fetching current weather from Open-Meteo if the primary commercial weather provider runs out of credits or encounters an error.
 - **Input Parameters:** `city (str)`, `coords (dict)`.
 - **Output Return Type:** `dict | None` — Normalized weather reading dict.
 - **How it helps the data:** Ensures 100% continuous data availability even without paid API keys.
 
 #### 6. `_meteo_one(self, city: str, coords: dict, date: str) -> dict | None`
-- **Purpose:** Queries Open-Meteo Archive API for historical date, aggregating hourly readings to daily noon metrics.
+- **Purpose:** Retrieves and condenses 24 hours of historical hourly weather data into a single representative midday snapshot for model training.
 - **Input Parameters:** `city (str)`, `coords (dict)`, `date (str)`.
 - **Output Return Type:** `dict | None` — Daily aggregated weather observation.
 - **How it helps the data:** Normalizes hourly timeseries arrays into representative daily dispatch conditions.
@@ -466,54 +466,54 @@ graph TD
 ### Module 4: `modules/news_service.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\news_service.py`  
 **Class:** `NewsService`  
-**Purpose:** Scrapes, filters, and classifies transportation strikes, civil unrest, and highway disruptions from Google News RSS feeds using NLP heuristics.
+**Purpose (Highway Intelligence Scout):** Scans internet news around the clock like a dedicated traffic scout, flagging trucker strikes, highway blockades, port strikes, and regional shutdowns that could strand freight on the road.
 
 #### Functions in `NewsService`:
 
 #### 1. `__init__(self, keywords: list, cities: dict)`
-- **Purpose:** Initializes keyword filters and target city boundaries.
+- **Purpose:** Programs the news scout with targeted logistics keywords (such as 'truck strike', 'chakka jam', and 'bandh') and city boundaries across major freight corridors.
 - **Input Parameters:** `keywords (list[str])` — 14 strike terms, `cities (dict)` — 10 Indian hub cities.
 - **Output Return Type:** None.
 - **How it helps the data:** Configures the geographic and semantic boundaries for external web scraping.
 
 #### 2. `fetch(self, date: str = None, city: str = None) -> list[dict]`
-- **Purpose:** Executes targeted RSS search queries across all keyword-city combinations, deduplicates articles, and applies NLP enrichment.
+- **Purpose:** Scours live Google News feeds across all cities and keywords, weeding out duplicate headlines and labeling each disruption with its severity and transport type.
 - **Input Parameters:** `date (str | None)`, `city (str | None)`.
 - **Output Return Type:** `list[dict]` — Enriched article objects.
 - **How it helps the data:** Converts unorganized XML web news into structured risk data tagged with severity, location, and transport modality.
 
 #### 3. `_build_queries(self, city: str = None) -> list[str]`
-- **Purpose:** Constructs Google News search query strings (e.g. `"truck strike Mumbai India"`, `"bandh India"`).
+- **Purpose:** Combines target cities and strike keywords into smart search phrases (like 'truck strike Mumbai India') to pinpoint relevant disruption news.
 - **Input Parameters:** `city (str | None)`.
 - **Output Return Type:** `list[str]` — Formatted query strings.
 - **How it helps the data:** Focuses search scope specifically on Indian logistics corridors.
 
 #### 4. `_date_filter(self, date: str) -> str`
-- **Purpose:** Formats Google News date search syntax (`after:YYYY-MM-DD before:YYYY-MM-DD`).
+- **Purpose:** Narrows web searches to the exact operational shipping window so the system only collects news that actually impacts current shipments.
 - **Input Parameters:** `date (str)`.
 - **Output Return Type:** `str` — Search date filter fragment.
 - **How it helps the data:** Restricts scraping strictly to the active dispatch operational window.
 
 #### 5. `_rss_search(self, query: str) -> list[dict]`
-- **Purpose:** Performs HTTP GET to `https://news.google.com/rss/search`, parses XML using `BeautifulSoup`, and extracts title, description, link, source, and published timestamp.
+- **Purpose:** Downloads and reads Google News XML feeds, gently spacing out web requests so servers are not overloaded, and extracts article titles, links, and publication dates.
 - **Input Parameters:** `query (str)`.
 - **Output Return Type:** `list[dict]` — Extracted article dictionaries.
 - **How it helps the data:** Extracts clean article metadata while enforcing a `time.sleep(0.5)` rate-limiting delay.
 
 #### 6. `_detect_city(self, text: str) -> str`
-- **Purpose:** Scans article title and body text for mentions of the 10 monitored Indian cities.
+- **Purpose:** Reads article headlines and body text to identify which specific Indian logistics hub or delivery route is being disrupted.
 - **Input Parameters:** `text (str)`.
 - **Output Return Type:** `str` — Matched city name or `"Unknown"`.
 - **How it helps the data:** Spatially tags news articles to regional warehouse and customer delivery locations.
 
 #### 7. `_get_state(self, city: str) -> str`
-- **Purpose:** Looks up the state corresponding to the detected city.
+- **Purpose:** Identifies which state a city belongs to so the system can determine whether a protest is a local municipal issue or a state-wide highway shutdown.
 - **Input Parameters:** `city (str)`.
 - **Output Return Type:** `str` — State name (e.g. `"Maharashtra"` for `"Mumbai"`).
 - **How it helps the data:** Maps municipal strikes to state-level regulatory jurisdictions.
 
 #### 8. `_classify_severity(self, text: str) -> str`
-- **Purpose:** Classifies disruption severity based on linguistic impact indicators:
+- **Purpose:** Grades disruption severity like a veteran logistics dispatcher, classifying events into Red (total shutdowns / national bandhs), Yellow (regional 24-hour strikes), or Green (minor local delays):
   - `🔴 HIGH`: If text contains `"bharat bandh"`, `"national strike"`, `"indefinite"`, or `"complete shutdown"`.
   - `🟡 MEDIUM`: If text contains `"state bandh"`, `"24-hour"`, `"48-hour"`, or `"city strike"`.
   - `🟢 LOW`: All other local transport advisories.
@@ -522,7 +522,7 @@ graph TD
 - **How it helps the data:** Enables downstream multi-agent specialists to trigger immediate Force Majeure and route diversions for high-severity events.
 
 #### 9. `_classify_type(self, text: str) -> str`
-- **Purpose:** Maps article text to logistics transport modality:
+- **Purpose:** Determines what kind of transport is affected—identifying whether a strike halts long-haul road trucks, freight trains, port containers, or city delivery vans:
   - `"bus"`, `"truck"`, `"railway"`, `"auto"`, `"taxi"`, `"metro"`, `"bandh"`, or `"general"`.
 - **Input Parameters:** `text (str)`.
 - **Output Return Type:** `str` — Modality tag string.
@@ -533,24 +533,24 @@ graph TD
 ### Module 5: `modules/weather_policy_generator.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\weather_policy_generator.py`  
 **Class:** `WeatherPolicyGenerator`  
-**Purpose:** Transforms raw meteorological telemetry from SQLite into 6 structured, high-density Word regulatory policy documents (`.docx`) using a Hybrid Rule + AI architecture (combining deterministic sensor metrics with Qwen2.5 hazard extraction) indexed into the Engine B RAG vector store.
+**Purpose (Automated Safety Officer):** Turns raw weather numbers into official, easy-to-read Word policy documents. It specifies exact safety rules—such as pulling high-sided trucks off the road in gale winds or requiring potency lab checks for heat-exposed pet diets.
 
 #### Functions in `WeatherPolicyGenerator`:
 
 #### 1. `__init__(self, db_path=str(DB_PATH), output_dir=None)`
-- **Purpose:** Initializes the generator, verifies `python-docx` availability, connects to local `OllamaService` (detecting `qwen2.5:7b`), and ensures target directory `india_monitor_data/rag/documents/Weather_Policies/` exists.
+- **Purpose:** Verifies access to local AI language models and prepares the regulatory storage folder where official weather rulebooks are saved.
 - **Input Parameters:** `db_path (str | Path)`, `output_dir (Path | None)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Establishes the generation output directory and verifies LLM synthesis availability.
 
 #### 2. `generate_all_policies(self) -> list[str]`
-- **Purpose:** Queries all extreme weather alerts from the database, clusters them by city, generates 5 city-specific protocols (`Bangalore`, `Chennai`, `Hyderabad`, `Mumbai`, `Pune`), creates the national `Master_Weather_Protocol.docx`, and returns the absolute paths.
+- **Purpose:** Reviews all extreme weather alerts across the nation and publishes official Word policy rulebooks for impacted delivery cities and national logistics corridors.
 - **Input Parameters:** None.
 - **Output Return Type:** `list[str]` — List of 6 generated `.docx` file paths.
 - **How it helps the data:** Converts raw numbers (e.g. 42°C, 32.9 m/s wind, 25mm rain) into high-density structured tables and discrete rule blocks that the RAG engine can cite during agentic adjudication.
 
 #### 3. `_fetch_weather_alerts(self) -> list[dict]`
-- **Purpose:** Executes SQL query against `weather_readings` filtering for safety thresholds:
+- **Purpose:** Scans weather records to isolate genuine safety hazards—filtering for extreme heat (>40°C), heavy rain (>20mm/hr), gale winds (>15m/s), or dense fog (<1km):
   ```sql
   WHERE temperature > 40 OR wind_speed > 15 OR rain_1h > 20 OR visibility_km < 1
   ```
@@ -559,13 +559,13 @@ graph TD
 - **How it helps the data:** Filters out benign telemetry to isolate critical environmental disruptions.
 
 #### 4. `_group_alerts_by_city(self, alerts: list[dict]) -> dict[str, list[dict]]`
-- **Purpose:** Groups flat alert records into a dictionary keyed by city name.
+- **Purpose:** Sorts scattered weather warnings into organized city-by-city bundles so each regional dispatch team receives a customized local protocol.
 - **Input Parameters:** `alerts (list[dict])`.
 - **Output Return Type:** `dict[str, list[dict]]` — Dictionary mapping city names to alert lists.
 - **How it helps the data:** Organizes national telemetry into city-level regional clusters.
 
 #### 5. `_create_city_weather_policy(self, city: str, alerts: list[dict]) -> Path`
-- **Purpose:** Compiles `{City}_Weather_Protocol.docx` structured into 4 high-density operational sections:
+- **Purpose:** Drafts an official, plain-English logistics rulebook for a city, detailing critical highway bottlenecks, truck safety suspensions during 55+ km/h winds, and quality holds for heat-sensitive drugs:
   - **Header & Telemetry Metadata:** Exact observed extremes (Peak Temp, Peak Wind, Peak Rain, Min Visibility).
   - **Section 1: Extracted Hazard Profile (AI Synthesis):** Qwen2.5 extracts *Primary Hazard Vector* (e.g. Gale Force Crosswinds 32.9 m/s), *Secondary Hazard Vector* (ambient humidity/drizzle), and *Critical Risk Window* (linehaul speed reduction).
   - **Section 2: Logistics Corridor & Choke Point Risk Matrix (Table):** Word Table detailing major freight arteries (e.g. Hyderabad ORR, Mumbai NH-48, Chennai NH-16) with specific hazard ratings and mandatory fleet directives.
@@ -580,7 +580,7 @@ graph TD
 - **How it helps the data:** Encodes legal rules and operational constraints into structured, citeable text documents for the RAG engine.
 
 #### 6. `_create_master_weather_protocol(self, alerts: list[dict]) -> Path`
-- **Purpose:** Generates national `Master_Weather_Protocol.docx` establishing cross-corridor risk matrices and liability rules.
+- **Purpose:** Combines regional storm data into a nationwide master weather protocol, establishing overarching corporate liability and force majeure guidelines across all transport routes.
 - **Input Parameters:** `alerts (list[dict])`.
 - **Output Return Type:** `pathlib.Path` — Path to master protocol document.
 - **How it helps the data:** Synthesizes nationwide multi-corridor weather impacts into a single sovereign operational guide.
@@ -590,42 +590,42 @@ graph TD
 ### Module 6: `modules/strike_intelligence_generator.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\strike_intelligence_generator.py`  
 **Class:** `StrikeIntelligenceGenerator`  
-**Purpose:** Aggregates scraped transportation strike news and compiles 17 structured intelligence briefs in `.docx` format using a Hybrid Rule + AI architecture (combining deterministic incident metrics with Qwen2.5 entity/trigger extraction).
+**Purpose (Disruption Security Analyst):** Converts scattered strike news reports into actionable security briefings. It maps out bypass detours around blocked highways and sets contract rules like capping daily truck delay fees at $100.
 
 #### Functions in `StrikeIntelligenceGenerator`:
 
 #### 1. `__init__(self, db_path=str(DB_PATH), output_dir=None)`
-- **Purpose:** Initializes generator, connects to local `OllamaService`, and creates `india_monitor_data/rag/documents/Strike_Intelligence/` directory.
+- **Purpose:** Connects the intelligence generator to local AI reasoning services and prepares the document directory where strike intelligence briefs are stored.
 - **Input Parameters:** `db_path (str | Path)`, `output_dir (Path | None)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Prepares file storage directories and verifies local LLM connection.
 
 #### 2. `generate_all_intelligence(self) -> list[str]`
-- **Purpose:** Fetches all 396+ strike articles from SQLite, generates 9 city-specific briefs (for cities with $\ge 3$ articles), 7 modality pattern analyses (for categories with $\ge 5$ articles), and the national master brief (`Master_Disruption_Intelligence.docx`).
+- **Purpose:** Processes hundreds of scattered news reports to generate comprehensive disruption briefs for every impacted city and transport modality (truck, rail, port).
 - **Input Parameters:** None.
 - **Output Return Type:** `list[str]` — List of 17 generated `.docx` document paths.
 - **How it helps the data:** Synthesizes hundreds of isolated web articles into actionable intelligence briefs with structured tables and discrete rule blocks.
 
 #### 3. `_fetch_strike_articles(self) -> list[dict]`
-- **Purpose:** Queries `strike_news` table for title, matched cities, category, published date, and source.
+- **Purpose:** Gathers verified strike and protest reports from the database into active memory for AI analysis and document authoring.
 - **Input Parameters:** None.
 - **Output Return Type:** `list[dict]` — Raw strike news records.
 - **How it helps the data:** Loads verified transport disruption articles from SQLite storage into RAM.
 
 #### 4. `_group_articles_by_city(self, articles: list[dict]) -> dict[str, list[dict]]`
-- **Purpose:** Groups articles by mentioned city.
+- **Purpose:** Organizes news reports by metropolitan area so local dispatchers can see every active protest occurring along their delivery routes.
 - **Input Parameters:** `articles (list[dict])`.
 - **Output Return Type:** `dict[str, list[dict]]` — Dictionary mapping cities to lists of disruption articles.
 - **How it helps the data:** Aggregates isolated incidents into city-specific incident registries.
 
 #### 5. `_group_articles_by_category(self, articles: list[dict]) -> dict[str, list[dict]]`
-- **Purpose:** Groups articles by strike category (`"truck"`, `"railway"`, `"bus"`, `"bandh"`, etc.).
+- **Purpose:** Groups disruption reports by freight modality (truck, train, port, or general bandh) to measure the risk to specific shipping methods.
 - **Input Parameters:** `articles (list[dict])`.
 - **Output Return Type:** `dict[str, list[dict]]` — Dictionary mapping transport modalities to articles.
 - **How it helps the data:** Categorizes incidents into modal vulnerability vectors for rail, road, and port transit.
 
 #### 6. `_create_city_strike_brief(self, city: str, articles: list[dict]) -> Path`
-- **Purpose:** Compiles `{City}_Strike_Intelligence.docx` structured into 4 high-density operational sections:
+- **Purpose:** Compiles a detailed city intelligence brief featuring incident tables, highway bypass directives (like diverting trucks onto peripheral expressways), and carrier detention fee caps ($100/day):
   - **Header & Severity Counts:** Exact incident count and severity breakdown (🔴 High / 🟡 Medium / 🟢 Low).
   - **Section 1: Extracted Disruption Incident Registry (Table):** High-density Word Table with columns: `Incident ID & Date`, `Source`, `Disruption Modality`, `Stated Trigger / Demand`, `Freight Impact Severity`.
   - **Section 2: Critical Bottlenecks & Highway Bypass Directives:** Primary national highway choke points (e.g. NH-44 Kundli Border, NH-48 Bhiwandi) and recommended FTL bypasses (e.g. KMP Expressway).
@@ -640,13 +640,13 @@ graph TD
 - **How it helps the data:** Converts disparate news headlines into standardized legal contracts and bypass directives for RAG indexing.
 
 #### 7. `_create_category_strike_brief(self, category: str, articles: list[dict]) -> Path`
-- **Purpose:** Compiles `{Category}_Pattern_Analysis.docx` detailing modal vulnerability, geographic distribution, case studies, and carrier contract adjudication rules (demurrage caps $100/day for trucks, $500/container rail demurrage, warehouse bandh lockdown).
+- **Purpose:** Produces a transport modality analysis detailing vulnerability trends, container demurrage caps ($500/day for rail), and warehouse lockdown procedures.
 - **Input Parameters:** `category (str)`, `articles (list[dict])`.
 - **Output Return Type:** `pathlib.Path` — Path to modal pattern brief.
 - **How it helps the data:** Generates modality-level carrier contract liability benchmarks.
 
 #### 8. `_create_master_disruption_intelligence(self, articles: list[dict]) -> Path`
-- **Purpose:** Generates `Master_Disruption_Intelligence.docx` summarizing nationwide disruption patterns and the 5-phase AI orchestration decision matrix.
+- **Purpose:** Publishes an executive-level nationwide disruption brief outlining high-risk transport arteries and multi-agent coordination strategies.
 - **Input Parameters:** `articles (list[dict])`.
 - **Output Return Type:** `pathlib.Path` — Path to master intelligence document.
 - **How it helps the data:** Synthesizes nationwide transport disruption patterns into an executive policy reference.
@@ -872,30 +872,30 @@ graph TD
 ### Module 7: `modules/ml_db_extension.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\ml_db_extension.py`  
 **Class:** `MLDatabaseExtension`  
-**Purpose:** Manages the relational ingestion of 10 SAP ERP tables, executes complex multi-table SQL joins, computes geospatial Haversine metrics and calendar features, and exposes sub-millisecond in-memory cached lookup APIs for ML training and inference.
+**Purpose (SAP Enterprise Data Bridge):** Takes messy business spreadsheets from SAP (orders, customer contracts, truck assignments, and warehouse dispatches) and weaves them into a single, clean tracking master sheet so the AI can predict delivery bottlenecks.
 
 #### Functions in `MLDatabaseExtension`:
 
 #### 1. `__init__(self, db_path: Optional[Path] = None)`
-- **Purpose:** Establishes SQLite connection with `check_same_thread=False`, sets `row_factory = sqlite3.Row`, enables WAL concurrency mode (`PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;`), initializes in-memory lookup caches, and executes `_build_sap_schema()`.
+- **Purpose:** Establishes a high-performance database connection with fast memory caching so the AI can retrieve order features in less than one millisecond without lag.
 - **Input Parameters:** `db_path (Path | None)` — Target database path.
 - **Output Return Type:** None.
 - **How it helps the data:** Guarantees thread-safe access and high-throughput zero-lock read/write operations during batch inference.
 
 #### 2. `_build_sap_schema(self) -> None`
-- **Purpose:** Executes DDL scripts creating normalized relational tables for all 10 SAP ERP structures (`sap_vbak`, `sap_vbap`, `sap_likp`, `sap_lips`, `sap_vttk`, `sap_vttp`, `sap_kna1`, `sap_knvv`, `sap_lfa1`, `sap_mara`) and `ml_predictions`, along with 8 B-Tree indexes on primary foreign keys (`idx_vbak_kunnr`, `idx_lips_vgbel`, `idx_vttp_vbeln`, etc.).
+- **Purpose:** Creates normalized relational tables mimicking real-world SAP ERP systems (sales orders, delivery notes, shipping manifests, customer masters, and material masters).
 - **Input Parameters:** None.
 - **Output Return Type:** None.
 - **How it helps the data:** Enforces relational integrity across sales orders, warehouse deliveries, linehaul shipments, and customer tiers.
 
 #### 3. `load_sap_data_from_csv(self, input_dir: Path) -> Dict[str, int]`
-- **Purpose:** Ingests 10 SAP CSV export files from `input_dir`, cleans column names, strips whitespace, and bulk-inserts them into SQLite tables using `df.to_sql(if_exists="replace")`. Invalidates in-memory caches.
+- **Purpose:** Ingests raw business export files into the database, cleaning up messy text and whitespace to prepare enterprise data for AI training.
 - **Input Parameters:** `input_dir (Path)` — Directory containing SAP CSV files.
 - **Output Return Type:** `Dict[str, int]` — Dictionary mapping table names to ingested row counts.
 - **How it helps the data:** Populates the ERP foundation of the AI system from flat enterprise exports.
 
 #### 4. `get_ml_ready_dataset(self, force_refresh: bool = False) -> pd.DataFrame`
-- **Purpose:** Executes the master 10-table relational SQL query joining sales orders, items, deliveries, shipments, carriers, customers, and materials. Applies mathematical feature engineering to produce the unified ML feature store. Results are cached in `self._cached_ml_df` and pre-indexed in `self._order_lookup_dict` for $O(1)$ instant lookups.
+- **Purpose:** Combines 10 separate SAP business spreadsheets into a unified master tracking sheet, computing key logistics metrics like travel distances, required road speeds, and weekend dock congestion.
 - **Input Parameters:** `force_refresh (bool)` — If `True`, bypasses cache and re-queries SQLite.
 - **Output Return Type:** `pd.DataFrame` — 62,299+ rows with all engineered feature columns.
 - **Engineered Feature Transformations:**
@@ -914,25 +914,25 @@ graph TD
 - **How it helps the data:** Assembles disparate relational tables into a unified mathematical vector space optimized for supervised model training and sub-millisecond batch lookups.
 
 #### 5. `get_order_details(self, order_id: str) -> Optional[Dict[str, Any]]`
-- **Purpose:** Retrieves the complete, feature-engineered joined dictionary for any specific sales order in $O(1)$ constant time from the pre-indexed memory hash map. Supports suffix matching fallback for short order IDs.
+- **Purpose:** Instantly pulls the complete business history and shipping profile for any specific order in less than one millisecond from memory.
 - **Input Parameters:** `order_id (str)` — SAP Sales Order Number (e.g. `"800000000000001"`).
 - **Output Return Type:** `Optional[Dict[str, Any]]` — Complete order feature dictionary or `None`.
 - **How it helps the data:** Eliminates redundant disk I/O and SQL joins during real-time multi-agent order evaluation.
 
 #### 6. `record_prediction(self, prediction: Dict[str, Any]) -> int`
-- **Purpose:** Inserts an Engine A prediction record into `ml_predictions` table (Order ID, Delivery ID, Shipment ID, Customer, Carrier, Predicted ETA, Delay Probability, Delay Hours, Delay Flag, Root Cause, Financial Risk USD, Timestamp).
+- **Purpose:** Permanently logs every AI prediction (delay probability, estimated hours late, and financial exposure) into an unalterable audit ledger.
 - **Input Parameters:** `prediction (Dict[str, Any])` — Inference result dictionary.
 - **Output Return Type:** `int` — Auto-incremented `prediction_id`.
 - **How it helps the data:** Maintains an immutable historical audit trail of all model predictions for model drift analysis.
 
 #### 7. `get_predictions(self, limit: int = 100, delayed_only: bool = False) -> List[Dict[str, Any]]`
-- **Purpose:** Queries historical model predictions from SQLite with optional filtering for delayed orders.
+- **Purpose:** Retrieves historical AI prediction records from the database, allowing managers to review past delay forecasts and audit model accuracy.
 - **Input Parameters:** `limit (int)` — Maximum number of records to return (default 100), `delayed_only (bool)` — If `True`, filters strictly for `is_delayed == 1`.
 - **Output Return Type:** `List[Dict[str, Any]]` — List of historical prediction dictionaries.
 - **How it helps the data:** Supplies historical baseline inferences to dashboard visualizers and audit engines.
 
 #### 8. `get_summary_stats(self) -> Dict[str, Any]`
-- **Purpose:** Aggregates overall database statistics across all SAP tables, total orders, total shipments, customer tier distribution, and active predictions.
+- **Purpose:** Calculates high-level business summary metrics (total revenue volume, customer tier counts, and delay rates) to monitor overall supply chain health.
 - **Input Parameters:** None.
 - **Output Return Type:** `Dict[str, Any]` — Key-value dictionary of high-level system telemetry.
 - **How it helps the data:** Provides pipeline health telemetry and data completeness verification before running daily inference batches.
@@ -942,24 +942,24 @@ graph TD
 ### Module 8: `modules/predictive_engine.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\predictive_engine.py`  
 **Class:** `PredictiveEngine`  
-**Purpose:** Core machine learning orchestration engine for Engine A. Implements the **Two-Stage Hurdle Architecture** (combining `RandomForestClassifier` for gating and `GradientBoostingRegressor` with Huber loss for conditional delay estimation), model persistence, Explainable AI (XAI) feature attributions, root cause diagnosis, financial risk quantification, and dynamic enrichment with Engine B RAG context.
+**Purpose (The Predictive ML Brain):** The mathematical heart of the AI. It uses historical shipping patterns to predict which orders will be late, exactly how many hours late they will be, and which real-world factors (like highway blockades or closed receiving docks) are causing the delay.
 
 #### Functions in `PredictiveEngine`:
 
 #### 1. `__init__(self, ml_db_extension=None, rag_engine=None, weather_service=None)`
-- **Purpose:** Initializes PredictiveEngine with dependencies, defines the 19 canonical ML feature columns (`FEATURE_COLS`), initializes model instances, and calls `_preload_environmental_caches()`.
+- **Purpose:** Sets up the predictive engine, defining the 19 standard logistics risk factors and loading live weather and strike alerts into fast memory.
 - **Input Parameters:** `ml_db_extension (MLDatabaseExtension | None)`, `rag_engine (RAGEngine | None)`, `weather_service (WeatherService | None)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Binds relational data access, semantic RAG retrieval, and real-time sensor streams into a unified predictive runtime.
 
 #### 2. `_preload_environmental_caches(self) -> None`
-- **Purpose:** Pre-loads the latest weather readings across all 10 cities and the top 50 strike news events from SQLite into memory caches (`self._weather_cache` and `self._strike_cache`).
+- **Purpose:** Pre-loads live city weather readings and highway strike news into computer memory, speeding up batch predictions from minutes to seconds.
 - **Input Parameters:** None.
 - **Output Return Type:** None.
 - **How it helps the data:** Eliminates per-order disk I/O, reducing batch evaluation runtime across thousands of orders to sub-second speeds.
 
 #### 3. `train_models(self, df: pd.DataFrame, train_size: float = 0.8) -> bool`
-- **Purpose:** Implements the **Two-Stage Hurdle Training Pipeline**:
+- **Purpose:** Teaches the AI how to predict delays using historical shipment data with a two-step approach: first separating on-time orders to eliminate false alarms, then accurately calculating delay hours for high-risk shipments:
   1. **Stage 1 (Classification Gate):** Fits `RandomForestClassifier(n_estimators=100, max_depth=6, random_state=42)` on full `X_train` against binary `y_train_cls` (Stratified). Evaluates gate accuracy ($97.10\%$, Precision $97.49\%$, ROC-AUC $0.9958$).
   2. **Stage 2 (Conditional Hurdle Regressor):** Filters training samples strictly to delayed orders (`y_train_cls == 1`), fitting `GradientBoostingRegressor(loss='huber', n_estimators=100, max_depth=5, learning_rate=0.08, random_state=42)` on actual delay hours.
   3. **Two-Stage Gated Evaluation:** Evaluates test set using the classification gate:
@@ -971,25 +971,25 @@ graph TD
 - **How it helps the data:** Trains mathematically robust models that generalize without suffering from zero-inflation distortion.
 
 #### 4. `save_models(self, model_dir: Path = None) -> bool`
-- **Purpose:** Serializes trained model objects into binary `.pkl` files (`rf_classifier.pkl`, `gb_regressor.pkl`) and exports `feature_importances.json` to `india_monitor_data/models/`.
+- **Purpose:** Packages and locks in the trained AI models and importance weights to disk so the software can make instant predictions without needing to re-learn each time.
 - **Input Parameters:** `model_dir (Path | None)` — Directory to persist model files (default `india_monitor_data/models/`).
 - **Output Return Type:** `bool` — `True` if all 3 artifacts saved successfully.
 - **How it helps the data:** Locks in trained weights so the inference engine can execute instantly without retraining on each pipeline run.
 
 #### 5. `load_models(self, model_dir: Path = None) -> bool`
-- **Purpose:** Deserializes trained model artifacts from disk on startup, enabling instant zero-latency inference without requiring re-training.
+- **Purpose:** Loads previously trained AI models from disk into active memory on startup in under 50 milliseconds for zero-delay operations.
 - **Input Parameters:** `model_dir (Path | None)` — Path to directory containing model files.
 - **Output Return Type:** `bool` — `True` if artifacts loaded successfully.
 - **How it helps the data:** Restores decision boundaries and feature weights into memory in under 50 milliseconds.
 
 #### 6. `explain_prediction(self, order_data: Dict[str, Any], delay_prob: float) -> List[Dict[str, Any]]`
-- **Purpose:** Implements Explainable AI (XAI) feature attribution using `feature_importances.json`. Matches active risk conditions for the order (e.g. Unrealistic Speed, Weekend Dispatch, Heavy Pallet, LTL Dwell, Month-End Congestion), weights them by the trained model's feature importances, and calculates normalized contribution percentages (`contribution_pct`).
+- **Purpose:** Eliminates the 'black-box' mystery by calculating clear percentage attributions—showing managers exactly which real-world factors (e.g. 85% highway blockade, 10% dock closure) caused the delay forecast.
 - **Input Parameters:** `order_data (Dict[str, Any])` — Single order feature dictionary, `delay_prob (float)` — Predicted delay probability.
 - **Output Return Type:** `List[Dict[str, Any]]` — Top contributing risk factors with human-readable explanations and percentage contributions.
 - **How it helps the data:** Transforms black-box ML probability scores into transparent root-cause narratives displayed in MS Teams Adaptive Cards and executive audit logs.
 
 #### 7. `predict_delivery_delay(self, order_id: str, order_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]`
-- **Purpose:** Executes the end-to-end prediction and risk quantification pipeline for a single order:
+- **Purpose:** Performs an end-to-end risk evaluation for an order, forecasting delay probability, calculating hours late, identifying root causes, assessing late penalties, and retrieving legal policy rules:
   1. Fetches feature vector from `MLDatabaseExtension`.
   2. Evaluates Two-Stage Hurdle models: Computes `delay_prob` (Stage 1 Classifier). If $P \ge 0.40$, evaluates Stage 2 Regressor for `delay_hours` ($\ge 12.0\text{h}$); otherwise sets `delay_hours = 0.0\text{h}$.
   3. Checks live environmental caches (`self._weather_cache` and `self._strike_cache`) for real-time adjustments ($+12\text{h}$ delay and $+0.10$ probability for active strikes; thermal/moisture risk diagnoses for extreme weather).
@@ -1001,7 +1001,7 @@ graph TD
 - **How it helps the data:** Merges historical statistical predictions with real-time sensory data and legal contract exposure into a single actionable record.
 
 #### 8. `_diagnose_root_cause(self, order_data: Dict[str, Any], is_delayed: bool) -> Tuple[str, str]`
-- **Purpose:** Evaluates operational, environmental, and carrier signals to determine the primary and secondary root causes of predicted delay:
+- **Purpose:** Investigates the order to identify the primary and secondary operational reasons for delay—such as extreme 40°C heat, active highway strikes, or unrealistic delivery deadlines:
   - Extreme Heatwave ($>40^\circ\text{C}$) / Monsoon Flooding ($>20\text{mm/hr}$) / Gale Winds ($>15\text{m/s}$).
   - Active Transport Strike or Highway Blockade in destination city.
   - Multi-Stop LTL Terminal Consolidation Dwell ($>1000\text{kg}$ LTL).
@@ -1013,7 +1013,7 @@ graph TD
 - **How it helps the data:** Isolates the root operational driver so downstream specialist agents know whether to re-route, invoke legal waivers, or trigger QA holds.
 
 #### 9. `_calculate_financial_risk(self, order_data: Dict[str, Any], delay_hours: float, is_delayed: bool) -> Dict[str, float]`
-- **Purpose:** Computes contractual financial liabilities and SLA penalties based on customer tier and order value:
+- **Purpose:** Calculates contractual delay penalties based on customer importance—such as $500/day for VIP Platinum clinics or 5%/day for Gold accounts—and flags perishable product spoilage risks:
   - **Platinum Tier Customers:** $\$500.00$ per 24-hour delay increment beyond requested delivery date.
   - **Gold Tier Customers:** $5\%$ of total order value per 24-hour delay increment (capped at $25\%$).
   - **Silver / Standard Customers:** $\$150.00$ fixed late delivery penalty.
@@ -1024,7 +1024,7 @@ graph TD
 - **How it helps the data:** Quantifies the financial impact of the delivery delay for automated executive approval gates.
 
 #### 10. `_enrich_with_rag(self, order_data: Dict[str, Any], root_cause: str) -> Dict[str, Any]`
-- **Purpose:** Automatically queries Engine B RAG (`rag_engine.ask`) using the detected customer tier, carrier name, destination city, and root cause.
+- **Purpose:** Searches the company's legal policy library using the order's specific customer tier and carrier to attach relevant contract clauses to the prediction.
 - **Input Parameters:** `order_data (Dict[str, Any])` — Order details, `root_cause (str)` — Diagnosed root cause.
 - **Output Return Type:** `Dict[str, Any]` — Retrieved policy excerpts, source document names, and clause citations.
 - **How it helps the data:** Grounds mathematical ML predictions in legally binding enterprise contract clauses.
@@ -1034,7 +1034,7 @@ graph TD
 ### Module 9: `modules/rag_engine.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\rag_engine.py`  
 **Classes:** `DocumentLoader`, `ClauseAwareChunker`, `BM25Index`, `VectorStore`, `RAGQueryEngine`, `RAGEngine`  
-**Purpose:** Engine B Knowledge Retrieval Core. Ingests 82 Word, PDF, Excel, and Text policy documents; performs dynamic regex boundary chunking; builds dense FAISS vectors and sparse BM25 lexicon; and executes hybrid reciprocal rank fusion search.
+**Purpose (Corporate Legal Research Assistant):** Reads and memorizes the company's entire 82-document library of contracts, SLAs, and safety guidelines. When a crisis occurs, it instantly retrieves the exact contract clauses and legal rules needed to handle the situation.
 
 #### Component Breakdown in `modules/rag_engine.py`:
 
@@ -1060,42 +1060,42 @@ graph TD
 ```
 
 #### Class 1: `DocumentLoader`
-**Purpose:** Recursively scans and parses multi-format raw documents from the RAG knowledge corpus, extracting normalized text and attaching domain metadata.
+**Purpose:** Opens and reads all types of company files (Word contracts, PDF agreements, Excel penalty charts, and text manuals) so the AI can learn from them.
 
 ##### Functions in `DocumentLoader`:
 
 ##### 1. `__init__(self, doc_dir: Optional[Path] = None)`
-- **Purpose:** Initializes document loader and sets the root directory for corpus documents (`india_monitor_data/rag/documents/`).
+- **Purpose:** Sets the file boundary for the digital policy library where customer SLAs, carrier agreements, and packaging guidelines are kept.
 - **Input Parameters:** `doc_dir (Path | None)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Establishes the authoritative filesystem boundary for regulatory and contractual policy ingestion.
 
 ##### 2. `load_all(self) -> List[Dict]`
-- **Purpose:** Iterates recursively through all subdirectories in the document store, identifies file types, routes them to specific format parsers, and returns a consolidated list of document dictionaries.
+- **Purpose:** Scans and opens all policy files across the corporate library, reading Word docs, PDFs, Excel tables, and text files into unified digital records.
 - **Input Parameters:** None.
 - **Output Return Type:** `List[Dict]` — List of loaded document objects containing `filename`, `filepath`, `category`, `text`, `char_count`, and `file_type`.
 - **How it helps the data:** Converts unparsed, disparate multi-format disk files into uniform memory dictionaries for chunking.
 
 ##### 3. `_load_docx(self, path: Path) -> str`
-- **Purpose:** Extracts text paragraphs and iterates through all table rows/cells in Microsoft Word (`.docx`) files using `python-docx`.
+- **Purpose:** Reads text and formatted data tables inside Microsoft Word contract files, preserving table layouts and clause headings.
 - **Input Parameters:** `path (Path)` — Absolute path to Word document.
 - **Output Return Type:** `str` — Extracted, newline-delimited text.
 - **How it helps the data:** Preserves tabular corridor matrices and legal clause paragraphs in human-authored and AI-generated documents.
 
 ##### 4. `_load_pdf(self, path: Path) -> str`
-- **Purpose:** Extracts text page-by-page from Adobe PDF (`.pdf`) regulatory agreements using `pypdf.PdfReader`.
+- **Purpose:** Reads through multi-page PDF regulatory documents and third-party carrier agreements, extracting readable text for the search index.
 - **Input Parameters:** `path (Path)` — Absolute path to PDF file.
 - **Output Return Type:** `str` — Concatenated text from all document pages.
 - **How it helps the data:** Ingests third-party carrier contracts and external statutory transit guidelines into searchable text.
 
 ##### 5. `_load_excel(self, path: Path) -> str`
-- **Purpose:** Reads tabular cells from Microsoft Excel (`.xlsx`) tariff schedules and resolution matrices using `openpyxl`.
+- **Purpose:** Converts corporate freight tariff sheets and penalty matrices in Excel into structured text that the search engine can understand.
 - **Input Parameters:** `path (Path)` — Absolute path to spreadsheet.
 - **Output Return Type:** `str` — Tab-separated row-by-row string representation.
 - **How it helps the data:** Allows quantitative freight rate charts, detention penalty tiers, and historical ticket logs to be indexed semantically.
 
 ##### 6. `_load_text(self, path: Path) -> str`
-- **Purpose:** Reads standard plain text (`.txt`) files with UTF-8 encoding (with fallback handling for latin-1).
+- **Purpose:** Ingests plain text runbooks, developer notes, and standard operating guidelines into the knowledge library.
 - **Input Parameters:** `path (Path)`.
 - **Output Return Type:** `str`.
 - **How it helps the data:** Ingests legacy configuration notes, SOP outlines, and developer runbooks.
@@ -1103,24 +1103,24 @@ graph TD
 ---
 
 #### Class 2: `ClauseAwareChunker`
-**Purpose:** Implements two-stage hierarchical semantic splitting to preserve legal clause boundaries, section headers, and ticket identifiers without truncating critical contract definitions.
+**Purpose:** Slices long, complex legal documents into bite-sized paragraphs without cutting sentences or rules in half, ensuring the AI sees the complete context of every policy.
 
 ##### Functions in `ClauseAwareChunker`:
 
 ##### 1. `__init__(self, chunk_size: int = 500, chunk_overlap: int = 50)`
-- **Purpose:** Configures chunker parameters: nominal chunk size (500 characters) and sliding window boundary overlap (50 characters).
+- **Purpose:** Sets the optimal paragraph slice size (500 characters) with a slight overlap so sentences and legal conditions are not cut off mid-thought.
 - **Input Parameters:** `chunk_size (int)`, `chunk_overlap (int)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Balances semantic granularity against sentence continuity for optimal dense embedding retrieval.
 
 ##### 2. `chunk_documents(self, documents: List[Dict]) -> List[Dict]`
-- **Purpose:** Iterates over loaded documents and processes each into a flattened sequence of granular semantic chunks.
+- **Purpose:** Slices long, multi-page legal documents into 909 digestible, bite-sized snippets that fit perfectly into AI reasoning prompts.
 - **Input Parameters:** `documents (List[Dict])` — List of loaded document dictionaries.
 - **Output Return Type:** `List[Dict]` — List of 909 semantic chunk dictionaries with metadata and deterministic IDs.
 - **How it helps the data:** Transforms monolithic multi-page documents into digestible text snippets suitable for transformer token limits.
 
 ##### 3. `_chunk_document(self, doc: Dict) -> List[Dict]`
-- **Purpose:** Executes two-stage regex splitting:
+- **Purpose:** Intelligently cuts documents at natural legal boundaries (like 'Section 4.2', numbered clauses, or rule IDs) so penalties and conditions stay together:
   1. *Primary Boundary Splitting:* Splits at formal numbered clauses (`\n[0-9]+\.[0-9]*`), ticket headers (`TICKET\s+`), section headers (`SECTION\s+`), and rule IDs (`[RULE-`).
   2. *Secondary Boundary Splitting:* Accumulates sentences up to `chunk_size` characters with `chunk_overlap` continuity.
 - **Input Parameters:** `doc (Dict)` — Single document dictionary.
@@ -1128,13 +1128,13 @@ graph TD
 - **How it helps the data:** Guarantees that contractual conditions and their corresponding penalty dollar amounts remain bound together in the same chunk.
 
 ##### 4. `_calculate_chunk_id(self, text: str, filename: str, index: int) -> str`
-- **Purpose:** Generates a deterministic SHA-256 hash identifier for each chunk (`f"chk_{hashlib.sha256(...).hexdigest()[:10]}"`).
+- **Purpose:** Generates a unique, tamper-proof digital fingerprint (hash ID) for every snippet, making every citation traceable and verifiable.
 - **Input Parameters:** `text (str)`, `filename (str)`, `index (int)`.
 - **Output Return Type:** `str` — 14-character unique chunk ID.
 - **How it helps the data:** Enables deduplication, immutable referencing, and exact citation tracking across pipeline runs.
 
 ##### 5. `save_chunks(self, chunks: List[Dict], output_path: Optional[Path] = None) -> None`
-- **Purpose:** Serializes all semantic chunks to disk at `india_monitor_data/rag/chunks/all_chunks.json`.
+- **Purpose:** Exports all 909 policy snippets to a clean JSON file so administrators can easily inspect and audit what the search engine has learned.
 - **Input Parameters:** `chunks (List[Dict])`, `output_path (Path | None)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Provides human-readable JSON transparency and offline inspectability of the RAG knowledge base.
@@ -1142,31 +1142,31 @@ graph TD
 ---
 
 #### Class 3: `BM25Index`
-**Purpose:** Sparse lexical search engine using Robertson-Spärck Jones Okapi BM25 scoring for exact keyword, acronym, and section number matching.
+**Purpose:** Acts like an ultra-precise digital index, searching for exact words, section numbers (like 'Section 4.2'), and dollar penalties ($500) so specific contract terms are never overlooked.
 
 ##### Functions in `BM25Index`:
 
 ##### 1. `__init__(self, k1: float = 1.5, b: float = 0.75)`
-- **Purpose:** Initializes BM25 hyperparameters ($k_1 = 1.5$ term frequency saturation parameter, $b = 0.75$ document length normalization parameter).
+- **Purpose:** Configures the exact-keyword search engine, tuning how aggressively it matches specific contract terms and section numbers.
 - **Input Parameters:** `k1 (float)`, `b (float)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Sets optimal sensitivity for legal acronyms and short contractual clauses.
 
 ##### 2. `_tokenize(self, text: str) -> List[str]`
-- **Purpose:** Tokenizes text into lowercase alphanumeric strings while preserving legal symbols, numbers, and currency (`re.findall(r'[a-zA-Z0-9$_\-%]+', text)`).
+- **Purpose:** Cleans search text into individual words while preserving critical symbols like section numbers ('4.2') and dollar signs ('$500').
 - **Input Parameters:** `text (str)`.
 - **Output Return Type:** `List[str]`.
 - **How it helps the data:** Ensures clause citations (e.g. `4.2`, `8.4`) and dollar penalties (e.g. `$500`, `$1,000`) are indexable terms.
 
 ##### 3. `build_index(self, chunks: List[Dict]) -> None`
-- **Purpose:** Computes document frequencies ($df$), total corpus length, average document length ($avgdl$), and Inverse Document Frequency ($idf$) weights for every unique lexicon term:
+- **Purpose:** Catalogs how rare or common every word is across the policy library, ensuring that rare terms (like 'Force Majeure' or 'debit memo') receive high search priority:
   $$\text{IDF}(q) = \ln\left(1.0 + \frac{N - df(q) + 0.5}{df(q) + 0.5}\right)$$
 - **Input Parameters:** `chunks (List[Dict])` — Complete list of semantic chunks.
 - **Output Return Type:** None.
 - **How it helps the data:** Establishes the sparse statistical lexicon across all 909 policy chunks.
 
 ##### 4. `search(self, query: str, top_k: int = 5, category: Optional[str] = None) -> List[Dict]`
-- **Purpose:** Scores all indexed chunks against query terms using the Okapi BM25 formula, with optional metadata category filtering:
+- **Purpose:** Searches the policy library for exact keyword matches, ensuring that specific section citations or contract codes are never missed:
   $$\text{BM25}(D, Q) = \sum_{q \in Q} \text{IDF}(q) \cdot \frac{f(q, D) \cdot (k_1 + 1)}{f(q, D) + k_1 \cdot \left(1 - b + b \cdot \frac{|D|}{avgdl}\right)}$$
 - **Input Parameters:** `query (str)` — Natural language search string, `top_k (int)` — Number of results, `category (str | None)` — Category filter.
 - **Output Return Type:** `List[Dict]` — Top-k scored chunk dictionaries with `bm25_score`.
@@ -1175,30 +1175,30 @@ graph TD
 ---
 
 #### Class 4: `VectorStore`
-**Purpose:** Dense vector search engine using HuggingFace `SentenceTransformer` embeddings and FAISS Inner Product / Cosine Similarity indexing.
+**Purpose:** Understands the conceptual meaning behind business questions—finding relevant policies even when the user searches with different wording than the contract.
 
 ##### Functions in `VectorStore`:
 
 ##### 1. `__init__(self, model_name: str = "all-MiniLM-L6-v2")`
-- **Purpose:** Loads the 384-dimensional `SentenceTransformer` embedding model and initializes index storage directories.
+- **Purpose:** Loads the deep-learning language model (SentenceTransformer) that understands the conceptual meaning of words beyond just keyword matching.
 - **Input Parameters:** `model_name (str)` — HuggingFace model identifier.
 - **Output Return Type:** None.
 - **How it helps the data:** Instantiates dense neural semantic mapping capability.
 
 ##### 2. `build_index(self, chunks: List[Dict]) -> None`
-- **Purpose:** Generates L2-normalized dense embeddings for all chunks, constructs a FAISS `IndexFlatIP` vector index, builds the parallel BM25 index, and persists all 4 index files to disk (`index.faiss`, `bm25.pkl`, `metadata.pkl`, `chunks.pkl`).
+- **Purpose:** Translates all 909 text snippets into mathematical concept maps (embeddings) and saves the search index to disk for sub-millisecond retrieval.
 - **Input Parameters:** `chunks (List[Dict])`.
 - **Output Return Type:** None.
 - **How it helps the data:** Creates persistent vector structures supporting sub-millisecond similarity lookups.
 
 ##### 3. `load_index(self) -> bool`
-- **Purpose:** Deserializes pre-computed FAISS vector index and BM25 lexicon from disk into RAM on application startup.
+- **Purpose:** Loads pre-built concept search indexes from disk into computer memory on startup, allowing the AI to search instantly without warm-up delays.
 - **Input Parameters:** None.
 - **Output Return Type:** `bool` — `True` if indexes loaded successfully, `False` otherwise.
 - **How it helps the data:** Achieves zero-warmup cold-start latency for real-time agent queries.
 
 ##### 4. `search_hybrid(self, query: str, top_k: int = 5, category: Optional[str] = None) -> List[Dict]`
-- **Purpose:** Executes dense vector search and sparse BM25 search in parallel, then fuses rankings using **Reciprocal Rank Fusion (RRF)**:
+- **Purpose:** Executes a two-pronged search—combining exact keyword matching with conceptual AI understanding—and fuses the best results so the AI gets the most relevant legal clauses:
   $$\text{RRF\_Score}(d) = \frac{1}{60 + \text{Rank}_{\text{dense}}(d)} + \frac{1}{60 + \text{Rank}_{\text{BM25}}(d)}$$
   Normalizes combined similarity score to $[0.0, 1.0]$. In-memory query cache ensures sub-millisecond retrieval.
 - **Input Parameters:** `query (str)`, `top_k (int)`, `category (str | None)`.
@@ -1208,30 +1208,30 @@ graph TD
 ---
 
 #### Class 5: `RAGQueryEngine`
-**Purpose:** Synthesis engine that packages retrieved chunks into structured context windows and formats citations for multi-agent reasoning.
+**Purpose:** Formulates direct, human-friendly answers to business questions by citing exact policy clauses, section numbers, and monetary rules.
 
 ##### Functions in `RAGQueryEngine`:
 
 ##### 1. `__init__(self, vector_store: VectorStore)`
-- **Purpose:** Binds the query engine to an active, loaded `VectorStore` instance.
+- **Purpose:** Connects the answer-generation engine to the hybrid search index so it can pull the right context to answer operational questions.
 - **Input Parameters:** `vector_store (VectorStore)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Connects the query synthesis layer to the underlying hybrid index.
 
 ##### 2. `ask(self, question: str, category: Optional[str] = None, top_k: int = 5) -> Dict`
-- **Purpose:** Public programmatic API. Performs hybrid retrieval, compiles deduplicated context, formats clause citations, and returns structured result payload.
+- **Purpose:** Takes an operational question, retrieves the top matching policy excerpts, and compiles a clean, cited answer payload for decision-makers.
 - **Input Parameters:** `question (str)`, `category (str | None)`, `top_k (int)`.
 - **Output Return Type:** `Dict` — `{"question", "answer", "sources", "confidence", "chunks"}`.
 - **How it helps the data:** Supplies self-contained knowledge payloads to the ML engine and multi-agent specialists.
 
 ##### 3. `_generate_answer(self, question: str, context: str, chunks: List[Dict]) -> str`
-- **Purpose:** Synthesizes extracted text excerpts into a concise, grounded paragraph quoting exact section numbers and policy directives.
+- **Purpose:** Summarizes scattered legal clauses into a single, cohesive answer paragraph that cites specific section numbers and dollar amounts.
 - **Input Parameters:** `question (str)`, `context (str)`, `chunks (List[Dict])`.
 - **Output Return Type:** `str` — Grounded textual answer with citations.
 - **How it helps the data:** Condenses multi-document search matches into actionable summaries.
 
 ##### 4. `query(self, question: str, category: Optional[str] = None, top_k: int = 5, verbose: bool = True) -> Dict`
-- **Purpose:** Verbose testing and inspection API that formats retrieval results for terminal display with ANSI color coding.
+- **Purpose:** Formats search results with visual color coding for terminal debugging, allowing developers to inspect retrieval quality.
 - **Input Parameters:** `question (str)`, `category (str | None)`, `top_k (int)`, `verbose (bool)`.
 - **Output Return Type:** `Dict`.
 - **How it helps the data:** Facilitates manual evaluation and developer debugging of knowledge retrieval.
@@ -1239,30 +1239,30 @@ graph TD
 ---
 
 #### Class 6: `RAGEngine`
-**Purpose:** Master facade coordinating `DocumentLoader`, `ClauseAwareChunker`, and `VectorStore` into a single unified interface.
+**Purpose:** The main front door to the entire policy search library, allowing any part of the system to ask questions and receive cited answers with a single command.
 
 ##### Functions in `RAGEngine`:
 
 ##### 1. `__init__(self)`
-- **Purpose:** Instantiates internal components (`DocumentLoader`, `ClauseAwareChunker`, `VectorStore`, `RAGQueryEngine`).
+- **Purpose:** Combines all document loading, chunking, and search tools into a single, easy-to-use master interface for the entire application.
 - **Input Parameters:** None.
 - **Output Return Type:** None.
 - **How it helps the data:** Provides a single unified entry point for all RAG operations in the project.
 
 ##### 2. `initialize(self, force_rebuild: bool = False) -> bool`
-- **Purpose:** Orchestrates index lifecycle. Attempts to load serialized indexes from disk; if missing or if `force_rebuild=True`, executes document loading, chunking, and full index generation.
+- **Purpose:** Manages the lifecycle of the knowledge base, loading saved indexes from disk or rebuilding everything from scratch if new policies were added.
 - **Input Parameters:** `force_rebuild (bool)` — If `True`, forces rebuild of FAISS and BM25 indexes.
 - **Output Return Type:** `bool` — `True` on success.
 - **How it helps the data:** Guarantees that the knowledge base remains synchronized with any newly added documents.
 
 ##### 3. `ask(self, question: str, category: Optional[str] = None) -> Dict`
-- **Purpose:** Programmatic query delegation to `RAGQueryEngine.ask()`.
+- **Purpose:** The standard, programmatic method used by the predictive engine to fetch relevant contract clauses quietly in the background.
 - **Input Parameters:** `question (str)`, `category (str | None)`.
 - **Output Return Type:** `Dict`.
 - **How it helps the data:** Standard method used by `PredictiveEngine._enrich_with_rag()`.
 
 ##### 4. `query(self, question: str, category: Optional[str] = None, verbose: bool = True) -> Dict`
-- **Purpose:** Interactive terminal query delegation to `RAGQueryEngine.query()`.
+- **Purpose:** An interactive search tool for terminal testing, allowing users to type questions and see retrieved policy snippets directly on screen.
 - **Input Parameters:** `question (str)`, `category (str | None)`, `verbose (bool)`.
 - **Output Return Type:** `Dict`.
 - **How it helps the data:** Used for CLI diagnostic queries and manual verification.
@@ -1272,24 +1272,24 @@ graph TD
 ### Module 10: `modules/ollama_service.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\ollama_service.py`  
 **Class:** `OllamaService`  
-**Purpose:** Provides a lightweight, high-performance interface to local Ollama LLM daemons (running `qwen2.5:7b`), implementing strict anti-hallucination guardrails and deterministic temperature constraints for dynamic policy synthesis.
+**Purpose (Private On-Premise AI Model):** Runs an advanced AI reasoning model directly on the company's internal computers, ensuring sensitive business data stays completely private and secure without relying on third-party cloud services.
 
 #### Functions in `OllamaService`:
 
 #### 1. `__init__(self, host: str = "http://localhost:11434", model: str = "qwen2.5:7b", timeout: int = 45)`
-- **Purpose:** Initializes Ollama REST API connection parameters.
+- **Purpose:** Sets the network connection address and timeout limits for communicating with the local AI model service.
 - **Input Parameters:** `host (str)` — Local daemon URL, `model (str)` — LLM model tag (`qwen2.5:7b`), `timeout (int)` — Request timeout in seconds.
 - **Output Return Type:** None.
 - **How it helps the data:** Connects the system to the local GPU-accelerated language model without external API dependencies.
 
 #### 2. `is_available(self) -> bool`
-- **Purpose:** Sends a lightweight `GET /api/tags` request (2-second timeout) to verify that the Ollama daemon is active and that `qwen2.5:7b` (or a compatible local model) is loaded in VRAM.
+- **Purpose:** Sends a quick health-check ping to make sure the local AI model is running and ready to answer questions, triggering automatic fallbacks if it is offline.
 - **Input Parameters:** None.
 - **Output Return Type:** `bool` — `True` if active and model exists, `False` otherwise.
 - **How it helps the data:** Ensures the pipeline never hangs if Ollama is offline, enabling immediate fallback to deterministic templates.
 
 #### 3. `generate(self, prompt: str, system_prompt: Optional[str] = None) -> Optional[str]`
-- **Purpose:** Sends generation payload to `POST /api/generate` with strict enterprise anti-hallucination settings:
+- **Purpose:** Prompts the local AI model with strict anti-hallucination guardrails, instructing it to rely solely on real facts and telemetry rather than guessing:
   ```json
   {
     "temperature": 0.1,
@@ -1395,15 +1395,15 @@ graph TD
 ### Module 11: `modules/agent_specialists.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\agent_specialists.py`  
 **Classes:** `RouteSupervisorAgent`, `ContractAdjudicatorAgent`, `QualityMitigationAgent`, `LLMReasoningEngine`  
-**Purpose:** Defines the domain-specialist agent personas and LLM legal reasoning engine that evaluate telematics telemetry, calculate contractual penalties, plan quality mitigations, and synthesize authoritative executive briefs.
+**Purpose (Virtual Supply Chain Board of Specialists):** Houses 4 specialized AI agents that act like a collaborative team of human experts—a highway route manager, a contract lawyer, a quality assurance manager, and an executive brief writer.
 
 #### Class 1: `RouteSupervisorAgent`
-**Purpose:** Monitors linehaul shipment milestones, evaluates GPS telematics connectivity, assesses required transit velocity against physical corridor limits, and flags regional transit choke points.
+**Purpose:** Acts as the virtual highway route manager, monitoring truck GPS signals, checking realistic driving speeds, and fining carriers if their tracking devices go dark.
 
 ##### Functions in `RouteSupervisorAgent`:
 
 ##### 1. `analyze_route(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any]) -> Dict[str, Any]`
-- **Purpose:** Analyzes corridor physical feasibility, verifies carrier GPS tracking status, assesses blind-tracking breach penalties, and flags unrealistic linehaul transit speed demands.
+- **Purpose:** Acts as a virtual highway operations manager, checking whether the truck driver's GPS tracking is active (charging a $200 penalty if disconnected for >12 hours) and verifying that the delivery speed is realistic.
 - **Input Parameters:** 
   - `prediction_payload (Dict[str, Any])` — Comprehensive prediction dictionary from Engine A (`dest_city`, `shipping_type`, `carrier_name`, `haversine_distance_km`, `required_transit_speed_kmh`).
   - `order_data (Dict[str, Any])` — Raw order feature dictionary from ERP (`telematics_status`).
@@ -1413,12 +1413,12 @@ graph TD
 ---
 
 #### Class 2: `ContractAdjudicatorAgent`
-**Purpose:** Evaluates contractual SLAs across customer tiers (Platinum, Gold, Independent), enforces receiving dock operating hours (17:00 cut-off), and rigorously tests Force Majeure criteria against the statutory 12-hour proactive notification mandate.
+**Purpose:** Acts as the corporate contract lawyer, calculating customer late fees, waiving penalties during verified natural disasters, and billing carriers if they arrive after receiving docks close.
 
 ##### Functions in `ContractAdjudicatorAgent`:
 
 ##### 1. `adjudicate_contract(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any], route_analysis: Dict[str, Any], notice_given_12h: bool = True) -> Dict[str, Any]`
-- **Purpose:** Evaluates customer contract terms, verifies Force Majeure eligibility (requiring verified Act of God telemetry, active GPS telematics, and $\ge 12\text{h}$ proactive notice), calculates tiered late delivery penalties, and determines carrier chargeback liability.
+- **Purpose:** Acts as an automated corporate contract lawyer. It checks customer contracts to see if late fees apply (like /day for VIP Platinum clinics), waives penalties if an official 'Act of God' storm occurred and the clinic was notified early, and charges the carrier a  fee if the truck arrives after the clinic is closed for the night.
 - **Input Parameters:**
   - `prediction_payload (Dict[str, Any])` — Engine A inference dictionary (`customer_tier`, `order_value_usd`, `delay_hours`, `will_be_delayed`, `predicted_eta`, `root_causes`).
   - `order_data (Dict[str, Any])` — Receiving dock closing time (`close_time`).
@@ -1430,12 +1430,12 @@ graph TD
 ---
 
 #### Class 3: `QualityMitigationAgent`
-**Purpose:** Evaluates pharmaceutical and veterinary diet product fragility, protects against stock-out emergencies by authorizing replacement air freight, flags shelf-life expiration risks, and enforces governance approval thresholds.
+**Purpose:** Protects delicate products (like critical veterinary pet diets and medications), approving emergency air freight replacements for stuck orders and holding heat-damaged goods for safety testing.
 
 ##### Functions in `QualityMitigationAgent`:
 
 ##### 1. `plan_mitigation(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any], contract_analysis: Dict[str, Any]) -> Dict[str, Any]`
-- **Purpose:** Formulates corrective action plans for distressed shipments. Authorizes \$1,000 emergency Air Freight replacement pallets for prescription diets delayed $>48\text{h}$, mandates SAP QA Quarantine Holds (`LIFSK = '01'`) for short-dated products ($<6\text{ months}$) or extreme heatwaves ($>40^\circ\text{C}$), and routes actions exceeding \$500 to the Regional Logistics Director via MS Teams.
+- **Purpose:** Protects product quality and animal health. If a truck is stuck for more than 2 days, it can automatically approve a $1,000 emergency replacement air shipment to keep clinics supplied, and places spoiled heat-exposed goods on hold for lab testing before clinics receive them.
 - **Input Parameters:**
   - `prediction_payload (Dict[str, Any])` — Engine A risk payload (`has_specialty_diet`, `delay_hours`, `will_be_delayed`, `root_causes`).
   - `order_data (Dict[str, Any])` — Material attributes (`min_shelf_life`, `material_description`).
@@ -1446,24 +1446,24 @@ graph TD
 ---
 
 #### Class 4: `LLMReasoningEngine`
-**Purpose:** Multi-provider LLM legal synthesis core. Merges mathematical predictions, retrieved RAG contract clauses, and specialist findings into a cohesive, legally binding executive decision brief.
+**Purpose:** Combines the predictions, legal clauses, and mitigation recommendations into a concise, professional executive briefing that business leaders can read in under 30 seconds.
 
 ##### Functions in `LLMReasoningEngine`:
 
 ##### 1. `__init__(self)`
-- **Purpose:** Initializes LLM provider bridge, detecting available runtime environments in priority order: Databricks Foundation Model Serving (`databricks-meta-llama-3-70b-instruct`), Google Gemini API (`gemini-1.5-pro`), OpenAI API (`gpt-4o`), Local Ollama (`qwen2.5:7b`), or Deterministic Local Expert fallback.
+- **Purpose:** Detects available AI language models across enterprise platforms (Databricks, Gemini, OpenAI, or local offline engines) so decision synthesis works in any cloud or local environment.
 - **Input Parameters:** None (Inspects environment variables `DATABRICKS_HOST`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `OLLAMA_HOST`).
 - **Output Return Type:** None.
 - **How it helps the data:** Ensures 100% continuous decision synthesis across cloud enterprise clusters, local offline developer laptops, and air-gapped server environments.
 
 ##### 2. `build_synthesis_prompt(self, order_id: str, customer_name: str, customer_tier: str, carrier_name: str, shipping_type: str, delay_prob: float, will_delay: bool, delay_hours: float, predicted_eta: str, route_analysis: Dict[str, Any], contract_analysis: Dict[str, Any], quality_analysis: Dict[str, Any], rag_citations: List[str]) -> str`
-- **Purpose:** Constructs an authoritative multi-section legal-operations prompt assembling SAP master data, Engine A ML delay predictions, Engine B retrieved contract clauses, and specialist agent determinations.
+- **Purpose:** Combines raw order data, machine learning delay predictions, and retrieved contract clauses into a complete case brief for executive legal review.
 - **Input Parameters:** `order_id (str)`, `customer_name (str)`, `customer_tier (str)`, `carrier_name (str)`, `shipping_type (str)`, `delay_prob (float)`, `will_delay (bool)`, `delay_hours (float)`, `predicted_eta (str)`, `route_analysis (Dict)`, `contract_analysis (Dict)`, `quality_analysis (Dict)`, `rag_citations (List[str])`.
 - **Output Return Type:** `str` — Structured synthesis prompt.
 - **How it helps the data:** Binds numerical ML predictions, discrete rule IDs, and contract clause citations into an unambiguous prompt for LLM adjudication.
 
 ##### 3. `synthesize_executive_decision(self, order_id: str, customer_name: str, customer_tier: str, carrier_name: str, shipping_type: str, delay_prob: float, will_delay: bool, delay_hours: float, predicted_eta: str, route_analysis: Dict[str, Any], contract_analysis: Dict[str, Any], quality_analysis: Dict[str, Any], rag_citations: List[str]) -> str`
-- **Purpose:** Executes LLM synthesis via configured provider (or deterministic template fallback), producing a concise, legally binding executive briefing paragraph summarizing root cause, liability assignment, and action authorizations.
+- **Purpose:** Writes an authoritative, plain-English executive summary paragraph explaining the root cause of the delay, financial liabilities, and recommended mitigation actions.
 - **Input Parameters:** All 13 master data, prediction, specialist analysis, and RAG citation arguments.
 - **Output Return Type:** `str` — Executive decision brief string.
 - **How it helps the data:** Produces human-readable, legally grounded decision summaries written directly into the executive audit log and MS Teams notifications.
@@ -1473,33 +1473,33 @@ graph TD
 ### Module 12: `modules/action_execution_engine.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\action_execution_engine.py`  
 **Classes:** `SAPActionExecutor`, `MSTeamsDispatcher`, `ClinicNotificationDispatcher`  
-**Purpose:** Physical and digital execution layer. Applies automated write-backs to SAP ERP tables, generates and posts Microsoft Teams Adaptive Cards (v1.4) for human director approvals, and dispatches proactive 12-hour clinic early warnings.
+**Purpose (Physical & Digital Execution Engine):** The operational 'hands and feet' of the system. It puts the AI's decisions into action—updating SAP enterprise software, posting interactive cards in Microsoft Teams, and warning clinics ahead of time.
 
 #### Class 1: `SAPActionExecutor`
-**Purpose:** Manages automated ERP write-backs to SQLite SAP tables, logging full before-and-after audit records and generating carrier accounts payable debit memos.
+**Purpose:** Automatically updates the company's core SAP system—locking damaged shipments so they aren't delivered by mistake, updating delivery dates, and issuing penalty debit memos to carriers.
 
 ##### Functions in `SAPActionExecutor`:
 
 ##### 1. `__init__(self, db_path: Path = DB_PATH)`
-- **Purpose:** Initializes SAP executor and creates required audit logging and debit memo tables.
+- **Purpose:** Prepares the database connection and ensures audit log tables exist before any automated ERP updates are attempted.
 - **Input Parameters:** `db_path (Path)` — SQLite database path.
 - **Output Return Type:** None.
 - **How it helps the data:** Prepares the relational tables required to store automated enterprise write-backs.
 
 ##### 2. `_get_connection(self) -> sqlite3.Connection`
-- **Purpose:** Opens a thread-safe connection with `sqlite3.Row` factory.
+- **Purpose:** Opens a safe, low-overhead database connection for recording simulated SAP transactions.
 - **Input Parameters:** None.
 - **Output Return Type:** `sqlite3.Connection`.
 - **How it helps the data:** Provides low-overhead transactional access to local database tables.
 
 ##### 3. `_init_action_tables(self) -> None`
-- **Purpose:** Executes SQL DDL scripts creating `sap_action_audit_log` (tracking Order ID, Action Type, Table, Field, Previous Value, New Value, Reason, Timestamp) and `carrier_debit_memos` (tracking Carrier, Amount USD, Penalty Reason, Status).
+- **Purpose:** Builds audit tables that track every simulated SAP change (old value vs. new value) and records carrier penalty debit memos for financial reconciliations.
 - **Input Parameters:** None.
 - **Output Return Type:** None.
 - **How it helps the data:** Establishes immutable tables for ERP compliance audits and carrier billing reconciliations.
 
 ##### 4. `execute_sap_writebacks(self, order_id: str, predicted_eta: str, qa_hold_required: bool, qa_reasons: List[str], carrier_chargeback_usd: float, carrier_name: str, penalty_clauses: List[str]) -> List[Dict[str, Any]]`
-- **Purpose:** Applies simulated SAP ERP transactional write-backs:
+- **Purpose:** Executes simulated business write-backs to SAP tables—placing quality-risk shipments on delivery hold (LIFSK = '01'), updating delivery arrival dates (VDATU), and posting penalty debit memos against carrier payables:
   1. *QA Quarantine Delivery Block:* Updates `SAP_VBAK.LIFSK = '01'` if cargo requires inspection.
   2. *Promise Date Synchronization:* Updates `SAP_VBAK.VDATU` to the ML predicted ETA date.
   3. *Carrier Accounts Payable Debit Memo:* Posts financial penalty to `carrier_debit_memos` and logs debit record in `SAP_BKPF.DMBTR`.
@@ -1510,24 +1510,24 @@ graph TD
 ---
 
 #### Class 2: `MSTeamsDispatcher`
-**Purpose:** Formats and transmits Microsoft Teams Adaptive Cards (v1.4) with interactive action buttons (`Approve Expense`, `Reject & Hold`) for human director oversight.
+**Purpose:** Delivers interactive notification cards directly into the Logistics Director's Microsoft Teams chat, allowing managers to approve or reject expensive mitigation actions with a single click.
 
 ##### Functions in `MSTeamsDispatcher`:
 
 ##### 1. `__init__(self, webhook_url: Optional[str] = None)`
-- **Purpose:** Initializes Teams dispatcher, resolves webhook URL from environment variables, and creates local persistence directory (`india_monitor_data/reports/ms_teams_cards/`).
+- **Purpose:** Sets up the Microsoft Teams communications link and prepares the storage folder where executive notification cards are saved.
 - **Input Parameters:** `webhook_url (str | None)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Sets up the communication channel to enterprise collaboration platforms.
 
 ##### 2. `create_adaptive_card(self, escalation_data: Dict[str, Any]) -> Dict[str, Any]`
-- **Purpose:** Generates schema-compliant Microsoft Adaptive Card JSON (v1.4) containing attention header, FactSet table (Sales Order, Clinic, Carrier, Cost, Urgency), action description, and two interactive `Action.Submit` buttons (`Approve Expense` / `Reject & Hold`).
+- **Purpose:** Formats an interactive Microsoft Teams card with prominent order details, cost summaries, and clickable 'Approve' or 'Reject' buttons for human managers.
 - **Input Parameters:** `escalation_data (Dict[str, Any])` — Escalation card details from `QualityMitigationAgent`.
 - **Output Return Type:** `Dict[str, Any]` — Complete Adaptive Card JSON schema dictionary.
 - **How it helps the data:** Formats machine decisions into intuitive visual cards for executive decision-makers.
 
 ##### 3. `dispatch_card(self, escalation_data: Dict[str, Any]) -> Dict[str, Any]`
-- **Purpose:** Persists Adaptive Card JSON to disk (`teams_card_order_{order_id}.json`) and transmits payload to Microsoft Teams incoming webhook via HTTP POST (if configured).
+- **Purpose:** Saves the notification card to disk and instantly posts it to the Regional Logistics Director's Microsoft Teams channel for fast sign-off.
 - **Input Parameters:** `escalation_data (Dict[str, Any])`.
 - **Output Return Type:** `Dict[str, Any]` — `{"card_file", "dispatch_status", "card_payload"}`.
 - **How it helps the data:** Guarantees that every high-value escalation is permanently recorded as an inspectable JSON artifact and transmitted to human managers.
@@ -1535,24 +1535,24 @@ graph TD
 ---
 
 #### Class 3: `ClinicNotificationDispatcher`
-**Purpose:** Dispatches automated early warnings to destination clinics $\ge 12\text{ hours}$ before arrival, satisfying the strict contractual requirement for Force Majeure penalty waivers.
+**Purpose:** Proactively warns customer veterinary clinics at least 12 hours in advance if a storm or strike delays their order, keeping customers informed while legally protecting the company from late fees.
 
 ##### Functions in `ClinicNotificationDispatcher`:
 
 ##### 1. `__init__(self, db_path: Path = DB_PATH)`
-- **Purpose:** Initializes clinic notification dispatcher and ensures `clinic_early_warnings` table exists.
+- **Purpose:** Connects the customer communications dispatcher to the database to track all early warnings sent to destination veterinary clinics.
 - **Input Parameters:** `db_path (Path)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Connects the notification dispatcher to the central SQLite database.
 
 ##### 2. `_init_notification_table(self) -> None`
-- **Purpose:** Executes SQL DDL creating `clinic_early_warnings` table (Notice ID, Order ID, Clinic Name, Destination City, Predicted ETA, Delay Reason, Force Majeure Compliant, Sent At).
+- **Purpose:** Builds the notification log table that proves when proactive early warnings were dispatched to clinics.
 - **Input Parameters:** None.
 - **Output Return Type:** None.
 - **How it helps the data:** Establishes an immutable record of external customer communications.
 
 ##### 3. `send_proactive_12h_notice(self, order_id: str, clinic_name: str, dest_city: str, predicted_eta: str, delay_reasons: List[str]) -> Dict[str, Any]`
-- **Purpose:** Formulates proactive customer notification text, inserts record into `clinic_early_warnings` table, and returns dispatch confirmation with `force_majeure_compliant = True`.
+- **Purpose:** Automatically drafts and logs an early warning notification to the receiving clinic at least 12 hours before delivery, satisfying the legal requirement for Force Majeure late-fee waivers.
 - **Input Parameters:** `order_id (str)`, `clinic_name (str)`, `dest_city (str)`, `predicted_eta (str)`, `delay_reasons (List[str])`.
 - **Output Return Type:** `Dict[str, Any]` — `{"notice_status", "force_majeure_compliant", "notice_message", "sent_at"}`.
 - **How it helps the data:** Provides the legally required early-warning evidence needed by `ContractAdjudicatorAgent` to waive \$500/day late delivery penalties under Act of God clauses.
@@ -1562,21 +1562,21 @@ graph TD
 ### Module 13: `modules/agentic_orchestrator.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\agentic_orchestrator.py`  
 **Classes:** `LLMSynthesizer`, `AgenticOrchestrator`  
-**Purpose:** Master orchestration core. Controls the autonomous 6-step daily agent lifecycle, coordinates specialist reasoning across all distressed orders, commits batch predictions, generates daily executive reports, and exports clean CSV summaries.
+**Purpose (The Master Conductor):** Orchestrates the complete daily routine of the AI Copilot from start to finish—gathering data, running predictive models, coordinating specialist agents, updating SAP, and emailing daily executive reports.
 
 #### Class 1: `LLMSynthesizer`
-**Purpose:** Bridges ML predictions and specialist agents. Sequences the execution order of `RouteSupervisorAgent`, `ClinicNotificationDispatcher`, `ContractAdjudicatorAgent`, `QualityMitigationAgent`, `SAPActionExecutor`, and `LLMReasoningEngine`.
+**Purpose:** Directs the sequence of agent discussions for every troubled order, making sure the route manager, contract lawyer, quality planner, and SAP executor work together in the right order.
 
 ##### Functions in `LLMSynthesizer`:
 
 ##### 1. `__init__(self, enable_teams_dispatch: bool = False)`
-- **Purpose:** Instantiates all 4 specialist agent instances, the SAP executor, the Teams dispatcher, and the clinic notifier.
+- **Purpose:** Coordinates all 4 specialist agents, the SAP executor, and the Teams dispatcher into a single unified decision-making workflow.
 - **Input Parameters:** `enable_teams_dispatch (bool)` — Flag to enable live webhook delivery.
 - **Output Return Type:** None.
 - **How it helps the data:** Assembles the multi-agent graph into a cohesive in-memory pipeline.
 
 ##### 2. `synthesize(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any] = None) -> Dict[str, Any]`
-- **Purpose:** Executes the end-to-end multi-agent evaluation for a single order:
+- **Purpose:** Coordinates the multi-agent review for a single shipment—running route checks, sending clinic notices, calculating penalties, planning mitigations, updating SAP, and writing executive summaries:
   1. Calls `RouteSupervisorAgent.analyze_route()` to verify telematics and corridor hazards.
   2. Calls `ClinicNotificationDispatcher.send_proactive_12h_notice()` to satisfy Force Majeure compliance.
   3. Calls `ContractAdjudicatorAgent.adjudicate_contract()` to calculate SLA penalties and Force Majeure status.
@@ -1592,18 +1592,18 @@ graph TD
 ---
 
 #### Class 2: `AgenticOrchestrator`
-**Purpose:** Main autonomous execution driver. Executes the 6-stage daily lifecycle from real-time stream scraping through model retraining, batch inference, multi-agent synthesis, and executive report publishing.
+**Purpose:** Drives the daily morning execution cycle across all 13 modules, ensuring the entire supply chain risk pipeline runs seamlessly every single day without requiring manual intervention.
 
 ##### Functions in `AgenticOrchestrator`:
 
 ##### 1. `__init__(self)`
-- **Purpose:** Initializes database manager, weather service, news service, document generators, ML feature store extension, hybrid RAG engine, and LLM synthesizer.
+- **Purpose:** Connects all 12 platform modules together upon startup, ensuring the pipeline is ready to execute its daily routine.
 - **Input Parameters:** None.
 - **Output Return Type:** None.
 - **How it helps the data:** Binds all 12 project modules into a single executable system.
 
 ##### 2. `run_daily_agent_cycle(self, date: str = None, order_limit: int = 5, target_order: str = None, all_orders: bool = False, repredict: bool = False, rebuild_rag: bool = False, enable_teams_dispatch: bool = False) -> Dict[str, Any]`
-- **Purpose:** Executes the autonomous 6-step daily agent operational lifecycle:
+- **Purpose:** Executes the complete 6-stage morning routine: ingesting weather/strikes, updating the rulebook, training ML models, analyzing active shipments, updating SAP, and publishing the executive report:
   - **Step 1:** Ingests live weather telemetry and strike RSS articles into SQLite (`session_start`).
   - **Step 2:** Verifies and rebuilds regulatory Word policy documents and Hybrid RAG vector index.
   - **Step 3:** Refreshes SAP ERP feature store and trains Two-Stage Hurdle ML models (`train_models`).
@@ -1622,13 +1622,13 @@ graph TD
 - **How it helps the data:** Orchestrates the continuous daily transformation of raw streaming data into concrete ERP transactions and executive reports.
 
 ##### 3. `_export_csvs(self, target_date: str) -> None`
-- **Purpose:** Exports daily weather readings and strike news tables from SQLite into flat CSV files (`weather_{date}.csv`, `strikes_{date}.csv`) in `india_monitor_data/csv/`.
+- **Purpose:** Exports daily weather and strike tables into flat spreadsheet CSV files so business analysts can easily open and explore them in Excel or PowerBI.
 - **Input Parameters:** `target_date (str)`.
 - **Output Return Type:** None.
 - **How it helps the data:** Provides portable tabular snapshots for external business intelligence tools (PowerBI, Tableau, Excel).
 
 ##### 4. `main() -> None`
-- **Purpose:** CLI entry point parsing command-line flags (`--date`, `--order`, `--limit`, `--all-orders`, `--repredict`, `--rebuild-rag`, `--enable-teams`) and triggering `run_daily_agent_cycle()`.
+- **Purpose:** Provides a command-line interface with customizable options (like processing specific dates, single orders, or forcing re-runs) for automated scheduling and testing.
 - **Input Parameters:** None (Parses `sys.argv`).
 - **Output Return Type:** None.
 - **How it helps the data:** Enables cron scheduling, Databricks job execution, and terminal CLI testing.
