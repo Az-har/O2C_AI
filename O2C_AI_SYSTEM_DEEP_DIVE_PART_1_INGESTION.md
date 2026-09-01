@@ -218,8 +218,8 @@ graph TD
 
 #### 1. `__init__(self, db_path=str(DB_PATH))`
 - **Purpose:** Initializes database manager, sets up file logging, and executes schema creation.
-- **Input Parameters:** `db_path (str | Path)` - Path to SQLite `.db` file.
-- **Output:** None.
+- **Input Parameters:** `db_path (str | Path)` — Path to SQLite `.db` file.
+- **Output Return Type:** None.
 - **How it helps the data:** Ensures tables and indices exist before any write operations occur.
 
 #### 2. `_make_logger(self)`
@@ -237,59 +237,55 @@ graph TD
 #### 4. `_build_schema(self)`
 - **Purpose:** Executes SQL DDL to create all 6 ingestion tables and B-Tree indexes (`idx_wr_city_date`, `idx_sn_date`, etc.).
 - **Input Parameters:** None.
-- **Output:** None.
+- **Output Return Type:** None.
 - **How it helps the data:** Establishes table structures, composite uniqueness constraints (`UNIQUE(city_name, date_only, hour_of_day)`), and index optimizations.
 
 #### 5. `session_start(self, session_type="full") -> int`
-- **Purpose:** Logs the start of an ETL ingestion cycle in `scrape_sessions`.
-- **Input Parameters:** `session_type (str)` - Type of session (`'full'`, `'weather'`, `'news'`).
-- **Output Return Type:** `int` (The newly generated `session_id`).
+- **Purpose:** Records the start of an ingestion session in `ingestion_sessions` table.
+- **Input Parameters:** `session_type (str)` — Type of run (`"full"`, `"weather"`, or `"news"`).
+- **Output Return Type:** `int` — Auto-incremented `session_id`.
 - **How it helps the data:** Assigns a session ID to tag every incoming weather reading and news article for data lineage.
 
 #### 6. `session_end(self, sid: int, status="success", cities=0, articles=0, error=None)`
-- **Purpose:** Updates session completion timestamp, status, count of ingested entities, and error logs.
+- **Purpose:** Updates session record with completion timestamp, status, processed row counts, or error traces.
 - **Input Parameters:** `sid (int)`, `status (str)`, `cities (int)`, `articles (int)`, `error (str | None)`.
-- **Output:** None.
+- **Output Return Type:** None.
 - **How it helps the data:** Tracks ETL health and monitors API pipeline success rates.
 
 #### 7. `write_weather(self, records: list, session_id: int) -> tuple[int, int]`
-- **Purpose:** Batch inserts weather readings using `INSERT OR IGNORE` against composite primary keys.
-- **Input Parameters:**
-  - `records (list[dict])`: List of weather dictionaries containing temperature, rain, wind, visibility, etc.
-  - `session_id (int)`: Active ingestion session ID.
-- **Output Return Type:** `tuple[int, int]` - `(saved_count, skipped_count)`.
+- **Purpose:** Executes batch upsert of weather observations into `weather_readings` table.
+- **Input Parameters:** `records (list[dict])` — Cleaned weather dicts, `session_id (int)`.
+- **Output Return Type:** `tuple[int, int]` — `(inserted_count, skipped_duplicate_count)`.
 - **How it helps the data:** Deduplicates incoming weather readings so multiple runs on the same day/hour never create duplicate rows.
 
 #### 8. `write_strikes(self, articles: list, session_id: int) -> tuple[int, int]`
-- **Purpose:** Batch inserts scraped strike articles into `strike_news`.
-- **Input Parameters:**
-  - `articles (list[dict])`: Enriched news dictionaries with title, description, severity, city, modality.
-  - `session_id (int)`: Active ingestion session ID.
-- **Output Return Type:** `tuple[int, int]` - `(saved_count, skipped_count)`.
+- **Purpose:** Executes batch upsert of news articles into `strike_news` table.
+- **Input Parameters:** `articles (list[dict])` — Cleaned news dicts, `session_id (int)`.
+- **Output Return Type:** `tuple[int, int]` — `(inserted_count, skipped_duplicate_count)`.
 - **How it helps the data:** Deduplicates news by `UNIQUE(title, source_name)`, preserving historical transport disruption records.
 
 #### 9. `write_rag_analysis(self, news_id: int, strike_title: str, question: str, answer: str, sources: list, confidence: float = None) -> int`
-- **Purpose:** Records a RAG semantic reasoning trace into `rag_analyses`.
-- **Input Parameters:** `news_id (int)`, `strike_title (str)`, `question (str)`, `answer (str)`, `sources (list[dict])`, `confidence (float)`.
-- **Output Return Type:** `int` (`analysis_id`).
+- **Purpose:** Persists Qwen2.5 Copilot analysis of a strike event in `rag_analysis_log`.
+- **Input Parameters:** `news_id (int)`, `strike_title (str)`, `question (str)`, `answer (str)`, `sources (list)`, `confidence (float)`.
+- **Output Return Type:** `int` — `analysis_id`.
 - **How it helps the data:** Maintains traceability between live news events and Copilot legal/logistics interpretations.
 
 #### 10. `read_weather(self, date: str = None, city: str = None) -> pd.DataFrame`
-- **Purpose:** Queries weather readings filtered by date (`YYYY-MM-DD`) and/or city.
-- **Input Parameters:** `date (str | None)`, `city (str | None)`.
-- **Output Return Type:** `pandas.DataFrame`
+- **Purpose:** Reads weather data into a pandas DataFrame with optional date and city filters.
+- **Input Parameters:** `date (str | None)` (YYYY-MM-DD), `city (str | None)`.
+- **Output Return Type:** `pd.DataFrame`
 - **How it helps the data:** Converts SQL records into structured DataFrames for downstream feature engineering in Engine A.
 
 #### 11. `read_strikes(self, date: str = None, city: str = None) -> pd.DataFrame`
-- **Purpose:** Queries strike articles filtered by date or city.
+- **Purpose:** Reads strike news into a pandas DataFrame with optional filters.
 - **Input Parameters:** `date (str | None)`, `city (str | None)`.
-- **Output Return Type:** `pandas.DataFrame`
+- **Output Return Type:** `pd.DataFrame`
 - **How it helps the data:** Supplies disruption intelligence to the Multi-Agent Route Supervisor.
 
 #### 12. `get_stats(self) -> dict`
-- **Purpose:** Returns total row counts across all database tables.
+- **Purpose:** Queries table row counts, date ranges, and session health for monitoring dashboards.
 - **Input Parameters:** None.
-- **Output Return Type:** `dict` (e.g. `{"weather_records": 130, "strike_articles": 396, ...}`).
+- **Output Return Type:** `dict` — High-level dataset summary metrics.
 - **How it helps the data:** Used by validation test suites and health-check monitoring dashboards.
 
 ---
@@ -297,46 +293,48 @@ graph TD
 ### Module 3: `modules/weather_service.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\weather_service.py`  
 **Class:** `WeatherService`  
-**Purpose:** Fetches meteorological conditions across the 10 monitored corridor cities. Supports dual API backends with automated zero-key fallback.
+**Purpose:** Ingests live and historical meteorological observations across 10 major logistics hubs across India using OpenWeatherMap (OWM) and Open-Meteo APIs.
 
 #### Key Class Attributes:
-- `WEATHER_CODES (dict)`: WMO weather interpretation code mapping (e.g. `0: "clear sky"`, `51: "light drizzle"`, `65: "heavy rain"`, `96: "thunderstorm with hail"`).
-- `WEATHER_MAIN (dict)`: High-level classification mapping (`"Clear"`, `"Clouds"`, `"Rain"`, `"Thunderstorm"`).
+- `CITIES`: Dictionary mapping 10 major supply chain hubs (`Mumbai`, `Delhi`, `Bangalore`, `Chennai`, `Kolkata`, `Hyderabad`, `Ahmedabad`, `Pune`, `Jaipur`, `Lucknow`) to lat/long coordinates.
+- `WMO_CODES`: Standard WMO code mapping table decoding numeric weather codes (e.g. `95` -> Thunderstorm, `65` -> Heavy Rain) into human-readable descriptions.
 
 #### Functions in `WeatherService`:
 
 #### 1. `__init__(self, api_key: str, cities: dict)`
-- **Purpose:** Initializes weather service with API credentials and city coordinate mappings.
-- **Input Parameters:** `api_key (str)` - OpenWeatherMap API key, `cities (dict)` - Dictionary of city coordinates from `config.py`.
+- **Purpose:** Initializes weather service with API credentials and city coordinate mapping.
+- **Input Parameters:** `api_key (str)` — OpenWeatherMap API key (optional), `cities (dict)` — Coordinate mapping dict.
+- **Output Return Type:** None.
+- **How it helps the data:** Establishes communication channels with external meteorological providers.
 
 #### 2. `fetch_current(self) -> list[dict]`
-- **Purpose:** Loops through all 10 monitored cities and fetches current weather. Tries OpenWeatherMap first; if key is missing or unauthorized (HTTP 401), automatically invokes Open-Meteo live endpoint.
+- **Purpose:** Iterates across all 10 cities, querying OWM current weather API (with automatic fallback to Open-Meteo).
 - **Input Parameters:** None.
-- **Output Return Type:** `list[dict]` (List of standardized weather reading dictionaries).
+- **Output Return Type:** `list[dict]` — List of standardized weather dictionaries.
 - **How it helps the data:** Provides real-time weather readings for cold-chain temperature control and transit delay forecasting.
 
 #### 3. `fetch_historical(self, date: str) -> list[dict]`
-- **Purpose:** Fetches historical weather readings for any past date (`YYYY-MM-DD`) via Open-Meteo Historical Archive API.
-- **Input Parameters:** `date (str)` - Target date in `YYYY-MM-DD` format.
-- **Output Return Type:** `list[dict]`
+- **Purpose:** Fetches historical weather observations for all 10 cities for a past date from Open-Meteo Archive API.
+- **Input Parameters:** `date (str)` — Target date in `YYYY-MM-DD` format.
+- **Output Return Type:** `list[dict]` — List of historical weather dictionaries.
 - **How it helps the data:** Enables backtesting ML models against historical weather events on specific dispatch dates.
 
 #### 4. `_owm_one(self, city: str, coords: dict) -> dict | None`
-- **Purpose:** Executes single HTTP GET request to OpenWeatherMap REST API.
-- **Input Parameters:** `city (str)`, `coords (dict)` - `{"lat": float, "lon": float, "state": str}`.
-- **Output Return Type:** `dict` (Normalized reading) or `None` on HTTP error.
-- **How it helps the data:** Extracts exact visibility, pressure, and cloudiness metrics.
+- **Purpose:** Queries OpenWeatherMap API for a single city and normalizes JSON response.
+- **Input Parameters:** `city (str)`, `coords (dict)` — `{"lat": float, "lon": float}`.
+- **Output Return Type:** `dict | None` — Normalized weather reading dict or `None` on failure.
+- **How it helps the data:** Extracts exact visibility, pressure, and cloudiness metrics from primary commercial telemetry.
 
 #### 5. `_meteo_current_one(self, city: str, coords: dict) -> dict | None`
-- **Purpose:** Executes single HTTP GET request to Open-Meteo Live Forecast API (`https://api.open-meteo.com/v1/forecast`).
+- **Purpose:** Queries Open-Meteo Current Weather endpoint as an automatic fallback when OWM API key is exhausted or missing.
 - **Input Parameters:** `city (str)`, `coords (dict)`.
-- **Output Return Type:** `dict` (Standardized reading dictionary).
+- **Output Return Type:** `dict | None` — Normalized weather reading dict.
 - **How it helps the data:** Ensures 100% continuous data availability even without paid API keys.
 
 #### 6. `_meteo_one(self, city: str, coords: dict, date: str) -> dict | None`
-- **Purpose:** Queries Open-Meteo Historical API for a specific date and extracts noon-time (12:00) weather readings.
+- **Purpose:** Queries Open-Meteo Archive API for historical date, aggregating hourly readings to daily noon metrics.
 - **Input Parameters:** `city (str)`, `coords (dict)`, `date (str)`.
-- **Output Return Type:** `dict` (Standardized reading dictionary).
+- **Output Return Type:** `dict | None` — Daily aggregated weather observation.
 - **How it helps the data:** Normalizes hourly timeseries arrays into representative daily dispatch conditions.
 
 ---
@@ -350,41 +348,45 @@ graph TD
 
 #### 1. `__init__(self, keywords: list, cities: dict)`
 - **Purpose:** Initializes keyword filters and target city boundaries.
-- **Input Parameters:** `keywords (list[str])` - 14 strike terms, `cities (dict)` - 10 Indian hub cities.
+- **Input Parameters:** `keywords (list[str])` — 14 strike terms, `cities (dict)` — 10 Indian hub cities.
+- **Output Return Type:** None.
+- **How it helps the data:** Configures the geographic and semantic boundaries for external web scraping.
 
 #### 2. `fetch(self, date: str = None, city: str = None) -> list[dict]`
 - **Purpose:** Executes targeted RSS search queries across all keyword-city combinations, deduplicates articles, and applies NLP enrichment.
 - **Input Parameters:** `date (str | None)`, `city (str | None)`.
-- **Output Return Type:** `list[dict]` (Enriched article objects).
+- **Output Return Type:** `list[dict]` — Enriched article objects.
 - **How it helps the data:** Converts unorganized XML web news into structured risk data tagged with severity, location, and transport modality.
 
 #### 3. `_build_queries(self, city: str = None) -> list[str]`
 - **Purpose:** Constructs Google News search query strings (e.g. `"truck strike Mumbai India"`, `"bandh India"`).
 - **Input Parameters:** `city (str | None)`.
-- **Output Return Type:** `list[str]`
+- **Output Return Type:** `list[str]` — Formatted query strings.
 - **How it helps the data:** Focuses search scope specifically on Indian logistics corridors.
 
 #### 4. `_date_filter(self, date: str) -> str`
 - **Purpose:** Formats Google News date search syntax (`after:YYYY-MM-DD before:YYYY-MM-DD`).
 - **Input Parameters:** `date (str)`.
-- **Output Return Type:** `str`
+- **Output Return Type:** `str` — Search date filter fragment.
+- **How it helps the data:** Restricts scraping strictly to the active dispatch operational window.
 
 #### 5. `_rss_search(self, query: str) -> list[dict]`
 - **Purpose:** Performs HTTP GET to `https://news.google.com/rss/search`, parses XML using `BeautifulSoup`, and extracts title, description, link, source, and published timestamp.
 - **Input Parameters:** `query (str)`.
-- **Output Return Type:** `list[dict]`
+- **Output Return Type:** `list[dict]` — Extracted article dictionaries.
 - **How it helps the data:** Extracts clean article metadata while enforcing a `time.sleep(0.5)` rate-limiting delay.
 
 #### 6. `_detect_city(self, text: str) -> str`
 - **Purpose:** Scans article title and body text for mentions of the 10 monitored Indian cities.
 - **Input Parameters:** `text (str)`.
-- **Output Return Type:** `str` (Matched city name or `"Unknown"`).
+- **Output Return Type:** `str` — Matched city name or `"Unknown"`.
 - **How it helps the data:** Spatially tags news articles to regional warehouse and customer delivery locations.
 
 #### 7. `_get_state(self, city: str) -> str`
 - **Purpose:** Looks up the state corresponding to the detected city.
 - **Input Parameters:** `city (str)`.
-- **Output Return Type:** `str` (e.g. `"Maharashtra"` for `"Mumbai"`).
+- **Output Return Type:** `str` — State name (e.g. `"Maharashtra"` for `"Mumbai"`).
+- **How it helps the data:** Maps municipal strikes to state-level regulatory jurisdictions.
 
 #### 8. `_classify_severity(self, text: str) -> str`
 - **Purpose:** Classifies disruption severity based on linguistic impact indicators:
@@ -392,14 +394,14 @@ graph TD
   - `🟡 MEDIUM`: If text contains `"state bandh"`, `"24-hour"`, `"48-hour"`, or `"city strike"`.
   - `🟢 LOW`: All other local transport advisories.
 - **Input Parameters:** `text (str)`.
-- **Output Return Type:** `str` (`"🔴 HIGH"`, `"🟡 MEDIUM"`, `"🟢 LOW"`).
+- **Output Return Type:** `str` — Categorical severity rating (`"🔴 HIGH"`, `"🟡 MEDIUM"`, `"🟢 LOW"`).
 - **How it helps the data:** Enables downstream multi-agent specialists to trigger immediate Force Majeure and route diversions for high-severity events.
 
 #### 9. `_classify_type(self, text: str) -> str`
 - **Purpose:** Maps article text to logistics transport modality:
   - `"bus"`, `"truck"`, `"railway"`, `"auto"`, `"taxi"`, `"metro"`, `"bandh"`, or `"general"`.
 - **Input Parameters:** `text (str)`.
-- **Output Return Type:** `str`
+- **Output Return Type:** `str` — Modality tag string.
 - **How it helps the data:** Allows the system to assess whether a strike impacts FTL road freight, intermodal rail, or local final-mile courier delivery.
 
 ---
@@ -414,11 +416,13 @@ graph TD
 #### 1. `__init__(self, db_path=str(DB_PATH), output_dir=None)`
 - **Purpose:** Initializes the generator, verifies `python-docx` availability, connects to local `OllamaService` (detecting `qwen2.5:7b`), and ensures target directory `india_monitor_data/rag/documents/Weather_Policies/` exists.
 - **Input Parameters:** `db_path (str | Path)`, `output_dir (Path | None)`.
+- **Output Return Type:** None.
+- **How it helps the data:** Establishes the generation output directory and verifies LLM synthesis availability.
 
 #### 2. `generate_all_policies(self) -> list[str]`
 - **Purpose:** Queries all extreme weather alerts from the database, clusters them by city, generates 5 city-specific protocols (`Bangalore`, `Chennai`, `Hyderabad`, `Mumbai`, `Pune`), creates the national `Master_Weather_Protocol.docx`, and returns the absolute paths.
 - **Input Parameters:** None.
-- **Output Return Type:** `list[str]` (List of 6 generated `.docx` file paths).
+- **Output Return Type:** `list[str]` — List of 6 generated `.docx` file paths.
 - **How it helps the data:** Converts raw numbers (e.g. 42°C, 32.9 m/s wind, 25mm rain) into high-density structured tables and discrete rule blocks that the RAG engine can cite during agentic adjudication.
 
 #### 3. `_fetch_weather_alerts(self) -> list[dict]`
@@ -427,12 +431,14 @@ graph TD
   WHERE temperature > 40 OR wind_speed > 15 OR rain_1h > 20 OR visibility_km < 1
   ```
 - **Input Parameters:** None.
-- **Output Return Type:** `list[dict]`
+- **Output Return Type:** `list[dict]` — List of extreme weather alert records.
+- **How it helps the data:** Filters out benign telemetry to isolate critical environmental disruptions.
 
 #### 4. `_group_alerts_by_city(self, alerts: list[dict]) -> dict[str, list[dict]]`
 - **Purpose:** Groups flat alert records into a dictionary keyed by city name.
 - **Input Parameters:** `alerts (list[dict])`.
-- **Output Return Type:** `dict[str, list[dict]]`
+- **Output Return Type:** `dict[str, list[dict]]` — Dictionary mapping city names to alert lists.
+- **How it helps the data:** Organizes national telemetry into city-level regional clusters.
 
 #### 5. `_create_city_weather_policy(self, city: str, alerts: list[dict]) -> Path`
 - **Purpose:** Compiles `{City}_Weather_Protocol.docx` structured into 4 high-density operational sections:
@@ -446,12 +452,14 @@ graph TD
     - `[RULE-W-{CITY}-04]`: Dynamic ETA safety buffer (+4h to +8h) and \$150 redelivery fee waiver.
   - **Section 4: Copilot Deterministic Action Checklist:** Step-by-step verification checklist for downstream agents.
 - **Input Parameters:** `city (str)`, `alerts (list[dict])`.
-- **Output Return Type:** `pathlib.Path`
+- **Output Return Type:** `pathlib.Path` — Path to generated Word document.
+- **How it helps the data:** Encodes legal rules and operational constraints into structured, citeable text documents for the RAG engine.
 
 #### 6. `_create_master_weather_protocol(self, alerts: list[dict]) -> Path`
 - **Purpose:** Generates national `Master_Weather_Protocol.docx` establishing cross-corridor risk matrices and liability rules.
 - **Input Parameters:** `alerts (list[dict])`.
-- **Output Return Type:** `pathlib.Path`
+- **Output Return Type:** `pathlib.Path` — Path to master protocol document.
+- **How it helps the data:** Synthesizes nationwide multi-corridor weather impacts into a single sovereign operational guide.
 
 ---
 
@@ -465,27 +473,32 @@ graph TD
 #### 1. `__init__(self, db_path=str(DB_PATH), output_dir=None)`
 - **Purpose:** Initializes generator, connects to local `OllamaService`, and creates `india_monitor_data/rag/documents/Strike_Intelligence/` directory.
 - **Input Parameters:** `db_path (str | Path)`, `output_dir (Path | None)`.
+- **Output Return Type:** None.
+- **How it helps the data:** Prepares file storage directories and verifies local LLM connection.
 
 #### 2. `generate_all_intelligence(self) -> list[str]`
 - **Purpose:** Fetches all 396+ strike articles from SQLite, generates 9 city-specific briefs (for cities with $\ge 3$ articles), 7 modality pattern analyses (for categories with $\ge 5$ articles), and the national master brief (`Master_Disruption_Intelligence.docx`).
 - **Input Parameters:** None.
-- **Output Return Type:** `list[str]` (List of 17 generated `.docx` document paths).
+- **Output Return Type:** `list[str]` — List of 17 generated `.docx` document paths.
 - **How it helps the data:** Synthesizes hundreds of isolated web articles into actionable intelligence briefs with structured tables and discrete rule blocks.
 
 #### 3. `_fetch_strike_articles(self) -> list[dict]`
 - **Purpose:** Queries `strike_news` table for title, matched cities, category, published date, and source.
 - **Input Parameters:** None.
-- **Output Return Type:** `list[dict]`
+- **Output Return Type:** `list[dict]` — Raw strike news records.
+- **How it helps the data:** Loads verified transport disruption articles from SQLite storage into RAM.
 
 #### 4. `_group_articles_by_city(self, articles: list[dict]) -> dict[str, list[dict]]`
 - **Purpose:** Groups articles by mentioned city.
 - **Input Parameters:** `articles (list[dict])`.
-- **Output Return Type:** `dict[str, list[dict]]`
+- **Output Return Type:** `dict[str, list[dict]]` — Dictionary mapping cities to lists of disruption articles.
+- **How it helps the data:** Aggregates isolated incidents into city-specific incident registries.
 
 #### 5. `_group_articles_by_category(self, articles: list[dict]) -> dict[str, list[dict]]`
 - **Purpose:** Groups articles by strike category (`"truck"`, `"railway"`, `"bus"`, `"bandh"`, etc.).
 - **Input Parameters:** `articles (list[dict])`.
-- **Output Return Type:** `dict[str, list[dict]]`
+- **Output Return Type:** `dict[str, list[dict]]` — Dictionary mapping transport modalities to articles.
+- **How it helps the data:** Categorizes incidents into modal vulnerability vectors for rail, road, and port transit.
 
 #### 6. `_create_city_strike_brief(self, city: str, articles: list[dict]) -> Path`
 - **Purpose:** Compiles `{City}_Strike_Intelligence.docx` structured into 4 high-density operational sections:
@@ -499,17 +512,20 @@ graph TD
     - `[RULE-S-{CITY}-04]`: Dynamic transit buffer (+12h to +24h) and clinic delivery rescheduling.
   - **Section 4: Copilot Deterministic Action Checklist:** 4-step execution checklist for AI agents.
 - **Input Parameters:** `city (str)`, `articles (list[dict])`.
-- **Output Return Type:** `pathlib.Path`
+- **Output Return Type:** `pathlib.Path` — Path to generated city brief.
+- **How it helps the data:** Converts disparate news headlines into standardized legal contracts and bypass directives for RAG indexing.
 
 #### 7. `_create_category_strike_brief(self, category: str, articles: list[dict]) -> Path`
 - **Purpose:** Compiles `{Category}_Pattern_Analysis.docx` detailing modal vulnerability, geographic distribution, case studies, and carrier contract adjudication rules (demurrage caps $100/day for trucks, $500/container rail demurrage, warehouse bandh lockdown).
 - **Input Parameters:** `category (str)`, `articles (list[dict])`.
-- **Output Return Type:** `pathlib.Path`
+- **Output Return Type:** `pathlib.Path` — Path to modal pattern brief.
+- **How it helps the data:** Generates modality-level carrier contract liability benchmarks.
 
 #### 8. `_create_master_disruption_intelligence(self, articles: list[dict]) -> Path`
 - **Purpose:** Generates `Master_Disruption_Intelligence.docx` summarizing nationwide disruption patterns and the 5-phase AI orchestration decision matrix.
 - **Input Parameters:** `articles (list[dict])`.
-- **Output Return Type:** `pathlib.Path`
+- **Output Return Type:** `pathlib.Path` — Path to master intelligence document.
+- **How it helps the data:** Synthesizes nationwide transport disruption patterns into an executive policy reference.
 
 ---
 

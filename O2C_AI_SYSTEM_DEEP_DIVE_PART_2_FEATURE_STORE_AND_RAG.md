@@ -100,19 +100,19 @@ The table below outlines every single data point fed into `RandomForestClassifie
 
 ### 3.2 Mathematical Formulations of Key Engineered Features
 
-#### 1. Geospatial Haversine Transit Distance (`haversine_distance_km`)
+##### Formulation 1: Geospatial Haversine Transit Distance (`haversine_distance_km`)
 To model real-world road corridor transit distances across India without requiring slow external routing APIs for 11,797+ orders, the engine computes the great-circle Haversine distance between the central distribution origin ($19.0760^\circ\text{N}, 72.8777^\circ\text{E}$) and the destination customer city:
 $$\Delta\phi = \text{radians}(\text{lat}_2 - \text{lat}_1), \quad \Delta\lambda = \text{radians}(\text{lon}_2 - \text{lon}_1)$$
 $$a = \sin^2\left(\frac{\Delta\phi}{2}\right) + \cos(\text{radians}(\text{lat}_1)) \cdot \cos(\text{radians}(\text{lat}_2)) \cdot \sin^2\left(\frac{\Delta\lambda}{2}\right)$$
 $$c = 2 \cdot \text{atan2}\left(\sqrt{a}, \sqrt{1-a}\right), \quad d = R \cdot c \quad (\text{where } R = 6,371.0\text{ km})$$
 
-#### 2. Required Transit Velocity (`required_transit_speed_kmh`) & Unrealistic Speed Flag
+##### Formulation 2: Required Transit Velocity (`required_transit_speed_kmh`) & Unrealistic Speed Flag
 Logistics delays often occur not because of carrier breakdown, but because sales teams promise delivery windows that are physically impossible for commercial road freight:
 $$\text{Transit Hours Available} = \max(1.0, \text{order\_to\_delivery\_days} \times 24.0)$$
 $$\text{required\_transit\_speed\_kmh} = \frac{\text{haversine\_distance\_km}}{\text{Transit Hours Available}}$$
 $$\text{is\_unrealistic\_speed} = \begin{cases} 1 & \text{if } \text{required\_transit\_speed\_kmh} > 55.0\text{ km/h} \\ 0 & \text{otherwise} \end{cases}$$
 
-#### 3. Composite Delay Probability Heuristic (Cold-Start Ground Truth Target)
+##### Formulation 3: Composite Delay Probability Heuristic (Cold-Start Ground Truth Target)
 During initial dataset preparation, a multi-signal risk heuristic establishes ground-truth labels for supervised training:
 $$P_{\text{delay}} = \text{clip}\Big(0.50 \cdot I_{\text{delayed}} + 0.20 \cdot I_{\text{heavy\_LTL}} + 0.15 \cdot I_{\text{rush\_tight}} + 0.15 \cdot I_{\text{unrealistic\_speed}} + 0.10 \cdot I_{\text{weekend}} + 0.08 \cdot I_{\text{month\_end}} + 0.05 \cdot I_{\text{platinum}}, \ 0.0, \ 0.98\Big)$$
 $$\text{is\_delayed} = \begin{cases} 1 & \text{if } P_{\text{delay}} > 0.40 \\ 0 & \text{otherwise} \end{cases}$$
@@ -246,6 +246,7 @@ graph TD
   - **`is_month_end`**: Binary flag $(1 \text{ if day of month} \ge 26 \text{ else } 0)$ to capture warehouse dispatch congestion surges.
   - **`customer_tier_code`**: Categorical integer mapping: $\text{Platinum} \to 3, \text{Gold} \to 2, \text{Independent} \to 2, \text{Silver/Standard} \to 1$.
   - **`shipping_risk_code`**: Modal risk mapping: $\text{Rush} \to 3, \text{LTL} \to 2, \text{FTL/Rail/Intermodal} \to 1, \text{Air} \to 0$.
+- **How it helps the data:** Assembles disparate relational tables into a unified mathematical vector space optimized for supervised model training and sub-millisecond batch lookups.
 
 #### 5. `get_order_details(self, order_id: str) -> Optional[Dict[str, Any]]`
 - **Purpose:** Retrieves the complete, feature-engineered joined dictionary for any specific sales order in $O(1)$ constant time from the pre-indexed memory hash map. Supports suffix matching fallback for short order IDs.
@@ -261,13 +262,15 @@ graph TD
 
 #### 7. `get_predictions(self, limit: int = 100, delayed_only: bool = False) -> List[Dict[str, Any]]`
 - **Purpose:** Queries historical model predictions from SQLite with optional filtering for delayed orders.
-- **Input Parameters:** `limit (int)`, `delayed_only (bool)`.
-- **Output Return Type:** `List[Dict[str, Any]]`.
+- **Input Parameters:** `limit (int)` — Maximum number of records to return (default 100), `delayed_only (bool)` — If `True`, filters strictly for `is_delayed == 1`.
+- **Output Return Type:** `List[Dict[str, Any]]` — List of historical prediction dictionaries.
+- **How it helps the data:** Supplies historical baseline inferences to dashboard visualizers and audit engines.
 
 #### 8. `get_summary_stats(self) -> Dict[str, Any]`
 - **Purpose:** Aggregates overall database statistics across all SAP tables, total orders, total shipments, customer tier distribution, and active predictions.
 - **Input Parameters:** None.
-- **Output Return Type:** `Dict[str, Any]`.
+- **Output Return Type:** `Dict[str, Any]` — Key-value dictionary of high-level system telemetry.
+- **How it helps the data:** Provides pipeline health telemetry and data completeness verification before running daily inference batches.
 
 ---
 
@@ -282,6 +285,7 @@ graph TD
 - **Purpose:** Initializes PredictiveEngine with dependencies, defines the 19 canonical ML feature columns (`FEATURE_COLS`), initializes model instances, and calls `_preload_environmental_caches()`.
 - **Input Parameters:** `ml_db_extension (MLDatabaseExtension | None)`, `rag_engine (RAGEngine | None)`, `weather_service (WeatherService | None)`.
 - **Output Return Type:** None.
+- **How it helps the data:** Binds relational data access, semantic RAG retrieval, and real-time sensor streams into a unified predictive runtime.
 
 #### 2. `_preload_environmental_caches(self) -> None`
 - **Purpose:** Pre-loads the latest weather readings across all 10 cities and the top 50 strike news events from SQLite into memory caches (`self._weather_cache` and `self._strike_cache`).
@@ -299,20 +303,23 @@ graph TD
   4. Extracts Gini feature importances and calls `save_models()`.
 - **Input Parameters:** `df (pd.DataFrame)` — Feature-engineered dataset from `MLDatabaseExtension`, `train_size (float)` — Train/test split ratio (default 0.8).
 - **Output Return Type:** `bool` — `True` if training succeeded, `False` otherwise.
+- **How it helps the data:** Trains mathematically robust models that generalize without suffering from zero-inflation distortion.
 
 #### 4. `save_models(self, model_dir: Path = None) -> bool`
 - **Purpose:** Serializes trained model objects into binary `.pkl` files (`rf_classifier.pkl`, `gb_regressor.pkl`) and exports `feature_importances.json` to `india_monitor_data/models/`.
-- **Input Parameters:** `model_dir (Path | None)`.
-- **Output Return Type:** `bool`.
+- **Input Parameters:** `model_dir (Path | None)` — Directory to persist model files (default `india_monitor_data/models/`).
+- **Output Return Type:** `bool` — `True` if all 3 artifacts saved successfully.
+- **How it helps the data:** Locks in trained weights so the inference engine can execute instantly without retraining on each pipeline run.
 
 #### 5. `load_models(self, model_dir: Path = None) -> bool`
 - **Purpose:** Deserializes trained model artifacts from disk on startup, enabling instant zero-latency inference without requiring re-training.
-- **Input Parameters:** `model_dir (Path | None)`.
+- **Input Parameters:** `model_dir (Path | None)` — Path to directory containing model files.
 - **Output Return Type:** `bool` — `True` if artifacts loaded successfully.
+- **How it helps the data:** Restores decision boundaries and feature weights into memory in under 50 milliseconds.
 
 #### 6. `explain_prediction(self, order_data: Dict[str, Any], delay_prob: float) -> List[Dict[str, Any]]`
 - **Purpose:** Implements Explainable AI (XAI) feature attribution using `feature_importances.json`. Matches active risk conditions for the order (e.g. Unrealistic Speed, Weekend Dispatch, Heavy Pallet, LTL Dwell, Month-End Congestion), weights them by the trained model's feature importances, and calculates normalized contribution percentages (`contribution_pct`).
-- **Input Parameters:** `order_data (Dict[str, Any])`, `delay_prob (float)`.
+- **Input Parameters:** `order_data (Dict[str, Any])` — Single order feature dictionary, `delay_prob (float)` — Predicted delay probability.
 - **Output Return Type:** `List[Dict[str, Any]]` — Top contributing risk factors with human-readable explanations and percentage contributions.
 - **How it helps the data:** Transforms black-box ML probability scores into transparent root-cause narratives displayed in MS Teams Adaptive Cards and executive audit logs.
 
@@ -324,8 +331,9 @@ graph TD
   4. Calculates financial exposure and contractual SLA penalties (Platinum Tier: \$500/day; Gold/Independent: 5%/day capped at 25%; \$150 after-hours clinic violation).
   5. Computes revised Estimated Time of Arrival (ETA).
   6. Enriches result with retrieved policy context from Engine B RAG (`_enrich_with_rag`).
-- **Input Parameters:** `order_id (str)`, `order_data (Dict[str, Any] | None)`.
+- **Input Parameters:** `order_id (str)` — SAP Sales Order Number, `order_data (Dict[str, Any] | None)` — Pre-fetched feature dictionary (optional).
 - **Output Return Type:** `Dict[str, Any]` — Comprehensive prediction payload consumed by Multi-Agent Specialists in Part 3.
+- **How it helps the data:** Merges historical statistical predictions with real-time sensory data and legal contract exposure into a single actionable record.
 
 #### 8. `_diagnose_root_cause(self, order_data: Dict[str, Any], is_delayed: bool) -> Tuple[str, str]`
 - **Purpose:** Evaluates operational, environmental, and carrier signals to determine the primary and secondary root causes of predicted delay:
@@ -335,8 +343,9 @@ graph TD
   - Unrealistic Transit Velocity Demand ($>55\text{km/h}$ required linehaul speed).
   - Weekend Dispatch / Receiving Dock Closure (Delivery scheduled after clinic close time).
   - Month-End Warehouse Dispatch Congestion.
-- **Input Parameters:** `order_data (Dict[str, Any])`, `is_delayed (bool)`.
+- **Input Parameters:** `order_data (Dict[str, Any])` — Order feature dictionary, `is_delayed (bool)` — Delay flag.
 - **Output Return Type:** `Tuple[str, str]` — `(primary_root_cause, secondary_root_cause)`.
+- **How it helps the data:** Isolates the root operational driver so downstream specialist agents know whether to re-route, invoke legal waivers, or trigger QA holds.
 
 #### 9. `_calculate_financial_risk(self, order_data: Dict[str, Any], delay_hours: float, is_delayed: bool) -> Dict[str, float]`
 - **Purpose:** Computes contractual financial liabilities and SLA penalties based on customer tier and order value:
@@ -347,11 +356,13 @@ graph TD
   - **Perishable Spoilage Risk:** If therapeutic wet food or biologics delay exceeds product shelf-life tolerance ($>48\text{h}$ in extreme heat), flags $100\%$ order value destruction risk.
 - **Input Parameters:** `order_data (Dict[str, Any])`, `delay_hours (float)`, `is_delayed (bool)`.
 - **Output Return Type:** `Dict[str, float]` — `{"sla_penalty_usd", "carrier_chargeback_usd", "total_financial_risk_usd"}`.
+- **How it helps the data:** Quantifies the financial impact of the delivery delay for automated executive approval gates.
 
 #### 10. `_enrich_with_rag(self, order_data: Dict[str, Any], root_cause: str) -> Dict[str, Any]`
 - **Purpose:** Automatically queries Engine B RAG (`rag_engine.ask`) using the detected customer tier, carrier name, destination city, and root cause.
-- **Input Parameters:** `order_data (Dict[str, Any])`, `root_cause (str)`.
+- **Input Parameters:** `order_data (Dict[str, Any])` — Order details, `root_cause (str)` — Diagnosed root cause.
 - **Output Return Type:** `Dict[str, Any]` — Retrieved policy excerpts, source document names, and clause citations.
+- **How it helps the data:** Grounds mathematical ML predictions in legally binding enterprise contract clauses.
 
 ---
 
@@ -384,48 +395,212 @@ graph TD
 ```
 
 #### Class 1: `DocumentLoader`
-- **`load_all(self) -> List[Dict]`**: Iterates through `india_monitor_data/rag/documents/`, detects file format by extension (`.docx`, `.pdf`, `.xlsx`, `.txt`), extracts raw text and document metadata, and assigns category based on parent folder (`Clinic SLAs`, `Vendor Contracts`, `Packaging Policies`, `History Resolution Logs`, `Strike Intelligence`, `Weather Policies`).
-- **`_load_docx(self, path: Path) -> str`**: Extracts paragraph text and table cell contents using `docx.Document`.
-- **`_load_pdf(self, path: Path) -> str`**: Iterates through PDF pages using `pypdf.PdfReader`.
-- **`_load_excel(self, path: Path) -> str`**: Reads active worksheet rows and tabulates cell values using `openpyxl`.
-- **`_load_text(self, path: Path) -> str`**: Reads UTF-8 plain text with fallback decoding.
+**Purpose:** Recursively scans and parses multi-format raw documents from the RAG knowledge corpus, extracting normalized text and attaching domain metadata.
+
+##### Functions in `DocumentLoader`:
+
+##### 1. `__init__(self, doc_dir: Optional[Path] = None)`
+- **Purpose:** Initializes document loader and sets the root directory for corpus documents (`india_monitor_data/rag/documents/`).
+- **Input Parameters:** `doc_dir (Path | None)`.
+- **Output Return Type:** None.
+- **How it helps the data:** Establishes the authoritative filesystem boundary for regulatory and contractual policy ingestion.
+
+##### 2. `load_all(self) -> List[Dict]`
+- **Purpose:** Iterates recursively through all subdirectories in the document store, identifies file types, routes them to specific format parsers, and returns a consolidated list of document dictionaries.
+- **Input Parameters:** None.
+- **Output Return Type:** `List[Dict]` — List of loaded document objects containing `filename`, `filepath`, `category`, `text`, `char_count`, and `file_type`.
+- **How it helps the data:** Converts unparsed, disparate multi-format disk files into uniform memory dictionaries for chunking.
+
+##### 3. `_load_docx(self, path: Path) -> str`
+- **Purpose:** Extracts text paragraphs and iterates through all table rows/cells in Microsoft Word (`.docx`) files using `python-docx`.
+- **Input Parameters:** `path (Path)` — Absolute path to Word document.
+- **Output Return Type:** `str` — Extracted, newline-delimited text.
+- **How it helps the data:** Preserves tabular corridor matrices and legal clause paragraphs in human-authored and AI-generated documents.
+
+##### 4. `_load_pdf(self, path: Path) -> str`
+- **Purpose:** Extracts text page-by-page from Adobe PDF (`.pdf`) regulatory agreements using `pypdf.PdfReader`.
+- **Input Parameters:** `path (Path)` — Absolute path to PDF file.
+- **Output Return Type:** `str` — Concatenated text from all document pages.
+- **How it helps the data:** Ingests third-party carrier contracts and external statutory transit guidelines into searchable text.
+
+##### 5. `_load_excel(self, path: Path) -> str`
+- **Purpose:** Reads tabular cells from Microsoft Excel (`.xlsx`) tariff schedules and resolution matrices using `openpyxl`.
+- **Input Parameters:** `path (Path)` — Absolute path to spreadsheet.
+- **Output Return Type:** `str` — Tab-separated row-by-row string representation.
+- **How it helps the data:** Allows quantitative freight rate charts, detention penalty tiers, and historical ticket logs to be indexed semantically.
+
+##### 6. `_load_text(self, path: Path) -> str`
+- **Purpose:** Reads standard plain text (`.txt`) files with UTF-8 encoding (with fallback handling for latin-1).
+- **Input Parameters:** `path (Path)`.
+- **Output Return Type:** `str`.
+- **How it helps the data:** Ingests legacy configuration notes, SOP outlines, and developer runbooks.
+
+---
 
 #### Class 2: `ClauseAwareChunker`
-- **`chunk_documents(self, documents: List[Dict]) -> List[Dict]`**: Processes loaded documents into granular semantic chunks.
-- **`_chunk_document(self, doc: Dict) -> List[Dict]`**: Implements two-stage hierarchical splitting:
-  1. **Primary Structural Boundary Splitting:** Uses regex lookahead to split at formal clause headings:
-     ```python
-     re.split(r'(?=\n(?:[0-9]+\.[0-9]*\s+|TICKET\s+|SECTION\s+|INC-[0-9]+\s+|[A-Z\s]{4,}:))|\n\n+', text)
-     ```
-  2. **Secondary Sentence Accumulation:** If a section exceeds `max_chunk_size` (500 chars), splits at sentence boundaries (`re.split(r'(?<=[.!?])\s+', sec)`) and accumulates sentences with `chunk_overlap = 50` chars.
-- **`_calculate_chunk_id(self, text: str, filename: str, index: int) -> str`**: Generates deterministic SHA-256 hash prefix identifying the chunk (`f"chk_{hashlib.sha255(...).hexdigest()[:10]}"`).
-- **`save_chunks(self, chunks: List[Dict], output_path: Path = None) -> None`**: Exports all chunks to `india_monitor_data/rag/chunks/all_chunks.json`.
+**Purpose:** Implements two-stage hierarchical semantic splitting to preserve legal clause boundaries, section headers, and ticket identifiers without truncating critical contract definitions.
+
+##### Functions in `ClauseAwareChunker`:
+
+##### 1. `__init__(self, chunk_size: int = 500, chunk_overlap: int = 50)`
+- **Purpose:** Configures chunker parameters: nominal chunk size (500 characters) and sliding window boundary overlap (50 characters).
+- **Input Parameters:** `chunk_size (int)`, `chunk_overlap (int)`.
+- **Output Return Type:** None.
+- **How it helps the data:** Balances semantic granularity against sentence continuity for optimal dense embedding retrieval.
+
+##### 2. `chunk_documents(self, documents: List[Dict]) -> List[Dict]`
+- **Purpose:** Iterates over loaded documents and processes each into a flattened sequence of granular semantic chunks.
+- **Input Parameters:** `documents (List[Dict])` — List of loaded document dictionaries.
+- **Output Return Type:** `List[Dict]` — List of 909 semantic chunk dictionaries with metadata and deterministic IDs.
+- **How it helps the data:** Transforms monolithic multi-page documents into digestible text snippets suitable for transformer token limits.
+
+##### 3. `_chunk_document(self, doc: Dict) -> List[Dict]`
+- **Purpose:** Executes two-stage regex splitting:
+  1. *Primary Boundary Splitting:* Splits at formal numbered clauses (`\n[0-9]+\.[0-9]*`), ticket headers (`TICKET\s+`), section headers (`SECTION\s+`), and rule IDs (`[RULE-`).
+  2. *Secondary Boundary Splitting:* Accumulates sentences up to `chunk_size` characters with `chunk_overlap` continuity.
+- **Input Parameters:** `doc (Dict)` — Single document dictionary.
+- **Output Return Type:** `List[Dict]` — Chunk dictionaries containing `chunk_id`, `text`, `filename`, `category`, and token statistics.
+- **How it helps the data:** Guarantees that contractual conditions and their corresponding penalty dollar amounts remain bound together in the same chunk.
+
+##### 4. `_calculate_chunk_id(self, text: str, filename: str, index: int) -> str`
+- **Purpose:** Generates a deterministic SHA-256 hash identifier for each chunk (`f"chk_{hashlib.sha256(...).hexdigest()[:10]}"`).
+- **Input Parameters:** `text (str)`, `filename (str)`, `index (int)`.
+- **Output Return Type:** `str` — 14-character unique chunk ID.
+- **How it helps the data:** Enables deduplication, immutable referencing, and exact citation tracking across pipeline runs.
+
+##### 5. `save_chunks(self, chunks: List[Dict], output_path: Optional[Path] = None) -> None`
+- **Purpose:** Serializes all semantic chunks to disk at `india_monitor_data/rag/chunks/all_chunks.json`.
+- **Input Parameters:** `chunks (List[Dict])`, `output_path (Path | None)`.
+- **Output Return Type:** None.
+- **How it helps the data:** Provides human-readable JSON transparency and offline inspectability of the RAG knowledge base.
+
+---
 
 #### Class 3: `BM25Index`
-- **`__init__(self, k1: float = 1.5, b: float = 0.75)`**: Initializes BM25 tuning parameters ($k_1 = 1.5$ term saturation, $b = 0.75$ document length normalization).
-- **`_tokenize(self, text: str) -> List[str]`**: Converts text to lowercase alphanumeric tokens, preserving currency and clause symbols (`re.findall(r'[a-zA-Z0-9$_\-%]+', text)`).
-- **`build_index(self, chunks: List[Dict]) -> None`**: Computes document frequencies ($df$), average document length ($avgdl$), and standard Robertson-Spärck Jones Inverse Document Frequencies ($idf$):
+**Purpose:** Sparse lexical search engine using Robertson-Spärck Jones Okapi BM25 scoring for exact keyword, acronym, and section number matching.
+
+##### Functions in `BM25Index`:
+
+##### 1. `__init__(self, k1: float = 1.5, b: float = 0.75)`
+- **Purpose:** Initializes BM25 hyperparameters ($k_1 = 1.5$ term frequency saturation parameter, $b = 0.75$ document length normalization parameter).
+- **Input Parameters:** `k1 (float)`, `b (float)`.
+- **Output Return Type:** None.
+- **How it helps the data:** Sets optimal sensitivity for legal acronyms and short contractual clauses.
+
+##### 2. `_tokenize(self, text: str) -> List[str]`
+- **Purpose:** Tokenizes text into lowercase alphanumeric strings while preserving legal symbols, numbers, and currency (`re.findall(r'[a-zA-Z0-9$_\-%]+', text)`).
+- **Input Parameters:** `text (str)`.
+- **Output Return Type:** `List[str]`.
+- **How it helps the data:** Ensures clause citations (e.g. `4.2`, `8.4`) and dollar penalties (e.g. `$500`, `$1,000`) are indexable terms.
+
+##### 3. `build_index(self, chunks: List[Dict]) -> None`
+- **Purpose:** Computes document frequencies ($df$), total corpus length, average document length ($avgdl$), and Inverse Document Frequency ($idf$) weights for every unique lexicon term:
   $$\text{IDF}(q) = \ln\left(1.0 + \frac{N - df(q) + 0.5}{df(q) + 0.5}\right)$$
-- **`search(self, query: str, top_k: int = 5, category: str = None) -> List[Dict]`**: Evaluates Okapi BM25 scoring across all documents:
+- **Input Parameters:** `chunks (List[Dict])` — Complete list of semantic chunks.
+- **Output Return Type:** None.
+- **How it helps the data:** Establishes the sparse statistical lexicon across all 909 policy chunks.
+
+##### 4. `search(self, query: str, top_k: int = 5, category: Optional[str] = None) -> List[Dict]`
+- **Purpose:** Scores all indexed chunks against query terms using the Okapi BM25 formula, with optional metadata category filtering:
   $$\text{BM25}(D, Q) = \sum_{q \in Q} \text{IDF}(q) \cdot \frac{f(q, D) \cdot (k_1 + 1)}{f(q, D) + k_1 \cdot \left(1 - b + b \cdot \frac{|D|}{avgdl}\right)}$$
+- **Input Parameters:** `query (str)` — Natural language search string, `top_k (int)` — Number of results, `category (str | None)` — Category filter.
+- **Output Return Type:** `List[Dict]` — Top-k scored chunk dictionaries with `bm25_score`.
+- **How it helps the data:** Guarantees exact keyword recall for specific contract codes (e.g. "Force Majeure 4.2" or "MHDRZ").
+
+---
 
 #### Class 4: `VectorStore`
-- **`__init__(self, model_name: str = "all-MiniLM-L6-v2")`**: Loads HuggingFace `SentenceTransformer` model (384 embedding dimensions).
-- **`build_index(self, chunks: List[Dict]) -> None`**: Generates L2-normalized dense embeddings, builds FAISS `IndexFlatIP` (Inner Product / Cosine Similarity), builds BM25 index, and serializes index files to disk (`index.faiss`, `bm25.pkl`, `metadata.pkl`, `chunks.pkl`).
-- **`load_index(self) -> bool`**: Deserializes pre-built FAISS and BM25 indexes into RAM.
-- **`search_hybrid(self, query: str, top_k: int = 5, category: str = None) -> List[Dict]`**: Executes dense vector search and sparse BM25 search in parallel, then merges results via **Reciprocal Rank Fusion (RRF)**:
+**Purpose:** Dense vector search engine using HuggingFace `SentenceTransformer` embeddings and FAISS Inner Product / Cosine Similarity indexing.
+
+##### Functions in `VectorStore`:
+
+##### 1. `__init__(self, model_name: str = "all-MiniLM-L6-v2")`
+- **Purpose:** Loads the 384-dimensional `SentenceTransformer` embedding model and initializes index storage directories.
+- **Input Parameters:** `model_name (str)` — HuggingFace model identifier.
+- **Output Return Type:** None.
+- **How it helps the data:** Instantiates dense neural semantic mapping capability.
+
+##### 2. `build_index(self, chunks: List[Dict]) -> None`
+- **Purpose:** Generates L2-normalized dense embeddings for all chunks, constructs a FAISS `IndexFlatIP` vector index, builds the parallel BM25 index, and persists all 4 index files to disk (`index.faiss`, `bm25.pkl`, `metadata.pkl`, `chunks.pkl`).
+- **Input Parameters:** `chunks (List[Dict])`.
+- **Output Return Type:** None.
+- **How it helps the data:** Creates persistent vector structures supporting sub-millisecond similarity lookups.
+
+##### 3. `load_index(self) -> bool`
+- **Purpose:** Deserializes pre-computed FAISS vector index and BM25 lexicon from disk into RAM on application startup.
+- **Input Parameters:** None.
+- **Output Return Type:** `bool` — `True` if indexes loaded successfully, `False` otherwise.
+- **How it helps the data:** Achieves zero-warmup cold-start latency for real-time agent queries.
+
+##### 4. `search_hybrid(self, query: str, top_k: int = 5, category: Optional[str] = None) -> List[Dict]`
+- **Purpose:** Executes dense vector search and sparse BM25 search in parallel, then fuses rankings using **Reciprocal Rank Fusion (RRF)**:
   $$\text{RRF\_Score}(d) = \frac{1}{60 + \text{Rank}_{\text{dense}}(d)} + \frac{1}{60 + \text{Rank}_{\text{BM25}}(d)}$$
   Normalizes combined similarity score to $[0.0, 1.0]$. In-memory query cache ensures sub-millisecond retrieval.
+- **Input Parameters:** `query (str)`, `top_k (int)`, `category (str | None)`.
+- **Output Return Type:** `List[Dict]` — Top-k fused chunks with similarity scores and source filenames.
+- **How it helps the data:** Combines semantic conceptual understanding (dense) with exact legal clause precision (sparse), eliminating retrieval blind spots.
+
+---
 
 #### Class 5: `RAGQueryEngine`
-- **`ask(self, question: str, category: str = None, top_k: int = 5) -> Dict`**: Executes hybrid search, builds context window from top matching chunks, and calls `_generate_answer()`.
-- **`_generate_answer(self, question: str, context: str, chunks: List[Dict]) -> str`**: Deduplicates snippets, formats clause citations with category tags and similarity scores, and constructs a structured answer payload.
-- **`query(self, question: str, category: str = None, top_k: int = 5, verbose: bool = True) -> Dict`**: High-level interface formatting output for terminal display or downstream agent prompts.
+**Purpose:** Synthesis engine that packages retrieved chunks into structured context windows and formats citations for multi-agent reasoning.
+
+##### Functions in `RAGQueryEngine`:
+
+##### 1. `__init__(self, vector_store: VectorStore)`
+- **Purpose:** Binds the query engine to an active, loaded `VectorStore` instance.
+- **Input Parameters:** `vector_store (VectorStore)`.
+- **Output Return Type:** None.
+- **How it helps the data:** Connects the query synthesis layer to the underlying hybrid index.
+
+##### 2. `ask(self, question: str, category: Optional[str] = None, top_k: int = 5) -> Dict`
+- **Purpose:** Public programmatic API. Performs hybrid retrieval, compiles deduplicated context, formats clause citations, and returns structured result payload.
+- **Input Parameters:** `question (str)`, `category (str | None)`, `top_k (int)`.
+- **Output Return Type:** `Dict` — `{"question", "answer", "sources", "confidence", "chunks"}`.
+- **How it helps the data:** Supplies self-contained knowledge payloads to the ML engine and multi-agent specialists.
+
+##### 3. `_generate_answer(self, question: str, context: str, chunks: List[Dict]) -> str`
+- **Purpose:** Synthesizes extracted text excerpts into a concise, grounded paragraph quoting exact section numbers and policy directives.
+- **Input Parameters:** `question (str)`, `context (str)`, `chunks (List[Dict])`.
+- **Output Return Type:** `str` — Grounded textual answer with citations.
+- **How it helps the data:** Condenses multi-document search matches into actionable summaries.
+
+##### 4. `query(self, question: str, category: Optional[str] = None, top_k: int = 5, verbose: bool = True) -> Dict`
+- **Purpose:** Verbose testing and inspection API that formats retrieval results for terminal display with ANSI color coding.
+- **Input Parameters:** `question (str)`, `category (str | None)`, `top_k (int)`, `verbose (bool)`.
+- **Output Return Type:** `Dict`.
+- **How it helps the data:** Facilitates manual evaluation and developer debugging of knowledge retrieval.
+
+---
 
 #### Class 6: `RAGEngine`
-- **`initialize(self, force_rebuild: bool = False) -> bool`**: Orchestrates `DocumentLoader`, `ClauseAwareChunker`, and `VectorStore`. Loads existing index or rebuilds from scratch if `force_rebuild=True`.
-- **`ask(self, question: str, category: str = None) -> Dict`**: Public API for silent programmatic retrieval.
-- **`query(self, question: str, category: str = None, verbose: bool = True) -> Dict`**: Public API for verbose terminal inspection.
+**Purpose:** Master facade coordinating `DocumentLoader`, `ClauseAwareChunker`, and `VectorStore` into a single unified interface.
+
+##### Functions in `RAGEngine`:
+
+##### 1. `__init__(self)`
+- **Purpose:** Instantiates internal components (`DocumentLoader`, `ClauseAwareChunker`, `VectorStore`, `RAGQueryEngine`).
+- **Input Parameters:** None.
+- **Output Return Type:** None.
+- **How it helps the data:** Provides a single unified entry point for all RAG operations in the project.
+
+##### 2. `initialize(self, force_rebuild: bool = False) -> bool`
+- **Purpose:** Orchestrates index lifecycle. Attempts to load serialized indexes from disk; if missing or if `force_rebuild=True`, executes document loading, chunking, and full index generation.
+- **Input Parameters:** `force_rebuild (bool)` — If `True`, forces rebuild of FAISS and BM25 indexes.
+- **Output Return Type:** `bool` — `True` on success.
+- **How it helps the data:** Guarantees that the knowledge base remains synchronized with any newly added documents.
+
+##### 3. `ask(self, question: str, category: Optional[str] = None) -> Dict`
+- **Purpose:** Programmatic query delegation to `RAGQueryEngine.ask()`.
+- **Input Parameters:** `question (str)`, `category (str | None)`.
+- **Output Return Type:** `Dict`.
+- **How it helps the data:** Standard method used by `PredictiveEngine._enrich_with_rag()`.
+
+##### 4. `query(self, question: str, category: Optional[str] = None, verbose: bool = True) -> Dict`
+- **Purpose:** Interactive terminal query delegation to `RAGQueryEngine.query()`.
+- **Input Parameters:** `question (str)`, `category (str | None)`, `verbose (bool)`.
+- **Output Return Type:** `Dict`.
+- **How it helps the data:** Used for CLI diagnostic queries and manual verification.
 
 ---
 
@@ -438,8 +613,9 @@ graph TD
 
 #### 1. `__init__(self, host: str = "http://localhost:11434", model: str = "qwen2.5:7b", timeout: int = 45)`
 - **Purpose:** Initializes Ollama REST API connection parameters.
-- **Input Parameters:** `host (str)`, `model (str)`, `timeout (int)`.
+- **Input Parameters:** `host (str)` — Local daemon URL, `model (str)` — LLM model tag (`qwen2.5:7b`), `timeout (int)` — Request timeout in seconds.
 - **Output Return Type:** None.
+- **How it helps the data:** Connects the system to the local GPU-accelerated language model without external API dependencies.
 
 #### 2. `is_available(self) -> bool`
 - **Purpose:** Sends a lightweight `GET /api/tags` request (2-second timeout) to verify that the Ollama daemon is active and that `qwen2.5:7b` (or a compatible local model) is loaded in VRAM.
@@ -458,8 +634,9 @@ graph TD
   }
   ```
   Applies the non-negotiable `STRICT_SYSTEM_PROMPT` mandating that the model only cite explicitly provided telemetry and facts.
-- **Input Parameters:** `prompt (str)`, `system_prompt (str | None)`.
+- **Input Parameters:** `prompt (str)` — User prompt, `system_prompt (str | None)` — Custom system instructions (optional).
 - **Output Return Type:** `Optional[str]` — Generated text completion or `None` on failure/timeout.
+- **How it helps the data:** Synthesizes unstructured weather observations and news headlines into structured insight blocks with zero hallucination.
 
 ---
 
