@@ -153,106 +153,32 @@ graph TD
 
 ---
 
-### 🧠 Deep Dive: What is Clause-Aware Chunking in Plain English?
+### 🧠 Deep Dive: How Engine B Understands Contracts & Policies
 
-#### 1. Why Do We Need "Chunking" at All?
-Large language models and search engines cannot read a 50-page legal contract or a 100-page carrier handbook in a single breath every time a question is asked. If you throw a 100-page document into an AI prompt:
-1. It is **too slow and expensive** to process millions of irrelevant words.
-2. The AI gets **confused by irrelevant information** (the "needle in a haystack" problem).
-3. Search engines must retrieve **exact, focused snippets** (like a single specific penalty clause) rather than an entire book.
-
-Therefore, documents must be sliced into small, bite-sized snippets called **"chunks"** (typically 300–600 characters). 
-
-However, **how you slice a document makes or breaks the entire AI system.**
+#### 1. What is Clause-Aware Chunking? (Plain English)
+- **Why Chunking is Needed:** LLMs cannot read an entire 100-page contract in one breath; documents must be sliced into small 500-character snippets ("chunks").
+- **Why Standard Chunking Fails:** Traditional tools cut text blindly by character count (like a meat cleaver). This often cuts a rule in half—putting *"Carrier pays $500/day fine"* in Chunk 1, and *"...unless a storm occurred, waiving all fines"* in Chunk 2. The AI only reads Chunk 1 and wrongfully fines the carrier during a hurricane!
+- **The Clause-Aware Solution:** Acts like a smart legal assistant. It detects legal headings (`Section 4.2`, `[RULE-W-01]`, bullet points) and ensures that the **Rule + Dollar Penalty + Exception Waiver** stay locked together in the same snippet with the document title stamped on top.
 
 ---
 
-#### 2. The Two Traditional Chunking Methods (And Why They Fail in Supply Chain & Law)
+#### 2. Sparse Search vs. Dense Search: What's the Difference?
 
-In standard software engineering, developers typically rely on two simple chunking methods. Both cause catastrophic failures when applied to legal contracts, insurance policies, and supply chain SLAs:
+To find the right contract snippet, Engine B uses two completely different search techniques:
 
-##### Method A: Fixed-Size Character / Token Chunking ("The Dumb Meat Cleaver")
-- **How it works:** Slices the text blindly every 500 characters or 200 words, like a meat cleaver dropping at strict mechanical intervals, completely ignoring what the text is saying.
-- **The Fatal Flaw:** It frequently cuts sentences, numbers, or legal conditions directly in half. A sentence starting with an obligation can be severed from its vital exception!
-
-##### Method B: Naive Paragraph / Double-Newline Chunking ("The Blind Slicer")
-- **How it works:** Slices text whenever it encounters an empty line (`\n\n`) or a period (`.`).
-- **The Fatal Flaw:** Legal documents are deeply hierarchical (e.g. *Section 4: Liquidated Damages* $\to$ *Clause 4.2: Tier 1 Penalties* $\to$ *Sub-clause (b): Natural Disaster Exceptions*). If you slice blindly on paragraph breaks, the snippet loses its parent heading! The AI retrieves a paragraph that says: *"In such cases, payment is reduced by 25%"*, but the AI has no clue *which* customer tier, *which* warehouse, or *which* transport mode that 25% applies to.
-
----
-
-#### 3. What is "Clause-Aware Chunking"? ("The Intelligent Legal Paralegal")
-
-**Clause-Aware Chunking** acts like an experienced corporate contract lawyer reading through agreements with a highlighter. Instead of slicing blindly by character counts or blank lines, it understands the **logical anatomy of a legal contract**:
-
-1. **Preserves Complete Legal Thoughts (The Rule + Penalty + Exception Rule):**
-   A legal clause is not just a statement—it is an **equation**:
-   $$\text{Legal Clause} = \text{Obligation} + \text{Monetary Penalty} + \text{Qualifying Conditions} + \text{Exceptions / Waivers}$$
-   Clause-Aware Chunking guarantees that the entire equation stays locked together in the exact same chunk.
-2. **Recognizes Legal & Operational Formatting Patterns:**
-   The chunker uses intelligent regular expressions to detect real-world contract boundaries:
-   - Section headers (e.g. `Section 4.2`, `Article IX`, `Clause 12(b)`)
-   - Regulatory rule identifiers (e.g. `[RULE-W-HYD-02]`, `[RULE-S-TRUCK-01]`)
-   - Numbered or lettered lists (`(i)`, `(ii)`, `(a)`, `(b)`, `1.`, `2.`)
-   - Markdown headers (`###`, `####`)
-3. **Hierarchical Metadata Header Stamping:**
-   Before storing a snippet, the chunker prepends the **Document Name** and **Section Title** directly to the chunk text. Even if a snippet is only 3 sentences long, the AI always sees:
-   `[Source: Master Vendor Agreement 2026 | Section 4.2: Force Majeure & Severe Weather Exceptions]`
-   This completely prevents the AI from getting confused about whose contract it is reading.
-4. **Adaptive Sliding Window Overlap (50-Character Bridge):**
-   Between adjacent chunks, a 50-character overlap is maintained so that thoughts flowing across paragraphs are never abruptly amputated at the boundary.
-
----
-
-#### 4. The Real-World Disaster: Traditional Slicing vs. Clause-Aware Chunking
-
-To see the dramatic difference in practice, consider this actual clause from a Carrier Master Service Agreement:
-
-```text
-Section 4.2: Late Delivery Liquidated Damages
-The freight carrier shall be assessed a penalty of $500 per day for delayed delivery past the promised delivery date. 
-PROVIDED HOWEVER, that if the delivery delay is directly caused by a verified Act of God, extreme heatwave (>40°C), or national highway strike, and the carrier provides at least 12 hours proactive notice to dispatch, all late delivery penalties are 100% waived under Force Majeure protocols.
-```
-
-Here is what happens inside the AI depending on the chunking method used:
-
-```
-┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ SCENARIO: A truck carrying pet medication is delayed 48h due to a 42°C heatwave in Hyderabad.   │
-│ The driver gave 14 hours notice. The carrier disputes a $1,000 late delivery fine.               │
-└──────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-❌ WHAT HAPPENS WITH FIXED-SIZE / NAIVE CHUNKING:
-   • The mechanical slicer drops at 200 characters:
-     [CHUNK 1]: "Section 4.2: Late Delivery Liquidated Damages. The freight carrier shall be assessed
-                 a penalty of $500 per day for delayed delivery past the promised delivery date."
-     [CHUNK 2]: "PROVIDED HOWEVER, that if the delivery delay is directly caused by a verified Act of 
-                 God, extreme heatwave (>40°C), or national highway strike..."
-   • When the AI searches for "carrier late delivery penalty", it retrieves CHUNK 1.
-   • CHUNK 1 contains ONLY the $500/day fine! The exception in CHUNK 2 was amputated into another file!
-   • THE DISASTER: The AI issues a wrongful $1,000 carrier debit memo, causing an expensive legal dispute
-     and damaging vendor relationships during a verified natural disaster!
-
-✅ WHAT HAPPENS WITH CLAUSE-AWARE CHUNKING (O2C COPILOT):
-   • The Clause-Aware Chunker recognizes "Section 4.2" and keeps the penalty AND the "PROVIDED HOWEVER"
-     exception together in a single 412-character semantic chunk.
-   • It stamps the header: "[Carrier Master Agreement | Section 4.2: Late Delivery Damages & Waivers]".
-   • THE TRIUMPH: The AI retrieves the complete clause, recognizes that 42°C > 40°C, verifies the 14h notice
-     (which satisfies >= 12h), grants a 72-Hour Force Majeure Waiver, and legally waives the $1,000 penalty!
-```
-
----
-
-#### 5. Executive Comparison Matrix: Chunking Strategies in Enterprise RAG
-
-| Operational Evaluation Factor | Method 1: Fixed-Size Character Slicing | Method 2: Naive Paragraph Slicing | Method 3: Clause-Aware Chunking (O2C AI Monitor) |
+| Search Method | Plain-English Analogy | What It Is Great At | Its Fatal Blindspot |
 |---|---|---|---|
-| **Slicing Mechanism** | Rigid character count (e.g. every 500 chars). | Splits on double line breaks (`\n\n`). | Structural regex matching on legal sections, rule IDs, and sub-clauses. |
-| **Integrity of Exceptions & Waivers** | ❌ **High Risk:** Cuts "unless" and "provided however" clauses in half. | ⚠️ **Moderate Risk:** Separates bulleted exceptions from main rules. | ✅ **100% Preserved:** Guarantees rule, penalty, and qualifying waiver remain in the same chunk. |
-| **Context Retention (Parent Headings)** | ❌ **Zero:** Chunks have no idea which document or section they came from. | ❌ **Lost:** Sub-clauses lose their governing section title. | ✅ **Complete:** Injects document title, customer tier, and section name into every chunk header. |
-| **Search Retrieval Accuracy** | ⚠️ Low (Retrieves fragmented half-sentences). | ⚠️ Medium (Misses context when paragraphs are short). | 🏆 **Superior:** Optimized for dense FAISS semantic search + sparse BM25 exact clause matching. |
-| **Risk of AI Legal Hallucination** | 🚨 **Severe:** Misquotes contracts due to truncated legal terms. | ⚠️ **Moderate:** Misses qualifying caveats located in adjacent lines. | 🛡️ **Near-Zero:** Provides the LLM with the complete, unabridged legal picture. |
-| **Suitability for Regulated Supply Chains** | ❌ Unusable for legal / contractual workflows. | ⚠️ Risky for compliance enforcement. | 🏆 **Enterprise Gold Standard:** Meets strict audit and contract arbitration standards. |
+| **Sparse Search**<br/>*(Okapi BM25)* | **Like "Ctrl + F" in a document.**<br/>It searches for the *exact words, letters, and numbers* you typed. | Exact numbers, section codes, acronyms, and dollar values (e.g. `$500`, `LIFSK = '01'`, `Section 4.2`, `NH-44`). | **Blind to meaning.** If you search *"rainstorm delay"*, but the contract says *"monsoon disruption"*, it finds **0 results** because the words don't match. |
+| **Dense Search**<br/>*(FAISS Vector / AI)* | **Like a smart human who understands your intent.**<br/>It matches the *conceptual meaning* of what you want. | Synonyms and concepts. Searching *"bad weather transit delay"* easily finds clauses mentioning *"cyclone alert"*, *"flooded highway"*, or *"adverse atmospheric event"*. | **Terrible with exact numbers and codes.** It can easily mix up `$500` with `$150` (both are "fees") or confuse `LIFSK = '01'` with `LIFSK = '02'`. |
+
+---
+
+#### 3. Why We Combine Both (Hybrid RAG)
+Neither search method works reliably on its own:
+- **Dense alone** gets confused by exact clause numbers and dollar amounts.
+- **Sparse alone** fails the moment someone uses a synonym.
+
+**The Hybrid Winner:** Engine B runs **both in parallel**. Dense search understands the *concept* (finding weather exceptions and transit strikes), while Sparse search locks onto the *exact numbers* (`Section 4.2`, `$500`). They vote together using **Reciprocal Rank Fusion (RRF)** to return the 100% correct legal clause every time.
 
 ---
 
