@@ -133,11 +133,14 @@ def list_orders(delayed_only: bool = False, limit: int = 20):
     print("=" * 105 + "\n")
 
 
-def export_markdown(out_file: Path = None):
-    """Export all stored predictions to a formatted Markdown report"""
+def export_markdown(out_file: Path = None, limit: int = None):
+    """Export stored predictions to a formatted Markdown report"""
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT * FROM ml_predictions ORDER BY will_be_delayed DESC, delay_probability DESC")
+    query = "SELECT * FROM ml_predictions ORDER BY will_be_delayed DESC, delay_probability DESC"
+    if limit and limit > 0:
+        query += f" LIMIT {limit}"
+    c.execute(query)
     rows = c.fetchall()
     conn.close()
 
@@ -148,10 +151,11 @@ def export_markdown(out_file: Path = None):
     if out_file is None:
         out_file = PROJECT_ROOT / "PREDICTIONS_REPORT.md"
 
+    limit_str = f" (Top {limit:,} by Risk)" if limit else " (All Stored Records)"
     md = []
-    md.append("# 📊 O2C AI Monitor - Order Predictions Report\n")
+    md.append(f"# 📊 O2C AI Monitor - Order Predictions Report{limit_str}\n")
     md.append(f"*Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n")
-    md.append(f"**Total Orders Processed:** {len(rows):,}\n\n")
+    md.append(f"**Total Orders Included in Report:** {len(rows):,}\n\n")
     md.append("| Order ID | Customer | Carrier | Status | Delay Prob | Delay (Hours) | Risk ($) | Root Cause Diagnosis |\n")
     md.append("|---|---|---|---|---|---|---|---|\n")
 
@@ -168,11 +172,14 @@ def export_markdown(out_file: Path = None):
     print(f"✅ Exported {len(rows):,} order predictions to Markdown: {out_file}")
 
 
-def export_csv(out_file: Path = None):
-    """Export all stored predictions to CSV"""
+def export_csv(out_file: Path = None, limit: int = None):
+    """Export stored predictions to CSV"""
     import pandas as pd
     conn = get_db_connection()
-    df = pd.read_sql_query("SELECT * FROM ml_predictions", conn)
+    query = "SELECT * FROM ml_predictions ORDER BY will_be_delayed DESC, delay_probability DESC"
+    if limit and limit > 0:
+        query += f" LIMIT {limit}"
+    df = pd.read_sql_query(query, conn)
     conn.close()
 
     if df.empty:
@@ -193,7 +200,7 @@ def main():
     parser.add_argument("--order", type=str, help="Look up a specific Order ID")
     parser.add_argument("--list", action="store_true", help="List recent order predictions")
     parser.add_argument("--delayed", action="store_true", help="List only delayed orders")
-    parser.add_argument("--limit", type=int, default=20, help="Limit number of rows displayed")
+    parser.add_argument("--limit", type=int, default=None, help="Limit number of rows displayed or exported")
     parser.add_argument("--export-md", action="store_true", help="Export predictions to PREDICTIONS_REPORT.md")
     parser.add_argument("--export-csv", action="store_true", help="Export predictions to CSV")
     args = parser.parse_args()
@@ -201,7 +208,7 @@ def main():
     # Default action if no arguments provided
     if not any([args.summary, args.order, args.list, args.delayed, args.export_md, args.export_csv]):
         show_summary()
-        list_orders(limit=10)
+        list_orders(limit=args.limit or 10)
         return
 
     if args.summary:
@@ -209,11 +216,11 @@ def main():
     if args.order:
         query_order(args.order)
     if args.list or args.delayed:
-        list_orders(delayed_only=args.delayed, limit=args.limit)
+        list_orders(delayed_only=args.delayed, limit=args.limit or 20)
     if args.export_md:
-        export_markdown()
+        export_markdown(limit=args.limit)
     if args.export_csv:
-        export_csv()
+        export_csv(limit=args.limit)
 
 
 if __name__ == "__main__":
