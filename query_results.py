@@ -236,9 +236,12 @@ def export_markdown(out_file: Path = None, limit: int = None, detailed: bool = F
                     continue
 
     if out_file is None:
-        out_file = PROJECT_ROOT / "PREDICTIONS_REPORT.md"
+        if detailed:
+            out_file = PROJECT_ROOT / "PREDICTIONS_DETAILED_REPORT.md"
+        else:
+            out_file = PROJECT_ROOT / "PREDICTIONS_SUMMARY_REPORT.md"
 
-    detail_tag = " (In-Depth Dossier)" if detailed else ""
+    detail_tag = " (In-Depth Dossier)" if detailed else " (Executive Summary)"
     limit_str = f" (Top {limit:,} by Risk)" if limit else " (All Stored Records)"
     md = []
     md.append(f"# 📊 O2C AI Monitor - Order Predictions Report{detail_tag}{limit_str}\n")
@@ -354,13 +357,15 @@ def main():
     parser.add_argument("--list", action="store_true", help="List recent order predictions")
     parser.add_argument("--delayed", action="store_true", help="List only delayed orders")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of rows displayed or exported")
-    parser.add_argument("--export-md", action="store_true", help="Export predictions to PREDICTIONS_REPORT.md")
+    parser.add_argument("--export-md", action="store_true", help="Export predictions to PREDICTIONS_SUMMARY_REPORT.md (or PREDICTIONS_DETAILED_REPORT.md if --detailed)")
+    parser.add_argument("--export-detailed", action="store_true", help="Export in-depth multi-agent dossier to PREDICTIONS_DETAILED_REPORT.md")
+    parser.add_argument("--export-both", action="store_true", help="Export BOTH summary and in-depth detailed Markdown reports simultaneously")
     parser.add_argument("--export-csv", action="store_true", help="Export predictions to CSV")
     parser.add_argument("--detailed", action="store_true", help="Include full multi-agent reasoning, XAI attributions, and executive brief in Markdown export")
     args = parser.parse_args()
 
     # Default action if no arguments provided
-    if not any([args.summary, args.order, args.list, args.delayed, args.export_md, args.export_csv]):
+    if not any([args.summary, args.order, args.list, args.delayed, args.export_md, args.export_detailed, args.export_both, args.export_csv]):
         show_summary()
         list_orders(limit=args.limit or 10)
         return
@@ -371,7 +376,12 @@ def main():
         query_order(args.order)
     if args.list or args.delayed:
         list_orders(delayed_only=args.delayed, limit=args.limit or 20)
-    if args.export_md:
+    if args.export_both:
+        export_markdown(limit=args.limit, detailed=False)
+        export_markdown(limit=args.limit, detailed=True)
+    elif args.export_detailed:
+        export_markdown(limit=args.limit, detailed=True)
+    elif args.export_md:
         export_markdown(limit=args.limit, detailed=args.detailed)
     if args.export_csv:
         export_csv(limit=args.limit)
