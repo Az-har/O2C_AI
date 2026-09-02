@@ -77,7 +77,7 @@ def show_summary():
 
 
 def query_order(order_id: str):
-    """Retrieve detailed prediction for a specific order ID"""
+    """Retrieve in-depth prediction and multi-agent analysis for a specific order ID"""
     conn = get_db_connection()
     c = conn.cursor()
     c.execute("SELECT * FROM ml_predictions WHERE order_id = ? ORDER BY prediction_id DESC LIMIT 1", (str(order_id),))
@@ -88,21 +88,89 @@ def query_order(order_id: str):
         print(f"❌ Order '{order_id}' not found in database.")
         return
 
-    print("\n" + "=" * 80)
-    print(f"📦 ORDER DETAILS: {row['order_id']}")
-    print("=" * 80)
-    print(f"• Customer Name      : {row['customer_name']}")
-    print(f"• Carrier Name       : {row['carrier_name']}")
-    print(f"• Delivery ID        : {row['delivery_id']}")
-    print(f"• Shipment ID        : {row['shipment_id']}")
-    print(f"• Status             : {'❌ DELAYED' if row['will_be_delayed'] else '✅ ON TIME'}")
-    print(f"• Delay Probability  : {row['delay_probability']:.1%}")
-    print(f"• Predicted Delay    : {row['delay_hours']:.1f} hours")
-    print(f"• Predicted ETA      : {row['predicted_eta']}")
-    print(f"• Financial Risk ($) : ${row['financial_risk_usd']:,.2f}")
-    print(f"• Root Cause Factors : {row['root_cause']}")
-    print(f"• Predicted At       : {row['predicted_at']}")
-    print("=" * 80 + "\n")
+    # Check for in-depth decision analysis in daily reports
+    report_decision = None
+    reports_dir = PROJECT_ROOT / "india_monitor_data" / "reports"
+    if reports_dir.exists():
+        # Look through reports in reverse chronological order
+        for rpath in sorted(reports_dir.glob("daily_agent_report_*.json"), reverse=True):
+            try:
+                with open(rpath, "r", encoding="utf-8") as rf:
+                    rdata = json.load(rf)
+                for d in rdata.get("decisions", []):
+                    if str(d.get("order_id")) == str(order_id):
+                        report_decision = d
+                        break
+                if report_decision:
+                    break
+            except Exception:
+                continue
+
+    print("\n" + "=" * 90)
+    print(f"📦 IN-DEPTH ORDER ANALYSIS & ROOT CAUSE REPORT: {row['order_id']}")
+    print("=" * 90)
+    print(f"• Customer Name       : {row['customer_name']}")
+    print(f"• Carrier Name        : {row['carrier_name']}")
+    print(f"• Delivery ID         : {row['delivery_id']}")
+    print(f"• Shipment ID         : {row['shipment_id']}")
+    print(f"• Predicted Status    : {'❌ DELAYED' if row['will_be_delayed'] else '✅ ON TIME'}")
+    print(f"• Delay Probability   : {row['delay_probability']:.1%}")
+    print(f"• Predicted Delay     : {row['delay_hours']:.1f} hours")
+    print(f"• Predicted ETA       : {row['predicted_eta']}")
+    print(f"• Financial Risk ($)  : ${row['financial_risk_usd']:,.2f}")
+
+    if report_decision:
+        pred = report_decision.get("engine_a_ml_prediction", {})
+        agents = report_decision.get("specialist_agents_analysis", {})
+        contract = report_decision.get("legal_and_sla_adjudication", {})
+        mitigation = report_decision.get("emergency_mitigation", {})
+        sap_actions = report_decision.get("executed_enterprise_actions", {}).get("sap_writebacks", [])
+        citations = report_decision.get("engine_b_rag_citations", [])
+
+        print("-" * 90)
+        print("🧠 EXPLAINABLE AI (XAI) ATTRIBUTION BREAKDOWN:")
+        attributions = pred.get("feature_attributions", [])
+        if attributions:
+            for a in attributions:
+                print(f"   • {a['contribution_pct']:>5.1f}%  ->  {a['factor']}")
+        else:
+            print("   • Baseline statistical transit variance")
+
+        print("-" * 90)
+        print("🔍 IDENTIFIED ROOT CAUSE BOTTLENECKS:")
+        causes = pred.get("root_causes", [])
+        if causes:
+            for rc in causes:
+                print(f"   • ⚠️  {rc}")
+        else:
+            print(f"   • {row['root_cause']}")
+
+        print("-" * 90)
+        print("🤖 SPECIALIST MULTI-AGENT ADJUDICATION:")
+        print(f"   • Route Supervisor    : Telematics Active={agents.get('route_supervisor', {}).get('telematics_active', True)} | Speed={agents.get('route_supervisor', {}).get('transit_speed_kmh', 0.0):.1f} km/h")
+        print(f"   • Contract Lawyer     : {contract.get('force_majeure_status', 'Standard Evaluation')}")
+        print(f"   • SLA Penalty Total   : ${contract.get('sla_delay_penalty_usd', 0.0):,.2f}")
+        print(f"   • QA & Mitigation     : {mitigation.get('approval_status', 'N/A')} (Cost: ${mitigation.get('total_mitigation_cost_usd', 0.0):,.2f})")
+
+        if sap_actions:
+            print("-" * 90)
+            print("⚡ SIMULATED SAP ERP ACTIONS EXECUTED:")
+            for act in sap_actions:
+                print(f"   • {act['action']} on {act['table']}.{act['field']} = {act['value']} ({act['reason'][:70]}...)")
+
+        if citations:
+            print("-" * 90)
+            print("📚 GOVERNING RAG POLICY CITATIONS:")
+            for cit in citations:
+                print(f"   • 📄 {cit}")
+
+        print("-" * 90)
+        print("📝 EXECUTIVE SYNTHESIS BRIEF:")
+        print(f"   {report_decision.get('executive_decision_brief', 'N/A')}")
+    else:
+        print("-" * 90)
+        print(f"• Root Cause Factors  : {row['root_cause']}")
+    print("=" * 90 + "\n")
 
 
 def list_orders(delayed_only: bool = False, limit: int = 20):
