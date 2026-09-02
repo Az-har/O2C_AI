@@ -1105,6 +1105,19 @@ graph TD
 #### Class 2: `ClauseAwareChunker`
 **Purpose:** Slices long, complex legal documents into bite-sized paragraphs without cutting sentences or rules in half, ensuring the AI sees the complete context of every policy.
 
+##### 🧠 Deep Dive: What is Clause-Aware Chunking & How is it Different?
+- **Why Chunking is Needed:** LLMs cannot read a 100-page carrier contract in a single prompt without confusion or extreme latency. Documents must be sliced into 300–600 character snippets ("chunks").
+- **Method 1: Fixed-Size Slicing ("The Meat Cleaver"):** Cuts text every 500 characters blindly. If a sentence says *"Carrier pays $500 penalty per day... unless an Act of God storm occurs, waiving all fines"*, it frequently cuts after "...per day", separating the penalty from the waiver! The AI sees only the fine and issues wrongful penalties during natural disasters.
+- **Method 2: Naive Paragraph Slicing ("The Blind Slicer"):** Cuts on blank lines (`\n\n`). Sub-clauses lose their parent headings, so the AI sees *"Payment reduced by 25%"* without knowing which customer tier or transport mode it governs.
+- **Method 3: Clause-Aware Chunking ("The Intelligent Legal Paralegal"):** Recognizes contract architecture (`Section 4.2`, `[RULE-W-HYD-02]`, numbered sub-clauses). It guarantees the **Obligation + Penalty + Exception/Waiver** remain in the exact same chunk, stamps document/section titles on every snippet, and maintains a 50-character sliding overlap.
+
+| Evaluation Factor | Fixed-Size Slicing | Naive Paragraph Slicing | Clause-Aware Chunking (O2C Copilot) |
+|---|---|---|---|
+| **Slicing Mechanism** | Rigid character count | Splits on `\n\n` linebreaks | Structural regex on legal clauses & rule IDs |
+| **Exception Preservation** | ❌ Cuts waivers in half | ⚠️ Separates exceptions from rules | ✅ 100% Preserved in same chunk |
+| **Context Retention** | ❌ Zero parent context | ❌ Loses governing section title | ✅ Document & section stamped on header |
+| **Risk of AI Hallucination** | 🚨 Severe (amputated terms) | ⚠️ Moderate (missing caveats) | 🛡️ Near-Zero (complete legal thought) |
+
 ##### Functions in `ClauseAwareChunker`:
 
 ##### 1. `__init__(self, chunk_size: int = 500, chunk_overlap: int = 50)`
