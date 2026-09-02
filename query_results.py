@@ -201,8 +201,8 @@ def list_orders(delayed_only: bool = False, limit: int = 20):
     print("=" * 105 + "\n")
 
 
-def export_markdown(out_file: Path = None, limit: int = None):
-    """Export stored predictions to a formatted Markdown report"""
+def export_markdown(out_file: Path = None, limit: int = None, detailed: bool = False):
+    """Export stored predictions to a formatted Markdown report with optional in-depth analysis"""
     conn = get_db_connection()
     c = conn.cursor()
     query = "SELECT * FROM ml_predictions ORDER BY will_be_delayed DESC, delay_probability DESC"
@@ -216,14 +216,36 @@ def export_markdown(out_file: Path = None, limit: int = None):
         print("ℹ️ No records to export.")
         return
 
+    # Load daily report decisions lookup if detailed mode is enabled
+    decisions_lookup = {}
+    if detailed:
+        target_oids = {str(r["order_id"]) for r in rows}
+        reports_dir = PROJECT_ROOT / "india_monitor_data" / "reports"
+        if reports_dir.exists():
+            for rpath in sorted(reports_dir.glob("daily_agent_report_*.json"), reverse=True):
+                try:
+                    with open(rpath, "r", encoding="utf-8") as rf:
+                        rdata = json.load(rf)
+                    for d in rdata.get("decisions", []):
+                        oid = str(d.get("order_id"))
+                        if oid in target_oids and oid not in decisions_lookup:
+                            decisions_lookup[oid] = d
+                    if len(decisions_lookup) >= len(target_oids):
+                        break
+                except Exception:
+                    continue
+
     if out_file is None:
         out_file = PROJECT_ROOT / "PREDICTIONS_REPORT.md"
 
+    detail_tag = " (In-Depth Dossier)" if detailed else ""
     limit_str = f" (Top {limit:,} by Risk)" if limit else " (All Stored Records)"
     md = []
-    md.append(f"# 📊 O2C AI Monitor - Order Predictions Report{limit_str}\n")
+    md.append(f"# 📊 O2C AI Monitor - Order Predictions Report{detail_tag}{limit_str}\n")
     md.append(f"*Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n")
     md.append(f"**Total Orders Included in Report:** {len(rows):,}\n\n")
+
+    md.append("## 📋 Executive Overview Table\n\n")
     md.append("| Order ID | Customer | Carrier | Status | Delay Prob | Delay (Hours) | Risk ($) | Root Cause Diagnosis |\n")
     md.append("|---|---|---|---|---|---|---|---|\n")
 
@@ -232,7 +254,70 @@ def export_markdown(out_file: Path = None, limit: int = None):
         cust = r["customer_name"] or "Unknown"
         carr = r["carrier_name"] or "Unknown"
         cause = (r["root_cause"] or "Normal transit conditions").replace("|", "-")
-        md.append(f"| `{r['order_id']}` | {cust} | {carr} | {status} | {r['delay_probability']:.1%} | {r['delay_hours']:.1f}h | ${r['financial_risk_usd']:,.2f} | {cause} |\n")
+        md.append(f"| [`{r['order_id']}`](#order-{r['order_id']}) | {cust} | {carr} | {status} | {r['delay_probability']:.1%} | {r['delay_hours']:.1f}h | ${r['financial_risk_usd']:,.2f} | {cause} |\n")
+
+    if detailed:
+        md.append("\n---\n\n## 🔬 Detailed Multi-Agent & Root Cause Breakdown\n\n")
+        for idx, r in enumerate(rows, 1):
+            oid = str(r["order_id"])
+            status = "❌ DELAYED" if r["will_be_delayed"] else "✅ ON TIME"
+            cust = r["customer_name"] or "Unknown Customer"
+            carr = r["carrier_name"] or "Unknown Carrier"
+            dec = decisions_lookup.get(oid)
+
+            md.append(f"### <a id='order-{oid}'></a>[{idx}/{len(rows)}] Order `{oid}` — {cust} ({status})\n\n")
+            md.append(f"- **Customer Profile:** {cust} | Delivery ID: `{r['delivery_id']}` | Shipment ID: `{r['shipment_id']}`\n")
+            md.append(f"- **Carrier Logistics:** {carr}\n")
+            md.append(f"- **ML Two-Stage Risk:** Delay Probability: **{r['delay_probability']:.1%}** | Predicted Delay: **{r['delay_hours']:.1f}h** | Predicted ETA: `{r['predicted_eta']}` | Financial Exposure: **${r['financial_risk_usd']:,.2f}**\n")
+
+            if dec:
+                pred = dec.get("engine_a_ml_prediction", {})
+                agents = dec.get("specialist_agents_analysis", {})
+                contract = dec.get("legal_and_sla_adjudication", {})
+                mitigation = dec.get("emergency_mitigation", {})
+                sap_actions = dec.get("executed_enterprise_actions", {}).get("sap_writebacks", [])
+                citations = dec.get("engine_b_rag_citations", [])
+
+                # XAI Attributions
+                attributions = pred.get("feature_attributions", [])
+                if attributions:
+                    md.append("- **🧠 Explainable AI (XAI) Attribution Breakdown:**\n")
+                    for a in attributions:
+                        md.append(f"  - `{a['contribution_pct']:>5.1f}%`  ->  {a['factor']}\n")
+
+                # Root Causes
+                causes = pred.get("root_causes", [])
+                if causes:
+                    md.append("- **🔍 Identified Root Cause Triggers:**\n")
+                    for rc in causes:
+                        md.append(f"  - ⚠️ {rc}\n")
+
+                # Specialist Agents
+                md.append("- **🤖 Specialist Multi-Agent Reasoning:**\n")
+                md.append(f"  - **Route Supervisor:** Telematics Active={agents.get('route_supervisor', {}).get('telematics_active', True)} | Speed={agents.get('route_supervisor', {}).get('transit_speed_kmh', 0.0):.1f} km/h\n")
+                md.append(f"  - **Contract Lawyer:** {contract.get('force_majeure_status', 'Standard SLA Evaluation')} (Penalty: ${contract.get('sla_delay_penalty_usd', 0.0):,.2f})\n")
+                md.append(f"  - **QA & Mitigation:** {mitigation.get('approval_status', 'N/A')} (Cost: ${mitigation.get('total_mitigation_cost_usd', 0.0):,.2f})\n")
+
+                # SAP ERP Actions
+                if sap_actions:
+                    md.append("- **⚡ Simulated SAP ERP Actions:**\n")
+                    for act in sap_actions:
+                        field_str = f".{act['field']}" if 'field' in act else ""
+                        val_str = f" = `{act['value']}`" if 'value' in act else (f" (${act['amount_usd']:,.2f})" if 'amount_usd' in act else "")
+                        md.append(f"  - `{act['action']}` on `{act.get('table', 'SAP')}{field_str}`{val_str} (*{act.get('reason', '')}*)\n")
+
+                # Citations
+                if citations:
+                    md.append(f"- **📚 Governing RAG Policy Citations:** {', '.join([f'`{c}`' for c in citations])}\n")
+
+                # Executive Brief
+                brief = dec.get("executive_decision_brief")
+                if brief:
+                    md.append(f"- **📝 Executive Synthesis Brief:**\n  > {brief}\n")
+            else:
+                md.append(f"- **Root Cause Diagnosis:** {r['root_cause']}\n")
+
+            md.append("\n---\n\n")
 
     with open(out_file, "w", encoding="utf-8") as f:
         f.writelines(md)
@@ -271,6 +356,7 @@ def main():
     parser.add_argument("--limit", type=int, default=None, help="Limit number of rows displayed or exported")
     parser.add_argument("--export-md", action="store_true", help="Export predictions to PREDICTIONS_REPORT.md")
     parser.add_argument("--export-csv", action="store_true", help="Export predictions to CSV")
+    parser.add_argument("--detailed", action="store_true", help="Include full multi-agent reasoning, XAI attributions, and executive brief in Markdown export")
     args = parser.parse_args()
 
     # Default action if no arguments provided
@@ -286,7 +372,7 @@ def main():
     if args.list or args.delayed:
         list_orders(delayed_only=args.delayed, limit=args.limit or 20)
     if args.export_md:
-        export_markdown(limit=args.limit)
+        export_markdown(limit=args.limit, detailed=args.detailed)
     if args.export_csv:
         export_csv(limit=args.limit)
 
