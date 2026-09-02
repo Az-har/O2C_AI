@@ -349,11 +349,14 @@ class AgenticOrchestrator:
                 pred_results = self.predictive_engine.predict_batch(orders_to_process, orders_data=orders_data)
 
                 for idx, (ord_id, od, pred_result) in enumerate(zip(orders_to_process, orders_data, pred_results), 1):
-                    predictions_to_record.append(pred_result)
                     decision = self.llm_synthesizer.synthesize(pred_result, order_data=od or {})
                     synthesized_decisions.append(decision)
+                    
+                    pred_with_decision = dict(pred_result)
+                    pred_with_decision["decision_json"] = json.dumps(decision)
+                    predictions_to_record.append(pred_with_decision)
 
-                    if idx <= 10 or idx % 500 == 0 or idx == len(orders_to_process):
+                    if idx <= 5 or idx % 100 == 0 or idx == len(orders_to_process):
                         print(f"\n   [{idx}/{len(orders_to_process)}] Order {ord_id} -> "
                               f"Status: {'❌ DELAYED' if decision['engine_a_ml_prediction']['is_delayed'] else '✅ ON TIME'} "
                               f"({decision['engine_a_ml_prediction']['delay_probability']:.1%}) | "

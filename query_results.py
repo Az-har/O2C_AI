@@ -31,6 +31,13 @@ def get_db_connection():
         sys.exit(1)
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("PRAGMA journal_mode = WAL;")
+        conn.execute("PRAGMA synchronous = NORMAL;")
+        conn.execute("PRAGMA cache_size = -64000;")
+        conn.execute("PRAGMA mmap_size = 268435456;")
+    except Exception:
+        pass
     return conn
 
 
@@ -88,23 +95,30 @@ def query_order(order_id: str):
         print(f"❌ Order '{order_id}' not found in database.")
         return
 
-    # Check for in-depth decision analysis in daily reports
+    # Check for in-depth decision analysis directly in database first (0ms)
     report_decision = None
-    reports_dir = PROJECT_ROOT / "india_monitor_data" / "reports"
-    if reports_dir.exists():
-        # Look through reports in reverse chronological order
-        for rpath in sorted(reports_dir.glob("daily_agent_report_*.json"), reverse=True):
-            try:
-                with open(rpath, "r", encoding="utf-8") as rf:
-                    rdata = json.load(rf)
-                for d in rdata.get("decisions", []):
-                    if str(d.get("order_id")) == str(order_id):
-                        report_decision = d
+    if "decision_json" in row.keys() and row["decision_json"]:
+        try:
+            report_decision = json.loads(row["decision_json"])
+        except Exception:
+            pass
+
+    # Fallback to daily reports on disk only if not found in database
+    if report_decision is None:
+        reports_dir = PROJECT_ROOT / "india_monitor_data" / "reports"
+        if reports_dir.exists():
+            for rpath in sorted(reports_dir.glob("daily_agent_report_*.json"), reverse=True):
+                try:
+                    with open(rpath, "r", encoding="utf-8") as rf:
+                        rdata = json.load(rf)
+                    for d in rdata.get("decisions", []):
+                        if str(d.get("order_id")) == str(order_id):
+                            report_decision = d
+                            break
+                    if report_decision:
                         break
-                if report_decision:
-                    break
-            except Exception:
-                continue
+                except Exception:
+                    continue
 
     print("\n" + "=" * 90)
     print(f"📦 IN-DEPTH ORDER ANALYSIS & ROOT CAUSE REPORT: {row['order_id']}")
@@ -216,24 +230,35 @@ def export_markdown(out_file: Path = None, limit: int = None, detailed: bool = F
         print("ℹ️ No records to export.")
         return
 
-    # Load daily report decisions lookup if detailed mode is enabled
+    # Load decisions lookup if detailed mode is enabled
     decisions_lookup = {}
     if detailed:
-        target_oids = {str(r["order_id"]) for r in rows}
-        reports_dir = PROJECT_ROOT / "india_monitor_data" / "reports"
-        if reports_dir.exists():
-            for rpath in sorted(reports_dir.glob("daily_agent_report_*.json"), reverse=True):
+        # 1. Pull directly from memory-mapped SQLite row (sub-millisecond)
+        for r in rows:
+            oid = str(r["order_id"])
+            if "decision_json" in r.keys() and r["decision_json"]:
                 try:
-                    with open(rpath, "r", encoding="utf-8") as rf:
-                        rdata = json.load(rf)
-                    for d in rdata.get("decisions", []):
-                        oid = str(d.get("order_id"))
-                        if oid in target_oids and oid not in decisions_lookup:
-                            decisions_lookup[oid] = d
-                    if len(decisions_lookup) >= len(target_oids):
-                        break
+                    decisions_lookup[oid] = json.loads(r["decision_json"])
                 except Exception:
-                    continue
+                    pass
+
+        # 2. Only look on disk for any orders still missing decision_json
+        missing_oids = {str(r["order_id"]) for r in rows if str(r["order_id"]) not in decisions_lookup}
+        if missing_oids:
+            reports_dir = PROJECT_ROOT / "india_monitor_data" / "reports"
+            if reports_dir.exists():
+                for rpath in sorted(reports_dir.glob("daily_agent_report_*.json"), reverse=True):
+                    try:
+                        with open(rpath, "r", encoding="utf-8") as rf:
+                            rdata = json.load(rf)
+                        for d in rdata.get("decisions", []):
+                            oid = str(d.get("order_id"))
+                            if oid in missing_oids and oid not in decisions_lookup:
+                                decisions_lookup[oid] = d
+                        if len(decisions_lookup) >= len(rows):
+                            break
+                    except Exception:
+                        continue
 
     if out_file is None:
         if detailed:

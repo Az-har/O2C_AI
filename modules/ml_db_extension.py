@@ -46,6 +46,9 @@ class MLDatabaseExtension:
         try:
             self.conn.execute("PRAGMA journal_mode=WAL;")
             self.conn.execute("PRAGMA synchronous=NORMAL;")
+            self.conn.execute("PRAGMA cache_size=-64000;")
+            self.conn.execute("PRAGMA mmap_size=268435456;")
+            self.conn.execute("PRAGMA temp_store=MEMORY;")
         except Exception:
             pass
         self._cached_ml_df = None
@@ -173,8 +176,13 @@ class MLDatabaseExtension:
             will_be_delayed INTEGER,
             root_cause TEXT,
             financial_risk_usd REAL,
-            predicted_at TEXT NOT NULL
+            predicted_at TEXT NOT NULL,
+            decision_json TEXT
         );
+
+        CREATE INDEX IF NOT EXISTS idx_ml_pred_order_id ON ml_predictions(order_id);
+        CREATE INDEX IF NOT EXISTS idx_ml_pred_delayed_prob ON ml_predictions(will_be_delayed DESC, delay_probability DESC);
+        CREATE INDEX IF NOT EXISTS idx_ml_pred_created ON ml_predictions(predicted_at DESC);
 
         CREATE INDEX IF NOT EXISTS idx_vbak_kunnr ON sap_vbak(kunnr);
         CREATE INDEX IF NOT EXISTS idx_lips_vgbel ON sap_lips(vgbel);
@@ -468,7 +476,8 @@ class MLDatabaseExtension:
             1 if prediction.get("will_be_delayed") else 0,
             str(prediction.get("root_cause", "")),
             float(prediction.get("financial_risk_usd", 0.0)),
-            datetime.now().isoformat()
+            datetime.now().isoformat(),
+            prediction.get("decision_json")
         ))
         self.conn.commit()
         return cursor.lastrowid
@@ -492,7 +501,8 @@ class MLDatabaseExtension:
                 1 if p.get("will_be_delayed") else 0,
                 str(p.get("root_cause", "")),
                 float(p.get("financial_risk_usd", 0.0)),
-                now_str
+                now_str,
+                p.get("decision_json")
             )
             for p in predictions
         ]
@@ -500,8 +510,8 @@ class MLDatabaseExtension:
             INSERT INTO ml_predictions (
                 order_id, delivery_id, shipment_id, customer_name, carrier_name,
                 predicted_eta, delay_probability, delay_hours, will_be_delayed,
-                root_cause, financial_risk_usd, predicted_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                root_cause, financial_risk_usd, predicted_at, decision_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, rows)
         self.conn.commit()
         return len(rows)
