@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![Databricks](https://img.shields.io/badge/Platform-Databricks-FF3621?style=flat-square&logo=databricks&logoColor=white)](https://databricks.com)
-[![Process Intelligence](https://img.shields.io/badge/Domain-Celonis%20%7C%20SAP%20O2C-000000?style=flat-square&logo=celonis&logoColor=white)](https://celonis.com)
+[![Process Intelligence](https://img.shields.io/badge/Domain-Celonis%20%7C%20SAP%20O2C-2563EB?style=flat-square)](https://celonis.com)
 [![ML Framework](https://img.shields.io/badge/ML-XGBoost%20%7C%20Random%20Forest-orange?style=flat-square)](https://xgboost.readthedocs.io/)
 [![RAG Architecture](https://img.shields.io/badge/RAG-ChromaDB%20%7C%20Embeddings-00A4EF?style=flat-square)](https://docs.trychroma.com/)
 
