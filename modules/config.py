@@ -27,9 +27,7 @@ STRIKE_KEYWORDS = [
     "bharat bandh", "road blockade",
 ]
 
-# Paths - Dynamic resolution for Databricks (all users/workspaces), Linux, and Windows
-import os
-
+# Paths - Dynamic resolution for Databricks, Linux, and Windows
 def _resolve_project_root() -> Path:
     if "O2C_PROJECT_ROOT" in os.environ:
         p = Path(os.environ["O2C_PROJECT_ROOT"])
@@ -49,16 +47,16 @@ def _resolve_project_root() -> Path:
     if (cwd.parent / "modules").exists() or (cwd.parent / "Input Files").exists():
         return cwd.parent
 
-    for base in [Path("/Workspace/Users"), Path("/Workspace/Repos")]:
-        if base.exists():
-            try:
-                for sub in base.glob("*/O2C_AI"):
-                    if sub.exists():
-                        return sub
-            except Exception:
-                pass
-
+    # Databricks workspace resolution
     if "DATABRICKS_RUNTIME_VERSION" in os.environ:
+        for base in [Path("/Workspace/Users"), Path("/Workspace/Repos")]:
+            if base.exists():
+                try:
+                    for sub in base.glob("*/O2C_AI"):
+                        if sub.exists():
+                            return sub
+                except Exception:
+                    pass
         tmp_p = Path("/tmp/O2C_AI")
         tmp_p.mkdir(parents=True, exist_ok=True)
         return tmp_p

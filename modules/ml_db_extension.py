@@ -192,6 +192,7 @@ class MLDatabaseExtension:
         CREATE INDEX IF NOT EXISTS idx_vttk_lifnr ON sap_vttk(lifnr);
         CREATE INDEX IF NOT EXISTS idx_vbap_vbeln ON sap_vbap(vbeln);
         CREATE INDEX IF NOT EXISTS idx_vbap_matnr ON sap_vbap(matnr);
+        """
         cursor.executescript(schema)
         # Safe auto-migration for existing databases
         try:

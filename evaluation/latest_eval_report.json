@@ -1,19 +1,19 @@
 {
   "metadata": {
-    "evaluation_date": "2026-08-31T18:40:30.493390",
+    "evaluation_date": "2026-09-02T22:52:00.004507",
     "total_analyses": 1958,
     "date_range": {
       "start": "2026-08-21T07:11:49.476772",
-      "end": "2026-08-31T18:40:28.644920"
+      "end": "2026-09-02T22:51:58.726055"
     }
   },
   "retrieval": {
     "confidence": {
-      "mean": 0.5115088875511532,
+      "mean": 0.511621755668963,
       "median": 0.4926471805980144,
-      "std": 0.05042789549102097,
-      "min": 0.3,
-      "max": 0.8326276779174804,
+      "std": 0.050479169043303906,
+      "min": 0.4351720036831117,
+      "max": 0.8444424927234648,
       "percentiles": {
         "10": 0.47944563001665363,
         "25": 0.47944563001665363,
@@ -21,7 +21,7 @@
         "75": 0.5163049890662432,
         "90": 0.5780839903152452,
         "95": 0.581026992593551,
-        "99": 0.7413122089585843
+        "99": 0.7453019636318332
       }
     },
     "sources_per_query": {
@@ -30,20 +30,20 @@
       "mode": 5.0
     },
     "document_diversity": {
-      "unique_docs_retrieved": 82,
+      "unique_docs_retrieved": 87,
       "total_docs_in_corpus": 78,
-      "coverage_percentage": 105.12820512820514,
+      "coverage_percentage": 111.53846153846155,
       "top_docs": {
         "resolution_logs_2023.txt": 3906,
         "sop_strike_response.txt": 2228,
         "kedb_2024.txt": 1666,
         "sla_2024.txt": 1500,
-        "Mandatory Intermodal Mode Shift (Road-to-Rail) & Rate Lock Protocol.docx": 13,
-        "Bhubaneswar_Strike_Intelligence.docx": 12,
-        "Extreme Delay Cancellation & Revenue Forfeiture Protocol.docx": 12,
-        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx": 11,
-        "STANDARD TRANSIT DELAY & CARRIER PERFORMANCE POLICY1.docx": 11,
-        "Packaging Policy Doc 8.docx": 11
+        "Auto_Pattern_Analysis.docx": 14,
+        "Carrier-At-Fault Delay & Liability Passthrough Protocol.docx": 12,
+        "Bus_Pattern_Analysis.docx": 11,
+        "Packaging Policy Doc 8.docx": 11,
+        "CATASTROPHIC BREAKDOWN & EMERGENCY CROSS-DOCKING MANDATE.docx": 10,
+        "Railway_Pattern_Analysis.docx": 10
       }
     },
     "category_distribution": {
@@ -51,12 +51,12 @@
       "sop": 2228,
       "kedb": 1666,
       "sla": 1500,
-      "clinic_slas": 112,
-      "strike_intelligence": 106,
-      "vendor_contract_docs": 92,
-      "packaging_policy_docs": 87,
-      "history_resolution_logs": 74,
-      "weather_policies": 19
+      "strike_intelligence": 129,
+      "clinic_slas": 104,
+      "vendor_contract_docs": 86,
+      "packaging_policy_docs": 84,
+      "history_resolution_logs": 66,
+      "weather_policies": 21
     }
   },
   "questions": {
@@ -92,21 +92,21 @@
   "quality": {
     "confidence_distribution": {
       "high": {
-        "count": 1956,
-        "percentage": 99.89785495403473
+        "count": 1957,
+        "percentage": 99.94892747701736
       },
       "medium": {
         "count": 1,
         "percentage": 0.05107252298263534
       },
       "low": {
-        "count": 1,
-        "percentage": 0.05107252298263534
+        "count": 0,
+        "percentage": 0.0
       }
     },
     "overall_grade": "A (Excellent)",
-    "avg_confidence": 0.5115088875511532,
-    "coverage_percentage": 105.12820512820514
+    "avg_confidence": 0.511621755668963,
+    "coverage_percentage": 111.53846153846155
   },
   "recommendations": [
     {

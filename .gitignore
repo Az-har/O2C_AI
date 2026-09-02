@@ -52,21 +52,28 @@ india_monitor_data/logs/*
 scratch/
 check_ml_evaluation.py
 evaluation/test_results_*.json
-PREDICTIONS*.md
-
 # Environment variables
 .env
 .env.*
 
-# OS generated files & lock files
+# OS generated files
 .DS_Store
 Thumbs.db
 .~lock.*
-.~lock.*#
-*.~lock*
+*.docx#
+
+# Runtime logs & reports
+*.log
+india_monitor_data/logs/
+india_monitor_data/csv_exports/*.csv
+india_monitor_data/reports/
+*PREDICTIONS*.md
+
+# Obsolete / scratch
+archive/
+*.tmpk*
 ~$*
 
 # Runtime data & reports
 india_monitor_data/csv_exports/*.csv
 india_monitor_data/reports/daily_agent_report_*.json
-india_monitor_data/reports/*.csv
