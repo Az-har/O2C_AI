@@ -311,11 +311,20 @@ class PredictiveEngine:
 
         # --- Root Cause Analysis ---
         root_causes = []
-        dest_city = order_data.get('dest_city', 'Unknown')
-        shipping_type = order_data.get('shipping_type', 'Road (FTL)')
-        customer_tier = order_data.get('customer_tier', 'Independent')
-        has_specialty = int(order_data.get('has_specialty_diet', 0)) == 1
-        order_val = float(order_data.get('order_value', 2500.0))
+        dest_city_raw = order_data.get('dest_city')
+        if dest_city_raw is None or (isinstance(dest_city_raw, float) and np.isnan(dest_city_raw)):
+            dest_city = 'Unknown'
+        else:
+            dest_city = str(dest_city_raw).strip()
+            if dest_city.lower() in ('nan', 'none', ''):
+                dest_city = 'Unknown'
+
+        shipping_type = str(order_data.get('shipping_type') or 'Road (FTL)')
+        customer_tier = str(order_data.get('customer_tier') or 'Independent')
+        if customer_tier.lower() in ('nan', 'none', ''):
+            customer_tier = 'Independent'
+        has_specialty = int(order_data.get('has_specialty_diet', 0) or 0) == 1
+        order_val = float(order_data.get('order_value', 2500.0) or 2500.0)
 
         if str(order_data.get('shipment_status', '')).lower() == 'delayed':
             root_causes.append("Carrier route delay / in-transit bottleneck")

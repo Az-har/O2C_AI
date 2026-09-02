@@ -253,9 +253,9 @@ class MLDatabaseExtension:
             
             kna1.kunnr AS customer_id,
             COALESCE(kna1.name1, 'Unknown Customer') AS customer_name,
-            kna1.ort01 AS dest_city,
-            kna1.regio AS dest_region,
-            kna1.pstlz AS dest_zip,
+            COALESCE(kna1.ort01, 'Unknown') AS dest_city,
+            COALESCE(kna1.regio, 'Unknown') AS dest_region,
+            COALESCE(kna1.pstlz, '000000') AS dest_zip,
             COALESCE(knvv.customer_tier, 'Independent') AS customer_tier,
             COALESCE(knvv.close_time, '17:00') AS close_time,
             
@@ -418,6 +418,9 @@ class MLDatabaseExtension:
         )
         df['delay_hours'] = np.round(base_delay_hours, 1)
         df['order_value_usd'] = df['order_value'].fillna(2500.0)
+        df['dest_city'] = df['dest_city'].fillna('Unknown').astype(str)
+        df['customer_tier'] = df['customer_tier'].fillna('Independent').astype(str)
+        df['shipping_type'] = df['shipping_type'].fillna('Road (FTL)').astype(str)
 
         # Cache dataset and pre-index dictionary for O(1) instantaneous lookups
         self._cached_ml_df = df
