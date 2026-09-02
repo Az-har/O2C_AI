@@ -192,8 +192,15 @@ class MLDatabaseExtension:
         CREATE INDEX IF NOT EXISTS idx_vttk_lifnr ON sap_vttk(lifnr);
         CREATE INDEX IF NOT EXISTS idx_vbap_vbeln ON sap_vbap(vbeln);
         CREATE INDEX IF NOT EXISTS idx_vbap_matnr ON sap_vbap(matnr);
-        """
         cursor.executescript(schema)
+        # Safe auto-migration for existing databases
+        try:
+            cursor.execute("PRAGMA table_info(ml_predictions)")
+            cols = [row[1] for row in cursor.fetchall()]
+            if "decision_json" not in cols:
+                cursor.execute("ALTER TABLE ml_predictions ADD COLUMN decision_json TEXT")
+        except Exception:
+            pass
         self.conn.commit()
 
     def load_sap_data_from_csv(self, input_dir: Path) -> Dict[str, int]:

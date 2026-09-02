@@ -353,7 +353,7 @@ class AgenticOrchestrator:
                     synthesized_decisions.append(decision)
                     
                     pred_with_decision = dict(pred_result)
-                    pred_with_decision["decision_json"] = json.dumps(decision)
+                    pred_with_decision["decision_json"] = json.dumps(decision, default=str)
                     predictions_to_record.append(pred_with_decision)
 
                     if idx <= 5 or idx % 100 == 0 or idx == len(orders_to_process):

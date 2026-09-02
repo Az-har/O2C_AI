@@ -170,7 +170,9 @@ def query_order(order_id: str):
             print("-" * 90)
             print("⚡ SIMULATED SAP ERP ACTIONS EXECUTED:")
             for act in sap_actions:
-                print(f"   • {act['action']} on {act['table']}.{act['field']} = {act['value']} ({act['reason'][:70]}...)")
+                field_str = f".{act['field']}" if "field" in act else ""
+                val_str = f" = {act['value']}" if "value" in act else (f" (${act['amount_usd']:,.2f})" if "amount_usd" in act else "")
+                print(f"   • {act.get('action', 'ACTION')} on {act.get('table', 'SAP')}{field_str}{val_str} ({act.get('reason', '')[:70]}...)")
 
         if citations:
             print("-" * 90)
@@ -354,16 +356,24 @@ def export_markdown(out_file: Path = None, limit: int = None, detailed: bool = F
 
 
 def export_csv(out_file: Path = None, limit: int = None):
-    """Export stored predictions to CSV"""
-    import pandas as pd
+    """Export stored predictions to CSV without pandas overhead"""
+    import csv
     conn = get_db_connection()
-    query = "SELECT * FROM ml_predictions ORDER BY will_be_delayed DESC, delay_probability DESC"
+    c = conn.cursor()
+    query = """
+        SELECT order_id, delivery_id, shipment_id, customer_name, carrier_name,
+               predicted_eta, delay_probability, delay_hours, will_be_delayed,
+               root_cause, financial_risk_usd, predicted_at
+        FROM ml_predictions
+        ORDER BY will_be_delayed DESC, delay_probability DESC
+    """
     if limit and limit > 0:
         query += f" LIMIT {limit}"
-    df = pd.read_sql_query(query, conn)
+    c.execute(query)
+    rows = c.fetchall()
     conn.close()
 
-    if df.empty:
+    if not rows:
         print("ℹ️ No records to export.")
         return
 
@@ -371,8 +381,18 @@ def export_csv(out_file: Path = None, limit: int = None):
         out_file = PROJECT_ROOT / "india_monitor_data" / "reports" / "predictions_export.csv"
         out_file.parent.mkdir(parents=True, exist_ok=True)
 
-    df.to_csv(out_file, index=False)
-    print(f"✅ Exported {len(df):,} order predictions to CSV: {out_file}")
+    headers = [
+        "order_id", "delivery_id", "shipment_id", "customer_name", "carrier_name",
+        "predicted_eta", "delay_probability", "delay_hours", "will_be_delayed",
+        "root_cause", "financial_risk_usd", "predicted_at"
+    ]
+    with open(out_file, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(headers)
+        for r in rows:
+            writer.writerow([r[h] for h in headers])
+
+    print(f"✅ Exported {len(rows):,} order predictions to CSV: {out_file}")
 
 
 def main():
