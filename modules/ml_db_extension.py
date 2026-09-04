@@ -200,6 +200,11 @@ class MLDatabaseExtension:
             cols = [row[1] for row in cursor.fetchall()]
             if "decision_json" not in cols:
                 cursor.execute("ALTER TABLE ml_predictions ADD COLUMN decision_json TEXT")
+            
+            cursor.execute("PRAGMA table_info(sap_vbak)")
+            vbak_cols = [row[1] for row in cursor.fetchall()]
+            if "lifsk" not in vbak_cols:
+                cursor.execute("ALTER TABLE sap_vbak ADD COLUMN lifsk TEXT DEFAULT '00'")
         except Exception:
             pass
         self.conn.commit()

@@ -64,15 +64,27 @@ class LLMSynthesizer:
     Coordinates specialist agents and synthesizes the final business decision.
     """
 
-    def __init__(self, enable_teams_dispatch: bool = False):
+    def __init__(
+        self,
+        enable_teams_dispatch: bool = False,
+        route_agent: Optional[RouteSupervisorAgent] = None,
+        contract_agent: Optional[ContractAdjudicatorAgent] = None,
+        quality_agent: Optional[QualityMitigationAgent] = None,
+        llm_reasoning: Optional[LLMReasoningEngine] = None,
+        sap_executor: Optional[SAPActionExecutor] = None,
+        teams_dispatcher: Optional[MSTeamsDispatcher] = None,
+        clinic_notifier: Optional[ClinicNotificationDispatcher] = None,
+        db_manager: Optional[DatabaseManager] = None
+    ):
         self.enable_teams_dispatch = enable_teams_dispatch
-        self.route_agent = RouteSupervisorAgent()
-        self.contract_agent = ContractAdjudicatorAgent()
-        self.quality_agent = QualityMitigationAgent()
-        self.llm_reasoning = LLMReasoningEngine()
-        self.sap_executor = SAPActionExecutor(DB_PATH)
-        self.teams_dispatcher = MSTeamsDispatcher()
-        self.clinic_notifier = ClinicNotificationDispatcher(DB_PATH)
+        self.db = db_manager or DatabaseManager()
+        self.route_agent = route_agent or RouteSupervisorAgent()
+        self.contract_agent = contract_agent or ContractAdjudicatorAgent()
+        self.quality_agent = quality_agent or QualityMitigationAgent()
+        self.llm_reasoning = llm_reasoning or LLMReasoningEngine()
+        self.sap_executor = sap_executor or SAPActionExecutor(db_manager=self.db)
+        self.teams_dispatcher = teams_dispatcher or MSTeamsDispatcher()
+        self.clinic_notifier = clinic_notifier or ClinicNotificationDispatcher(db_manager=self.db)
 
     def synthesize(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """
@@ -222,21 +234,32 @@ class AgenticOrchestrator:
     Drives the end-to-end daily lifecycle of the O2C Delivery Risk Copilot.
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        db_manager: Optional[DatabaseManager] = None,
+        weather_service: Optional[WeatherService] = None,
+        news_service: Optional[NewsService] = None,
+        weather_policy_gen: Optional[WeatherPolicyGenerator] = None,
+        strike_intel_gen: Optional[StrikeIntelligenceGenerator] = None,
+        ml_db_extension: Optional[MLDatabaseExtension] = None,
+        rag_engine: Optional[RAGEngine] = None,
+        predictive_engine: Optional[PredictiveEngine] = None,
+        llm_synthesizer: Optional[LLMSynthesizer] = None,
+    ):
         print("\n" + "=" * 80)
         print("🤖 O2C AI MONITOR - AGENTIC ORCHESTRATOR (PHASE 4 & 5)")
         print("=" * 80 + "\n")
         
-        self.db = DatabaseManager()
-        self.weather = WeatherService(OPENWEATHER_API_KEY, INDIA_CITIES)
-        self.news = NewsService(STRIKE_KEYWORDS, INDIA_CITIES)
-        self.weather_policy_gen = WeatherPolicyGenerator()
-        self.strike_intel_gen = StrikeIntelligenceGenerator()
+        self.db = db_manager or DatabaseManager()
+        self.weather = weather_service or WeatherService(OPENWEATHER_API_KEY, INDIA_CITIES)
+        self.news = news_service or NewsService(STRIKE_KEYWORDS, INDIA_CITIES)
+        self.weather_policy_gen = weather_policy_gen or WeatherPolicyGenerator()
+        self.strike_intel_gen = strike_intel_gen or StrikeIntelligenceGenerator()
         
-        self.ml_db = MLDatabaseExtension(db_path=DB_PATH)
-        self.rag = RAGEngine()
-        self.predictive_engine = None
-        self.llm_synthesizer = LLMSynthesizer()
+        self.ml_db = ml_db_extension or MLDatabaseExtension(db_path=DB_PATH)
+        self.rag = rag_engine or RAGEngine()
+        self.predictive_engine = predictive_engine
+        self.llm_synthesizer = llm_synthesizer or LLMSynthesizer(db_manager=self.db)
 
     def run_daily_agent_cycle(
         self,
@@ -250,15 +273,14 @@ class AgenticOrchestrator:
     ) -> Dict[str, Any]:
         """
         Execute the complete autonomous daily cycle:
-        1. Ingest real-time Weather & Strike feeds into SQLite
+        1. Ingest real-time Weather & Strike feeds into SQLite (Resilient step execution)
         2. Check & index RAG policy knowledge base
         3. Load SAP tables & train Engine A ML models
-        4. Predict delay risks with weather & strike intersection (auto-skips already predicted orders unless repredict=True)
-        5. Retrieve RAG SLA clauses & contract addenda
-        6. Execute Phase 4 LLM Decision Synthesis & MS Teams Approval Routing
-        7. Generate daily executive report & export datasets
+        4. Predict delay risks with weather & strike intersection
+        5. Concurrently synthesize Phase 4 LLM Decisions & MS Teams Approval Routing
+        6. Generate daily executive report & export datasets
         """
-        self.llm_synthesizer = LLMSynthesizer(enable_teams_dispatch=enable_teams_dispatch)
+        self.llm_synthesizer.enable_teams_dispatch = enable_teams_dispatch
         session_id = self.db.session_start("daily_agentic_cycle")
         daily_reports_dir = PROJECT_ROOT / "india_monitor_data" / "reports"
         daily_reports_dir.mkdir(parents=True, exist_ok=True)
@@ -271,22 +293,33 @@ class AgenticOrchestrator:
             print("\n[Step 1/6] 📡 REAL-TIME EXTERNAL STREAM INGESTION")
             print("-" * 75)
             
-            # 1.1 Weather Ingestion
-            w_data = self.weather.fetch_historical(today_str) if date else self.weather.fetch_current()
-            w_saved, _ = self.db.write_weather(w_data, session_id) if w_data else (0, 0)
-            print(f"   🌦️  Weather Feed: Ingested {w_saved} new readings into SQLite")
+            # 1.1 Weather Ingestion (Resilient with graceful degradation - Critique 1.1)
+            w_saved = 0
+            try:
+                w_data = self.weather.fetch_historical(today_str) if date else self.weather.fetch_current()
+                w_saved, _ = self.db.write_weather(w_data, session_id) if w_data else (0, 0)
+                print(f"   🌦️  Weather Feed: Ingested {w_saved} new readings into SQLite")
+            except Exception as e:
+                print(f"   ⚠️  Weather Feed Warning: {e}. Proceeding with cached database records.")
 
-            # 1.2 Strike & Disruption News Ingestion
-            s_data = self.news.fetch(date=date)
-            s_saved, _ = self.db.write_strikes(s_data, session_id) if s_data else (0, 0)
-            print(f"   📰 News Feed   : Ingested {s_saved} disruption articles into SQLite")
+            # 1.2 Strike & Disruption News Ingestion (Resilient with graceful degradation - Critique 1.1)
+            s_saved = 0
+            try:
+                s_data = self.news.fetch(date=date)
+                s_saved, _ = self.db.write_strikes(s_data, session_id) if s_data else (0, 0)
+                print(f"   📰 News Feed   : Ingested {s_saved} disruption articles into SQLite")
+            except Exception as e:
+                print(f"   ⚠️  News Feed Warning: {e}. Proceeding with cached database records.")
 
             # ── STEP 2: RAG KNOWLEDGE BASE VERIFICATION ───────────────
             print("\n[Step 2/6] 📚 RAG KNOWLEDGE BASE VERIFICATION")
             print("-" * 75)
-            # Re-generate policy docs from fresh weather/news if needed
-            self.weather_policy_gen.generate_all_policies()
-            self.strike_intel_gen.generate_all_intelligence()
+            try:
+                self.weather_policy_gen.generate_all_policies()
+                self.strike_intel_gen.generate_all_intelligence()
+            except Exception as e:
+                print(f"   ⚠️  Policy Generation Note: {e}. Utilizing existing verified policy corpus.")
+            
             self.rag.initialize(force_rebuild=rebuild_rag)
             print(f"   ✅ RAG Index Verified: {len(self.rag.vector_store.metadata)} vector chunks ready")
 
@@ -298,14 +331,15 @@ class AgenticOrchestrator:
             self.ml_db.load_sap_data_from_csv(input_dir)
             ml_df = self.ml_db.get_ml_ready_dataset()
             
-            self.predictive_engine = PredictiveEngine(
-                ml_db_extension=self.ml_db,
-                rag_engine=self.rag,
-                weather_service=self.weather
-            )
+            if self.predictive_engine is None:
+                self.predictive_engine = PredictiveEngine(
+                    ml_db_extension=self.ml_db,
+                    rag_engine=self.rag,
+                    weather_service=self.weather
+                )
             self.predictive_engine.train_models(ml_df)
 
-            # ── STEP 4 & 5: PREDICT & SYNTHESIZE ACTIVE SAP ORDERS ─────────
+            # ── STEP 4 & 5: PREDICT & CONCURRENTLY SYNTHESIZE SAP ORDERS ──
             print("\n[Step 4/6] 📦 DUAL-ENGINE DELAY PREDICTION & CONTEXT RETRIEVAL")
             print("-" * 75)
 
@@ -348,12 +382,25 @@ class AgenticOrchestrator:
                 orders_data = [self.ml_db.get_order_details(oid) for oid in orders_to_process]
                 pred_results = self.predictive_engine.predict_batch(orders_to_process, orders_data=orders_data)
 
-                for idx, (ord_id, od, pred_result) in enumerate(zip(orders_to_process, orders_data, pred_results), 1):
-                    decision = self.llm_synthesizer.synthesize(pred_result, order_data=od or {})
-                    synthesized_decisions.append(decision)
-                    
-                    pred_with_decision = dict(pred_result)
+                # Parallel Agent Decision Synthesis (Critique 3.1)
+                from concurrent.futures import ThreadPoolExecutor
+                synth_workers = min(8, (os.cpu_count() or 4) * 2)
+
+                def _synth_task(args):
+                    idx, ord_id, od, pred_res = args
+                    decision = self.llm_synthesizer.synthesize(pred_res, order_data=od or {})
+                    pred_with_decision = dict(pred_res)
                     pred_with_decision["decision_json"] = json.dumps(decision, default=str)
+                    return idx, ord_id, decision, pred_with_decision
+
+                task_args = [(i, oid, od, pr) for i, (oid, od, pr) in enumerate(zip(orders_to_process, orders_data, pred_results), 1)]
+                with ThreadPoolExecutor(max_workers=synth_workers) as executor:
+                    synth_batch = list(executor.map(_synth_task, task_args))
+
+                # Maintain deterministic order
+                synth_batch.sort(key=lambda x: x[0])
+                for idx, ord_id, decision, pred_with_decision in synth_batch:
+                    synthesized_decisions.append(decision)
                     predictions_to_record.append(pred_with_decision)
 
                     if idx <= 5 or idx % 100 == 0 or idx == len(orders_to_process):

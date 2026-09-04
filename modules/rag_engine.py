@@ -89,32 +89,31 @@ class DocumentLoader:
                 if file_path.suffix.lower() in self.SUPPORTED:
                     all_files.append(file_path)
         
-        print(f"📂 Loading {len(all_files)} documents (scanning all folders)...")
-        docs = []
-        for f in all_files:
-            # Get relative path from docs_dir for better display
+        print(f"📂 Loading {len(all_files)} documents in parallel across worker threads...")
+        from concurrent.futures import ThreadPoolExecutor
+        workers = min(16, (os.cpu_count() or 4) * 2)
+        
+        def _process_file(f: Path) -> Optional[Dict]:
             rel_path = f.relative_to(self.docs_dir)
-            print(f"   📄 {rel_path}...", end=" ")
-            
             text = self._load_one(f)
             if text:
-                # Use folder name as category
                 folder_name = f.parent.name if f.parent != self.docs_dir else "general"
                 category = self._normalize_category(folder_name)
-                
-                docs.append({
+                return {
                     "filename": f.name,
                     "folder": folder_name,
                     "category": category,
                     "relative_path": str(rel_path),
                     "text": text,
                     "char_count": len(text)
-                })
-                print(f"✅ {len(text)} chars")
-            else:
-                print("❌ Failed")
-        
-        print(f"\n✅ Loaded {len(docs)} documents from all folders\n")
+                }
+            return None
+
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            results = list(executor.map(_process_file, all_files))
+
+        docs = [d for d in results if d is not None]
+        print(f"✅ Concurrently loaded {len(docs)} documents ({len(all_files) - len(docs)} skipped/empty)\n")
         return docs
 
     def _load_one(self, file_path: Path) -> Optional[str]:

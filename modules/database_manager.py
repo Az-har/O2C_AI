@@ -1,9 +1,12 @@
 """Database Manager for O2C AI Monitor"""
 import sqlite3
 import logging
+import queue
+import threading
 from pathlib import Path
 from datetime import datetime
 from contextlib import contextmanager
+from typing import List, Dict, Any, Optional
 import pandas as pd
 
 from .config import DB_PATH, LOG_DIR
@@ -12,14 +15,18 @@ from .config import DB_PATH, LOG_DIR
 class DatabaseManager:
     """
     Single responsibility: talk to SQLite database.
-    All other classes use this — nothing talks to DB directly.
+    Central repository for all data access across the O2C AI system.
+    Equipped with thread-safe connection pooling to prevent connection thrashing.
     """
 
-    def __init__(self, db_path=str(DB_PATH)):
-        self.db_path = db_path
+    def __init__(self, db_path=str(DB_PATH), pool_size: int = 8):
+        self.db_path = str(db_path)
+        self.pool_size = pool_size
+        self._pool = queue.Queue(maxsize=pool_size)
         self.logger = self._make_logger()
         self._build_schema()
-        print(f"✅ DatabaseManager ready → {self.db_path}")
+        self._apply_migrations()
+        print(f"✅ DatabaseManager ready (Connection Pool: {self.pool_size}) → {self.db_path}")
 
     def _make_logger(self):
         log_file = LOG_DIR / f"monitor_{datetime.now():%Y%m%d}.log"
@@ -31,12 +38,12 @@ class DatabaseManager:
             logger.addHandler(fh)
         return logger
 
-    @contextmanager
-    def connection(self):
-        """Safe auto-commit / auto-rollback connection"""
+    def _create_raw_connection(self) -> sqlite3.Connection:
+        """Create an optimized SQLite connection with WAL mode and memory-mapping"""
         conn = sqlite3.connect(
             self.db_path,
-            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
+            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
+            check_same_thread=False
         )
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA journal_mode=WAL")
@@ -44,6 +51,29 @@ class DatabaseManager:
         conn.execute("PRAGMA synchronous=NORMAL")
         conn.execute("PRAGMA cache_size=-64000")
         conn.execute("PRAGMA mmap_size=268435456")
+        return conn
+
+    def _get_connection(self) -> sqlite3.Connection:
+        """Fetch a connection from pool or create a new one if pool is empty"""
+        try:
+            return self._pool.get_nowait()
+        except queue.Empty:
+            return self._create_raw_connection()
+
+    def _release_connection(self, conn: sqlite3.Connection):
+        """Return connection to pool or close if pool is full"""
+        try:
+            self._pool.put_nowait(conn)
+        except queue.Full:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+    @contextmanager
+    def connection(self):
+        """Safe auto-commit / auto-rollback pooled connection context manager"""
+        conn = self._get_connection()
         try:
             yield conn
             conn.commit()
@@ -52,7 +82,7 @@ class DatabaseManager:
             self.logger.error(f"DB error: {e}")
             raise
         finally:
-            conn.close()
+            self._release_connection(conn)
 
     def _build_schema(self):
         schema = """
@@ -152,16 +182,84 @@ class DatabaseManager:
             FOREIGN KEY(news_id) REFERENCES strike_news(news_id)
         );
 
+        CREATE TABLE IF NOT EXISTS sap_action_audit_log (
+            action_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id TEXT NOT NULL,
+            action_type TEXT NOT NULL,
+            sap_table TEXT NOT NULL,
+            sap_field TEXT NOT NULL,
+            previous_value TEXT,
+            new_value TEXT,
+            reason TEXT,
+            executed_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS carrier_debit_memos (
+            memo_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id TEXT NOT NULL,
+            carrier_name TEXT NOT NULL,
+            debit_amount_usd REAL NOT NULL,
+            penalty_reason TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            status TEXT DEFAULT 'POSTED_TO_AP_LEDGER'
+        );
+
+        CREATE TABLE IF NOT EXISTS clinic_early_warnings (
+            notice_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id TEXT NOT NULL,
+            clinic_name TEXT NOT NULL,
+            destination_city TEXT NOT NULL,
+            predicted_eta TEXT NOT NULL,
+            delay_reason TEXT NOT NULL,
+            force_majeure_compliant INTEGER DEFAULT 1,
+            sent_at TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS schema_migrations (
+            migration_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            version TEXT NOT NULL UNIQUE,
+            description TEXT NOT NULL,
+            applied_at TEXT NOT NULL
+        );
+
         CREATE INDEX IF NOT EXISTS idx_wr_city_date ON weather_readings(city_name, date_only);
         CREATE INDEX IF NOT EXISTS idx_wr_date      ON weather_readings(date_only);
         CREATE INDEX IF NOT EXISTS idx_sn_date      ON strike_news(published_date);
         CREATE INDEX IF NOT EXISTS idx_sn_city      ON strike_news(city_mentioned);
         CREATE INDEX IF NOT EXISTS idx_ds_date      ON daily_summaries(summary_date);
         CREATE INDEX IF NOT EXISTS idx_rag_news     ON rag_analyses(news_id);
+        CREATE INDEX IF NOT EXISTS idx_sap_audit_order ON sap_action_audit_log(order_id);
+        CREATE INDEX IF NOT EXISTS idx_carrier_memo_order ON carrier_debit_memos(order_id);
+        CREATE INDEX IF NOT EXISTS idx_clinic_warn_order ON clinic_early_warnings(order_id);
         """
         with self.connection() as conn:
             conn.executescript(schema)
         self.logger.info("Schema ready")
+
+    def _apply_migrations(self):
+        """Standardized, non-destructive schema migrations tracked in schema_migrations table"""
+        migrations = [
+            ("v1.1_action_indexes", "Add B-tree indexes for SAP action and clinic audit tables", [
+                "CREATE INDEX IF NOT EXISTS idx_sap_audit_order ON sap_action_audit_log(order_id);",
+                "CREATE INDEX IF NOT EXISTS idx_carrier_memo_order ON carrier_debit_memos(order_id);",
+                "CREATE INDEX IF NOT EXISTS idx_clinic_warn_order ON clinic_early_warnings(order_id);"
+            ]),
+        ]
+
+        with self.connection() as conn:
+            for version, desc, sql_list in migrations:
+                applied = conn.execute("SELECT 1 FROM schema_migrations WHERE version = ?", (version,)).fetchone()
+                if not applied:
+                    for stmt in sql_list:
+                        try:
+                            conn.execute(stmt)
+                        except Exception as e:
+                            self.logger.warning(f"Migration {version} statement note: {e}")
+                    conn.execute(
+                        "INSERT INTO schema_migrations (version, description, applied_at) VALUES (?, ?, ?)",
+                        (version, desc, datetime.now().isoformat())
+                    )
+                    self.logger.info(f"Applied database migration: {version} - {desc}")
 
     # ── Session Management ─────────────────────────────────
     
@@ -344,3 +442,88 @@ class DatabaseManager:
             stats["rag_analyses"] = conn.execute("SELECT COUNT(*) FROM rag_analyses").fetchone()[0]
             stats["sessions"] = conn.execute("SELECT COUNT(*) FROM scrape_sessions").fetchone()[0]
             return stats
+
+    # ── Phase 5 Action Execution & Audit Repository ────────
+
+    def record_sap_action(
+        self,
+        order_id: str,
+        action_type: str,
+        sap_table: str,
+        sap_field: str,
+        previous_value: str,
+        new_value: str,
+        reason: str,
+        executed_at: str = None
+    ) -> int:
+        """Centralized write-back for SAP ERP action audit trails"""
+        ts = executed_at or datetime.now().isoformat()
+        with self.connection() as conn:
+            cur = conn.execute("""
+                INSERT INTO sap_action_audit_log (
+                    order_id, action_type, sap_table, sap_field, previous_value, new_value, reason, executed_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (str(order_id), action_type, sap_table, sap_field, previous_value, new_value, reason, ts))
+            return cur.lastrowid
+
+    def record_carrier_debit_memo(
+        self,
+        order_id: str,
+        carrier_name: str,
+        debit_amount_usd: float,
+        penalty_reason: str,
+        created_at: str = None,
+        status: str = "POSTED_TO_AP_LEDGER"
+    ) -> int:
+        """Centralized write-back for carrier accounts-payable debit memos"""
+        ts = created_at or datetime.now().isoformat()
+        with self.connection() as conn:
+            cur = conn.execute("""
+                INSERT INTO carrier_debit_memos (
+                    order_id, carrier_name, debit_amount_usd, penalty_reason, created_at, status
+                ) VALUES (?, ?, ?, ?, ?, ?)
+            """, (str(order_id), carrier_name, float(debit_amount_usd), penalty_reason, ts, status))
+            return cur.lastrowid
+
+    def record_clinic_notice(
+        self,
+        order_id: str,
+        clinic_name: str,
+        destination_city: str,
+        predicted_eta: str,
+        delay_reason: str,
+        force_majeure_compliant: bool = True,
+        sent_at: str = None
+    ) -> int:
+        """Centralized write-back for 12-hour proactive clinic early warnings"""
+        ts = sent_at or datetime.now().isoformat()
+        with self.connection() as conn:
+            cur = conn.execute("""
+                INSERT INTO clinic_early_warnings (
+                    order_id, clinic_name, destination_city, predicted_eta, delay_reason, force_majeure_compliant, sent_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (str(order_id), clinic_name, destination_city, predicted_eta, delay_reason, 1 if force_majeure_compliant else 0, ts))
+            return cur.lastrowid
+
+    def get_sap_audit_log(self, order_id: str) -> List[Dict[str, Any]]:
+        """Retrieve audit log of executed actions for a specific order"""
+        with self.connection() as conn:
+            rows = conn.execute(
+                "SELECT * FROM sap_action_audit_log WHERE order_id = ? ORDER BY executed_at DESC",
+                (str(order_id),)
+            ).fetchall()
+            return [dict(r) for r in rows]
+
+    def get_clinic_notices(self, order_id: str = None) -> List[Dict[str, Any]]:
+        """Retrieve clinic early warning notifications"""
+        with self.connection() as conn:
+            if order_id:
+                rows = conn.execute(
+                    "SELECT * FROM clinic_early_warnings WHERE order_id = ? ORDER BY sent_at DESC",
+                    (str(order_id),)
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM clinic_early_warnings ORDER BY sent_at DESC"
+                ).fetchall()
+            return [dict(r) for r in rows]

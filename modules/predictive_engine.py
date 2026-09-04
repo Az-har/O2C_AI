@@ -98,6 +98,34 @@ class PredictiveEngine:
         except Exception:
             pass
 
+    def clear_environmental_caches(self):
+        """Reset environmental caches to enforce pure statelessness (Critique 1.3)"""
+        self._weather_cache.clear()
+        self._strike_cache.clear()
+
+    def get_city_weather(self, city_name: str, force_fresh_lookup: bool = False) -> Optional[Dict[str, Any]]:
+        """Stateless / indexed query for latest city weather reading"""
+        city_clean = city_name.lower().strip()
+        if not force_fresh_lookup and city_clean in self._weather_cache:
+            return self._weather_cache[city_clean]
+        if self.ml_db is not None:
+            try:
+                conn = self.ml_db.conn
+                w_row = conn.execute("""
+                    SELECT temperature, rain_1h, wind_speed, visibility_km, weather_description
+                    FROM weather_readings
+                    WHERE LOWER(city_name) = ?
+                    ORDER BY recorded_at DESC LIMIT 1
+                """, (city_clean,)).fetchone()
+                if w_row:
+                    res = dict(w_row)
+                    if not force_fresh_lookup:
+                        self._weather_cache[city_clean] = res
+                    return res
+            except Exception:
+                pass
+        return None
+
     def save_models(self, model_dir: Path = None) -> bool:
         """Persist trained model artifacts for instant zero-latency loading"""
         import pickle
@@ -247,7 +275,13 @@ class PredictiveEngine:
             print(f"❌ Error during model training: {e}")
             return False
 
-    def predict_delivery_delay(self, order_id: str, order_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def predict_delivery_delay(
+        self,
+        order_id: str,
+        order_data: Optional[Dict[str, Any]] = None,
+        precomputed_prob: Optional[float] = None,
+        precomputed_delay_hours: Optional[float] = None
+    ) -> Dict[str, Any]:
         """
         Execute prediction pipeline for a single order using Two-Stage Hurdle architecture:
         1. Query ERP features
@@ -265,12 +299,16 @@ class PredictiveEngine:
         if not order_data:
             return {"error": f"Order ID {order_id} not found in SAP database."}
 
-        # Extract features as DataFrame with feature names to preserve schema
-        feat_dict = {col: [float(order_data.get(col, 0.0))] for col in self.FEATURE_COLS}
-        X_single = pd.DataFrame(feat_dict)
-
         # --- Engine A: Two-Stage Hurdle ML Prediction ---
-        if self.is_trained and self.clf_model is not None and self.reg_model is not None:
+        if precomputed_prob is not None:
+            # Leverage batch vectorized predictions (Critique 3.2 optimization)
+            delay_prob = float(precomputed_prob)
+            will_delayed = bool(delay_prob >= 0.40)
+            delay_hours = float(precomputed_delay_hours or 0.0) if will_delayed else 0.0
+        elif self.is_trained and self.clf_model is not None and self.reg_model is not None:
+            # Extract features as DataFrame with feature names to preserve schema
+            feat_dict = {col: [float(order_data.get(col, 0.0))] for col in self.FEATURE_COLS}
+            X_single = pd.DataFrame(feat_dict)
             delay_prob = float(self.clf_model.predict_proba(X_single)[0][1])
             will_delayed = bool(delay_prob >= 0.40)
             if will_delayed:
@@ -515,16 +553,22 @@ class PredictiveEngine:
         # 2. Vectorized Model Inference
         if self.is_trained and self.clf_model is not None and self.reg_model is not None:
             delay_probs = self.clf_model.predict_proba(X_batch)[:, 1].tolist()
-            delay_hours_arr = np.maximum(0.0, self.reg_model.predict(X_batch)).tolist()
+            raw_hrs = self.reg_model.predict(X_batch)
+            delay_hours_arr = [float(np.maximum(12.0, round(h, 1))) if p >= 0.40 else 0.0 for p, h in zip(delay_probs, raw_hrs)]
         else:
             delay_probs = [0.15] * len(v_order_ids)
-            delay_hours_arr = [1.0] * len(v_order_ids)
+            delay_hours_arr = [0.0] * len(v_order_ids)
 
-        # 3. Assemble full predictions in memory
-        results = []
-        for ord_id, od, prob, hrs in zip(v_order_ids, v_orders_data, delay_probs, delay_hours_arr):
-            res = self.predict_delivery_delay(ord_id, order_data=od)
-            results.append(res)
+        # 3. Assemble full predictions leveraging precomputed vectorized batch inference (Critique 3.2)
+        results = [
+            self.predict_delivery_delay(
+                ord_id,
+                order_data=od,
+                precomputed_prob=prob,
+                precomputed_delay_hours=hrs
+            )
+            for ord_id, od, prob, hrs in zip(v_order_ids, v_orders_data, delay_probs, delay_hours_arr)
+        ]
 
         return results
 
