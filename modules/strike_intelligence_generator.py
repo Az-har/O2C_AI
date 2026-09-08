@@ -1,4 +1,5 @@
 """Strike Intelligence Generator - Converts strike news into RAG-ready policy documents"""
+import re
 import sqlite3
 import json
 from pathlib import Path
@@ -59,27 +60,37 @@ class StrikeIntelligenceGenerator:
             print("⚠️  No strike articles found. Run the main pipeline first.")
             return []
         
+        intel_by_mode = self._group_articles_by_mode(articles)
         intel_by_city = self._group_articles_by_city(articles)
         intel_by_category = self._group_articles_by_category(articles)
         
         generated_files = []
         print(f"\n📝 Generating intelligence briefs...")
+
+        # 1. Multimodal Transport Briefs (Maritime, Air, Rail, Road, Canal)
+        for mode, mode_articles in intel_by_mode.items():
+            if len(mode_articles) >= 2:
+                doc_path = self._create_mode_disruption_brief(mode, mode_articles)
+                generated_files.append(doc_path)
+                print(f"   ✅ [Mode] {doc_path.name}")
         
+        # 2. Regional / Hub Specific Briefs
         for city, city_articles in intel_by_city.items():
-            if len(city_articles) >= 3:
+            if len(city_articles) >= 3 and city != "Global":
                 doc_path = self._create_city_strike_brief(city, city_articles)
                 generated_files.append(doc_path)
-                print(f"   ✅ {doc_path.name}")
+                print(f"   ✅ [Hub] {doc_path.name}")
         
+        # 3. Disruption Category Briefs
         for category, cat_articles in intel_by_category.items():
-            if len(cat_articles) >= 5:
+            if len(cat_articles) >= 4:
                 doc_path = self._create_category_strike_brief(category, cat_articles)
                 generated_files.append(doc_path)
-                print(f"   ✅ {doc_path.name}")
+                print(f"   ✅ [Category] {doc_path.name}")
         
         master_doc = self._create_master_disruption_intelligence(articles)
         generated_files.append(master_doc)
-        print(f"   ✅ {master_doc.name}")
+        print(f"   ✅ [Master] {master_doc.name}")
         
         print(f"\n✅ Generated {len(generated_files)} intelligence documents")
         print(f"📁 Saved to: {self.output_dir}")
@@ -92,8 +103,13 @@ class StrikeIntelligenceGenerator:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
-        query = """SELECT title, city_mentioned as matched_cities, strike_type as category, 
-                   published_date as published, source_name as source
+        query = """SELECT title, city_mentioned as matched_cities,
+                          COALESCE(transport_mode, 'Multimodal') as transport_mode,
+                          COALESCE(disruption_category, strike_type) as disruption_category,
+                          COALESCE(country_mentioned, 'Global') as country,
+                          COALESCE(severity, 'LOW') as severity,
+                          strike_type as category, 
+                          published_date as published, source_name as source
                    FROM strike_news ORDER BY published_date DESC"""
         
         cursor.execute(query)
@@ -101,14 +117,22 @@ class StrikeIntelligenceGenerator:
         conn.close()
         
         for article in articles:
-            # city_mentioned is a single string, convert to list
             city = article.get('matched_cities')
-            if city and city != 'Unknown':
+            if city and city not in ['Unknown', 'International Freight Network']:
                 article['matched_cities'] = [city]
             else:
-                article['matched_cities'] = []
+                article['matched_cities'] = [article.get('country') or 'Global Corridor']
         return articles
     
+    def _group_articles_by_mode(self, articles: List[Dict]) -> Dict[str, List[Dict]]:
+        by_mode = {}
+        for article in articles:
+            mode = article.get('transport_mode') or 'Multimodal Logistics'
+            if mode not in by_mode:
+                by_mode[mode] = []
+            by_mode[mode].append(article)
+        return by_mode
+
     def _group_articles_by_city(self, articles: List[Dict]) -> Dict[str, List[Dict]]:
         by_city = {}
         for article in articles:
@@ -121,11 +145,66 @@ class StrikeIntelligenceGenerator:
     def _group_articles_by_category(self, articles: List[Dict]) -> Dict[str, List[Dict]]:
         by_category = {}
         for article in articles:
-            category = article.get('category', 'general')
+            category = article.get('disruption_category') or article.get('category') or 'Operational Disruption'
             if category not in by_category:
                 by_category[category] = []
             by_category[category].append(article)
         return by_category
+
+    def _create_mode_disruption_brief(self, mode: str, articles: List[Dict]) -> Path:
+        doc = Document()
+        title = doc.add_heading(f'{mode.upper()} TRANSPORTATION RISK & ROUTING PLAYBOOK', 0)
+        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        
+        doc.add_paragraph(f"Report Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        doc.add_paragraph(f"Transit Modality: {mode}")
+        doc.add_paragraph(f"Total Disruption Incidents Monitored: {len(articles)}")
+        
+        doc.add_heading('1. EXECUTIVE CORRIDOR RISK SUMMARY', 1)
+        doc.add_paragraph(
+            f"This operational brief defines mandatory response rules, alternative routing options, and carrier "
+            f"SLA liability caps for disruptions affecting {mode} worldwide. All incidents have been ingested via "
+            f"real-time intelligence streams and mapped into RAG knowledge bases for automated order adjudication."
+        )
+
+        doc.add_heading('2. ACTIVE INCIDENT TELEMETRY', 1)
+        for idx, art in enumerate(articles[:8], 1):
+            p = doc.add_paragraph()
+            p.add_run(f"Incident #{idx}: {art.get('title', 'Unknown')}\n").bold = True
+            loc = art.get('matched_cities', ['Global Corridor'])[0]
+            country = art.get('country', 'Global')
+            sev = art.get('severity', 'MEDIUM')
+            p.add_run(f"• Location / Hub: {loc} ({country}) | Severity: {sev}\n")
+            p.add_run(f"• Published: {art.get('published', 'N/A')} | Source: {art.get('source', 'Unknown')}\n")
+
+        mode_code = re.sub(r'[^A-Z]', '', mode.upper())[:6] or "MODE"
+        doc.add_heading('3. AUTONOMOUS COPILOT ADJUDICATION RULES', 1)
+        rules = [
+            f"[RULE-{mode_code}-01] FORCE MAJEURE & TRANSIT EXTENSION (SECTION 8.2):\n"
+            f"  Documented {mode} disruptions exceeding 24 hours grant automatic delivery window adjustment (+24h to +72h) and exempt carriers from liquidated damages upon telematics proof.",
+            f"[RULE-{mode_code}-02] INTERMODAL MODE-SHIFT CONVERSION (CLAUSE 3.4):\n"
+            f"  For time-sensitive pharmaceutical and veterinary orders stranded >36 hours in {mode} corridors, the Copilot authorizes immediate emergency intermodal diversion or express transport.",
+            f"[RULE-{mode_code}-03] DETENTION, DEMURRAGE & YARD STORAGE LIABILITY CAP:\n"
+            f"  Carrier demurrage and container storage claims arising directly from {mode} industrial actions or terminal closures are strictly capped at $150.00/day per consignment."
+        ]
+        for r in rules:
+            doc.add_paragraph(r)
+
+        doc.add_heading('4. COPILOT ACTION CHECKLIST', 1)
+        checklist = [
+            f"[x] Step 1: Query SAP linehauls scheduled through {mode} transport lanes.",
+            f"[x] Step 2: Inject [RULE-{mode_code}-01] safety buffer (+24h to +72h) to revised PDD.",
+            f"[x] Step 3: Check clinic receiving window compatibility; notify destination facilities.",
+            f"[x] Step 4: Dispatch MS Teams Adaptive Card to Regional Logistics Director for approval."
+        ]
+        for item in checklist:
+            doc.add_paragraph(item)
+
+        safe_name = re.sub(r'[\\/*?:"<>| ]', '_', mode)
+        filename = f"{safe_name}_Playbook.docx"
+        doc_path = self.output_dir / filename
+        doc.save(str(doc_path))
+        return doc_path
     
     def _create_city_strike_brief(self, city: str, articles: List[Dict]) -> Path:
         doc = Document()

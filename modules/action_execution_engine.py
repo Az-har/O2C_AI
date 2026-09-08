@@ -48,6 +48,16 @@ class ERPActionInterface(ABC):
         """Post accounts-payable carrier penalty debit memo (e.g. BKPF/BSEG)"""
         pass
 
+    @abstractmethod
+    def get_carrier_debit_memos(self, order_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Retrieve posted carrier debit memos"""
+        pass
+
+    @abstractmethod
+    def update_carrier_debit_memo_status(self, memo_id: int, status: str) -> bool:
+        """Update settlement/reconciliation status of a carrier debit memo"""
+        pass
+
 
 class SQLiteSAPMockAdapter(ERPActionInterface):
     """
@@ -71,7 +81,10 @@ class SQLiteSAPMockAdapter(ERPActionInterface):
                     )
                 except sqlite3.OperationalError as oe:
                     if "no such column: lifsk" in str(oe).lower():
-                        conn.execute("ALTER TABLE sap_vbak ADD COLUMN lifsk TEXT DEFAULT '00'")
+                        try:
+                            conn.execute("ALTER TABLE sap_vbak ADD COLUMN lifsk TEXT DEFAULT '00'")
+                        except sqlite3.OperationalError:
+                            pass  # Column already added on disk by another pooled connection
                         conn.execute(
                             "UPDATE sap_vbak SET lifsk = ? WHERE vbeln = ?",
                             (str(block_code), str(order_id))
@@ -187,6 +200,14 @@ class SQLiteSAPMockAdapter(ERPActionInterface):
                 "status": f"ERROR: {e}"
             }
 
+    def get_carrier_debit_memos(self, order_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Retrieve posted carrier debit memos from SQLite via DatabaseManager"""
+        return self.db.get_carrier_debit_memos(order_id)
+
+    def update_carrier_debit_memo_status(self, memo_id: int, status: str) -> bool:
+        """Update settlement/reconciliation status of a carrier debit memo"""
+        return self.db.update_carrier_debit_memo_status(memo_id, status)
+
 
 class SAPODataAdapter(ERPActionInterface):
     """
@@ -233,6 +254,14 @@ class SAPODataAdapter(ERPActionInterface):
             "channel": "SAP_ODATA_S4HANA",
             "status": "QUEUED_TO_ERP"
         }
+
+    def get_carrier_debit_memos(self, order_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        logger.info(f"[SAP OData] GET {self.base_url}/A_DebitMemoRequest")
+        return []
+
+    def update_carrier_debit_memo_status(self, memo_id: int, status: str) -> bool:
+        logger.info(f"[SAP OData] PATCH {self.base_url}/A_DebitMemoRequest('{memo_id}') Status='{status}'")
+        return True
 
 
 class SAPActionExecutor:
@@ -288,6 +317,14 @@ class SAPActionExecutor:
             executed_actions.append(act_memo)
 
         return executed_actions
+
+    def get_carrier_debit_memos(self, order_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Retrieve posted carrier accounts-payable debit memos"""
+        return self.erp_adapter.get_carrier_debit_memos(order_id)
+
+    def update_carrier_debit_memo_status(self, memo_id: int, status: str) -> bool:
+        """Update settlement/reconciliation status of a carrier debit memo"""
+        return self.erp_adapter.update_carrier_debit_memo_status(memo_id, status)
 
 
 class MSTeamsDispatcher:
@@ -376,6 +413,22 @@ class MSTeamsDispatcher:
             ]
         }
         return card_json
+
+    def create_teams_card(
+        self,
+        order_id: str,
+        escalation_reason: str,
+        financial_impact_usd: float,
+        proposed_action: str
+    ) -> Dict[str, Any]:
+        """Convenience method to construct card from individual agent arguments"""
+        return self.create_adaptive_card({
+            "order_id": order_id,
+            "escalation_reason": escalation_reason,
+            "mitigation_expense_usd": financial_impact_usd,
+            "recommended_action": proposed_action,
+            "urgency": "CRITICAL" if financial_impact_usd > 1000 else "HIGH"
+        })
 
     def dispatch_card(self, escalation_data: Dict[str, Any]) -> Dict[str, Any]:
         """Dispatch card to Teams webhook or persist locally"""

@@ -35,7 +35,7 @@
         },
         {
           "title": "Assigned Carrier:",
-          "value": "JB Hunt"
+          "value": "XPO Logistics"
         },
         {
           "title": "Mitigation Cost:",
@@ -62,7 +62,7 @@
         "action": "APPROVE_MITIGATION",
         "order_id": "800000000000001",
         "approved_amount": 1000.0,
-        "timestamp": "2026-08-27T16:57:48.436865"
+        "timestamp": "2026-09-05T12:11:54.166047"
       }
     },
     {
@@ -72,7 +72,7 @@
       "data": {
         "action": "REJECT_MITIGATION",
         "order_id": "800000000000001",
-        "timestamp": "2026-08-27T16:57:48.436865"
+        "timestamp": "2026-09-05T12:11:54.166047"
       }
     }
   ]

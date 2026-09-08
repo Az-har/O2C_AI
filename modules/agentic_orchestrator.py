@@ -227,6 +227,25 @@ class LLMSynthesizer:
             "executive_decision_brief": exec_brief
         }
 
+    def synthesize_with_graph(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Execute decision synthesis through the full LangGraph state machine"""
+        from modules.agentic_graph import run_order_graph
+        order_id = str(prediction_payload.get("order_id", ""))
+        graph_state = run_order_graph(order_id, prediction_payload, order_data)
+        
+        # Build consolidated decision JSON artifact with graph metadata
+        base_decision = self.synthesize(prediction_payload, order_data)
+        base_decision["langgraph_state"] = {
+            "requires_human_approval": graph_state.get("requires_human_approval", False),
+            "approval_reason": graph_state.get("approval_reason", ""),
+            "total_mitigation_cost": graph_state.get("total_mitigation_cost", 0.0),
+            "audit_trail": graph_state.get("audit_trail", []),
+            "governance_checkpoint": "human_approval_checkpoint" if graph_state.get("requires_human_approval") else "action_execution_node"
+        }
+        if graph_state.get("final_decision"):
+            base_decision["executive_decision_brief"] = graph_state["final_decision"]
+        return base_decision
+
 
 class AgenticOrchestrator:
     """
@@ -269,7 +288,8 @@ class AgenticOrchestrator:
         all_orders: bool = False,
         repredict: bool = False,
         rebuild_rag: bool = False,
-        enable_teams_dispatch: bool = False
+        enable_teams_dispatch: bool = False,
+        use_agent_graph: bool = False
     ) -> Dict[str, Any]:
         """
         Execute the complete autonomous daily cycle:
@@ -382,13 +402,16 @@ class AgenticOrchestrator:
                 orders_data = [self.ml_db.get_order_details(oid) for oid in orders_to_process]
                 pred_results = self.predictive_engine.predict_batch(orders_to_process, orders_data=orders_data)
 
-                # Parallel Agent Decision Synthesis (Critique 3.1)
+                # Hardware-Optimized Concurrency Tuning (Ryzen 3 4-Core + Radeon RX 6600 8GB VRAM)
                 from concurrent.futures import ThreadPoolExecutor
-                synth_workers = min(8, (os.cpu_count() or 4) * 2)
+                synth_workers = 2 if (use_agent_graph or target_order) else min(4, os.cpu_count() or 2)
 
                 def _synth_task(args):
                     idx, ord_id, od, pred_res = args
-                    decision = self.llm_synthesizer.synthesize(pred_res, order_data=od or {})
+                    if use_agent_graph or target_order:
+                        decision = self.llm_synthesizer.synthesize_with_graph(pred_res, order_data=od or {})
+                    else:
+                        decision = self.llm_synthesizer.synthesize(pred_res, order_data=od or {})
                     pred_with_decision = dict(pred_res)
                     pred_with_decision["decision_json"] = json.dumps(decision, default=str)
                     return idx, ord_id, decision, pred_with_decision

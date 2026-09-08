@@ -1,6 +1,8 @@
 """Weather Service for O2C AI Monitor"""
 import requests
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Optional, List, Dict, Any
 
 
 class WeatherService:
@@ -34,43 +36,67 @@ class WeatherService:
     def __init__(self, api_key: str, cities: dict):
         self.api_key = api_key or ""
         self.cities = cities
+        self._session = requests.Session()
+
+    def _fetch_city_current(self, city: str, coords: dict, use_owm: bool) -> Optional[dict]:
+        rec = None
+        if use_owm:
+            rec = self._owm_one(city, coords)
+        if not rec:
+            rec = self._meteo_current_one(city, coords)
+        return rec
 
     def fetch_current(self) -> list:
-        """Fetch live weather for all cities (OpenWeatherMap or Open-Meteo fallback)"""
+        """Fetch live weather for all cities concurrently (OpenWeatherMap or Open-Meteo fallback)"""
         use_owm = bool(self.api_key and len(self.api_key) >= 16)
         source_label = "OpenWeatherMap" if use_owm else "Open-Meteo (Live Global API)"
-        print(f"🌤️  Fetching current weather ({source_label})...")
+        print(f"🌤️  Fetching current weather concurrently ({source_label}, 5 workers)...")
         
         results = []
-        for city, coords in self.cities.items():
-            print(f"   📍 {city:<15}", end=" ")
-            rec = None
-            if use_owm:
-                rec = self._owm_one(city, coords)
-            
-            # If OWM was not used or failed (e.g. 401 Unauthorized), fallback to Open-Meteo live
-            if not rec:
-                rec = self._meteo_current_one(city, coords)
-
-            if rec:
-                results.append(rec)
+        with ThreadPoolExecutor(max_workers=min(5, len(self.cities))) as executor:
+            future_to_city = {
+                executor.submit(self._fetch_city_current, city, coords, use_owm): city
+                for city, coords in self.cities.items()
+            }
+            for future in as_completed(future_to_city):
+                city = future_to_city[future]
+                try:
+                    rec = future.result()
+                    if rec:
+                        print(f"   📍 {city:<15} ✅ {rec.get('temperature')}°C  {rec.get('weather_description')}")
+                        results.append(rec)
+                    else:
+                        print(f"   📍 {city:<15} ⚠️  No data")
+                except Exception as e:
+                    print(f"   📍 {city:<15} ❌ {str(e)[:50]}")
         return results
 
     def fetch_historical(self, date: str) -> list:
-        """Fetch historical weather via Open-Meteo (free, no key)"""
-        print(f"📅 Fetching historical weather for {date} (Open-Meteo)...")
+        """Fetch historical weather concurrently via Open-Meteo (free, no key)"""
+        print(f"📅 Fetching historical weather concurrently for {date} (Open-Meteo, 5 workers)...")
         results = []
-        for city, coords in self.cities.items():
-            print(f"   📍 {city:<15}", end=" ")
-            rec = self._meteo_one(city, coords, date)
-            if rec:
-                results.append(rec)
+        with ThreadPoolExecutor(max_workers=min(5, len(self.cities))) as executor:
+            future_to_city = {
+                executor.submit(self._meteo_one, city, coords, date): city
+                for city, coords in self.cities.items()
+            }
+            for future in as_completed(future_to_city):
+                city = future_to_city[future]
+                try:
+                    rec = future.result()
+                    if rec:
+                        print(f"   📍 {city:<15} ✅ {rec.get('temperature')}°C  {rec.get('weather_description')}")
+                        results.append(rec)
+                    else:
+                        print(f"   📍 {city:<15} ⚠️  No data")
+                except Exception as e:
+                    print(f"   📍 {city:<15} ❌ {str(e)[:50]}")
         return results
 
-    def _owm_one(self, city: str, coords: dict) -> dict:
-        """Fetch one city from OpenWeatherMap"""
+    def _owm_one(self, city: str, coords: dict) -> Optional[dict]:
+        """Fetch one city from OpenWeatherMap using pooled session"""
         try:
-            r = requests.get(self.OWM_URL, params={
+            r = self._session.get(self.OWM_URL, params={
                 "lat": coords["lat"],
                 "lon": coords["lon"],
                 "appid": self.api_key,
@@ -79,7 +105,7 @@ class WeatherService:
             r.raise_for_status()
             data = r.json()
             
-            rec = {
+            return {
                 "city_name": city,
                 "state": coords.get("state"),
                 "recorded_at": datetime.now().isoformat(),
@@ -99,15 +125,13 @@ class WeatherService:
                 "snow_1h": data.get("snow", {}).get("1h", 0),
                 "data_source": "OpenWeatherMap"
             }
-            print(f"✅ {rec['temperature']}°C  {rec['weather_description']} [OWM]")
-            return rec
         except Exception:
             return None
 
-    def _meteo_current_one(self, city: str, coords: dict) -> dict:
-        """Fetch current weather from Open-Meteo (zero-key live API)"""
+    def _meteo_current_one(self, city: str, coords: dict) -> Optional[dict]:
+        """Fetch current weather from Open-Meteo using pooled session"""
         try:
-            r = requests.get(self.METEO_CURRENT_URL, params={
+            r = self._session.get(self.METEO_CURRENT_URL, params={
                 "latitude": coords["lat"],
                 "longitude": coords["lon"],
                 "current": "temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m",
@@ -117,7 +141,7 @@ class WeatherService:
             cur = r.json()["current"]
             w_code = cur.get("weather_code", 0)
             
-            rec = {
+            return {
                 "city_name": city,
                 "state": coords.get("state"),
                 "recorded_at": cur.get("time", datetime.now().isoformat()),
@@ -137,16 +161,13 @@ class WeatherService:
                 "snow_1h": 0,
                 "data_source": "Open-Meteo (Live)"
             }
-            print(f"✅ {rec['temperature']}°C  {rec['weather_description']}")
-            return rec
-        except Exception as e:
-            print(f"❌ {str(e)[:50]}")
+        except Exception:
             return None
 
-    def _meteo_one(self, city: str, coords: dict, date: str) -> dict:
-        """Fetch one city from Open-Meteo historical"""
+    def _meteo_one(self, city: str, coords: dict, date: str) -> Optional[dict]:
+        """Fetch one city from Open-Meteo historical using pooled session"""
         try:
-            r = requests.get(self.METEO_HIST_URL, params={
+            r = self._session.get(self.METEO_HIST_URL, params={
                 "latitude": coords["lat"],
                 "longitude": coords["lon"],
                 "start_date": date,
@@ -159,7 +180,7 @@ class WeatherService:
             
             # Take noon values (index 12)
             idx = 12 if len(data["time"]) > 12 else 0
-            rec = {
+            return {
                 "city_name": city,
                 "state": coords.get("state"),
                 "recorded_at": data["time"][idx],
@@ -179,8 +200,5 @@ class WeatherService:
                 "snow_1h": 0,
                 "data_source": "Open-Meteo"
             }
-            print(f"✅ {rec['temperature']}°C  {rec['weather_description']}")
-            return rec
-        except Exception as e:
-            print(f"❌ {str(e)[:50]}")
+        except Exception:
             return None

@@ -12,6 +12,9 @@ import pandas as pd
 from .config import DB_PATH, LOG_DIR
 
 
+_INITIALIZED_DBS = set()
+
+
 class DatabaseManager:
     """
     Single responsibility: talk to SQLite database.
@@ -24,8 +27,10 @@ class DatabaseManager:
         self.pool_size = pool_size
         self._pool = queue.Queue(maxsize=pool_size)
         self.logger = self._make_logger()
-        self._build_schema()
-        self._apply_migrations()
+        if self.db_path not in _INITIALIZED_DBS:
+            self._build_schema()
+            self._apply_migrations()
+            _INITIALIZED_DBS.add(self.db_path)
         print(f"✅ DatabaseManager ready (Connection Pool: {self.pool_size}) → {self.db_path}")
 
     def _make_logger(self):
@@ -133,6 +138,9 @@ class DatabaseManager:
             keyword_matched  TEXT,
             city_mentioned   TEXT,
             state_mentioned  TEXT,
+            country_mentioned TEXT   DEFAULT 'Global',
+            transport_mode   TEXT    DEFAULT 'Multimodal',
+            disruption_category TEXT DEFAULT 'Disruption',
             severity         TEXT,
             strike_type      TEXT,
             published_date   TEXT,
@@ -244,6 +252,14 @@ class DatabaseManager:
                 "CREATE INDEX IF NOT EXISTS idx_carrier_memo_order ON carrier_debit_memos(order_id);",
                 "CREATE INDEX IF NOT EXISTS idx_clinic_warn_order ON clinic_early_warnings(order_id);"
             ]),
+            ("v1.2_multimodal_disruptions", "Add multimodal transport columns and indexes to strike_news", [
+                "ALTER TABLE strike_news ADD COLUMN country_mentioned TEXT DEFAULT 'Global';",
+                "ALTER TABLE strike_news ADD COLUMN transport_mode TEXT DEFAULT 'Multimodal';",
+                "ALTER TABLE strike_news ADD COLUMN disruption_category TEXT DEFAULT 'Disruption';",
+                "CREATE INDEX IF NOT EXISTS idx_sn_mode ON strike_news(transport_mode);",
+                "CREATE INDEX IF NOT EXISTS idx_sn_category ON strike_news(disruption_category);",
+                "CREATE INDEX IF NOT EXISTS idx_sn_country ON strike_news(country_mentioned);"
+            ]),
         ]
 
         with self.connection() as conn:
@@ -286,83 +302,103 @@ class DatabaseManager:
     # ── Write Operations ───────────────────────────────────
 
     def write_weather(self, records: list, session_id: int) -> tuple:
-        """Insert weather records. Returns (saved, skipped)"""
-        saved = skipped = 0
-        with self.connection() as conn:
-            for r in records:
+        """Insert weather records using high-performance executemany. Returns (saved, skipped)"""
+        if not records:
+            return 0, 0
+        
+        param_rows = []
+        for r in records:
+            try:
+                ts_raw = r.get("recorded_at") or r.get("timestamp") or datetime.now().isoformat()
                 try:
-                    ts_raw = r.get("recorded_at") or r.get("timestamp") or datetime.now().isoformat()
-                    try:
-                        ts = datetime.strptime(str(ts_raw), "%Y-%m-%d %H:%M:%S")
-                    except:
-                        ts = datetime.fromisoformat(str(ts_raw)[:19])
+                    ts = datetime.strptime(str(ts_raw), "%Y-%m-%d %H:%M:%S")
+                except:
+                    ts = datetime.fromisoformat(str(ts_raw)[:19])
 
-                    conn.execute("""
-                        INSERT OR IGNORE INTO weather_readings (
-                            session_id, city_name, state, recorded_at, date_only, hour_of_day,
-                            temperature, feels_like, temp_min, temp_max, humidity, pressure,
-                            visibility_km, cloudiness, weather_main, weather_description,
-                            wind_speed, wind_direction, rain_1h, snow_1h, data_source
-                        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                    """, (
-                        session_id, r.get("city_name") or r.get("city"), r.get("state"),
-                        ts.isoformat(), ts.strftime("%Y-%m-%d"), ts.hour,
-                        r.get("temperature"), r.get("feels_like"), r.get("temp_min"), r.get("temp_max"),
-                        r.get("humidity"), r.get("pressure"), r.get("visibility_km") or r.get("visibility"),
-                        r.get("cloudiness"), r.get("weather_main"),
-                        r.get("weather_description") or r.get("description"),
-                        r.get("wind_speed"), r.get("wind_direction") or r.get("wind_deg"),
-                        r.get("rain_1h", 0), r.get("snow_1h", 0),
-                        r.get("data_source", "OpenWeatherMap"),
-                    ))
-                    chg = conn.execute("SELECT changes()").fetchone()[0]
-                    if chg:
-                        saved += 1
-                    else:
-                        skipped += 1
-                except Exception as e:
-                    self.logger.error(f"write_weather error [{r.get('city_name')}]: {e}")
-        return saved, skipped
+                param_rows.append((
+                    session_id, r.get("city_name") or r.get("city"), r.get("state"),
+                    ts.isoformat(), ts.strftime("%Y-%m-%d"), ts.hour,
+                    r.get("temperature"), r.get("feels_like"), r.get("temp_min"), r.get("temp_max"),
+                    r.get("humidity"), r.get("pressure"), r.get("visibility_km") or r.get("visibility"),
+                    r.get("cloudiness"), r.get("weather_main"),
+                    r.get("weather_description") or r.get("description"),
+                    r.get("wind_speed"), r.get("wind_direction") or r.get("wind_deg"),
+                    r.get("rain_1h", 0), r.get("snow_1h", 0),
+                    r.get("data_source", "OpenWeatherMap"),
+                ))
+            except Exception as e:
+                self.logger.error(f"write_weather param prep error [{r.get('city_name')}]: {e}")
+
+        if not param_rows:
+            return 0, 0
+
+        with self.connection() as conn:
+            before_count = conn.execute("SELECT COUNT(*) FROM weather_readings").fetchone()[0]
+            conn.executemany("""
+                INSERT OR IGNORE INTO weather_readings (
+                    session_id, city_name, state, recorded_at, date_only, hour_of_day,
+                    temperature, feels_like, temp_min, temp_max, humidity, pressure,
+                    visibility_km, cloudiness, weather_main, weather_description,
+                    wind_speed, wind_direction, rain_1h, snow_1h, data_source
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """, param_rows)
+            after_count = conn.execute("SELECT COUNT(*) FROM weather_readings").fetchone()[0]
+            saved = after_count - before_count
+            skipped = len(param_rows) - saved
+            return saved, skipped
 
     def write_strikes(self, articles: list, session_id: int) -> tuple:
-        """Insert strike news. Returns (saved, skipped)"""
-        saved = skipped = 0
-        with self.connection() as conn:
-            for a in articles:
-                try:
-                    sev = str(a.get("severity", "LOW")).replace("🔴 ", "").replace("🟡 ", "").replace("🟢 ", "")
-                    pub_date = None
-                    raw = a.get("published_date") or a.get("published", "")
-                    if raw:
-                        try:
-                            pub_date = pd.to_datetime(raw).strftime("%Y-%m-%d")
-                        except:
-                            pub_date = datetime.now().strftime("%Y-%m-%d")
+        """Insert strike news using high-performance executemany. Returns (saved, skipped)"""
+        if not articles:
+            return 0, 0
 
-                    conn.execute("""
-                        INSERT OR IGNORE INTO strike_news (
-                            session_id, title, description, url, source_name, keyword_matched,
-                            city_mentioned, state_mentioned, severity, strike_type,
-                            published_date, scraped_at
-                        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
-                    """, (
-                        session_id, str(a.get("title", ""))[:500],
-                        str(a.get("description", ""))[:2000], str(a.get("url", ""))[:500],
-                        str(a.get("source_name") or a.get("source", "Unknown"))[:100],
-                        str(a.get("keyword_matched") or a.get("keyword", ""))[:100],
-                        str(a.get("city_mentioned") or a.get("city", "Unknown"))[:100],
-                        str(a.get("state_mentioned", ""))[:100], sev,
-                        str(a.get("strike_type", "general"))[:50],
-                        pub_date, datetime.now().isoformat()
-                    ))
-                    chg = conn.execute("SELECT changes()").fetchone()[0]
-                    if chg:
-                        saved += 1
-                    else:
-                        skipped += 1
-                except Exception as e:
-                    self.logger.error(f"write_strikes error: {e}")
-        return saved, skipped
+        param_rows = []
+        for a in articles:
+            try:
+                sev = str(a.get("severity", "LOW")).replace("🔴 ", "").replace("🟡 ", "").replace("🟢 ", "")
+                pub_date = None
+                raw = a.get("published_date") or a.get("published", "")
+                if raw:
+                    try:
+                        pub_date = pd.to_datetime(raw).strftime("%Y-%m-%d")
+                    except:
+                        pub_date = datetime.now().strftime("%Y-%m-%d")
+
+                country = str(a.get("country_mentioned") or a.get("country", "Global"))[:100]
+                t_mode = str(a.get("transport_mode") or a.get("mode", "Multimodal"))[:100]
+                d_cat = str(a.get("disruption_category") or a.get("category", "Disruption"))[:100]
+
+                param_rows.append((
+                    session_id, str(a.get("title", ""))[:500],
+                    str(a.get("description", ""))[:2000], str(a.get("url", ""))[:500],
+                    str(a.get("source_name") or a.get("source", "Unknown"))[:100],
+                    str(a.get("keyword_matched") or a.get("keyword", ""))[:100],
+                    str(a.get("city_mentioned") or a.get("city", "Unknown"))[:100],
+                    str(a.get("state_mentioned", ""))[:100],
+                    country, t_mode, d_cat, sev,
+                    str(a.get("strike_type", t_mode))[:50],
+                    pub_date, datetime.now().isoformat()
+                ))
+            except Exception as e:
+                self.logger.error(f"write_strikes param prep error: {e}")
+
+        if not param_rows:
+            return 0, 0
+
+        with self.connection() as conn:
+            before_count = conn.execute("SELECT COUNT(*) FROM strike_news").fetchone()[0]
+            conn.executemany("""
+                INSERT OR IGNORE INTO strike_news (
+                    session_id, title, description, url, source_name, keyword_matched,
+                    city_mentioned, state_mentioned, country_mentioned, transport_mode,
+                    disruption_category, severity, strike_type,
+                    published_date, scraped_at
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """, param_rows)
+            after_count = conn.execute("SELECT COUNT(*) FROM strike_news").fetchone()[0]
+            saved = after_count - before_count
+            skipped = len(param_rows) - saved
+            return saved, skipped
 
     def write_rag_analysis(self, news_id: int, strike_title: str, question: str, 
                           answer: str, sources: list, confidence: float = None) -> int:
@@ -399,6 +435,21 @@ class DatabaseManager:
             sql += " ORDER BY recorded_at DESC"
             
             return pd.read_sql_query(sql, conn, params=params)
+
+    def get_city_weather(self, city: str) -> Optional[Dict[str, Any]]:
+        """Fast indexed retrieval of latest weather reading for a city as dict"""
+        with self.connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT city_name, temperature, feels_like, humidity, wind_speed,
+                       weather_main, weather_description, rain_1h, recorded_at
+                FROM weather_readings
+                WHERE city_name LIKE ?
+                ORDER BY recorded_at DESC
+                LIMIT 1
+            """, (f"%{city.strip()}%",))
+            row = cur.fetchone()
+            return dict(row) if row else None
 
     def read_strikes(self, date: str = None, city: str = None) -> pd.DataFrame:
         """Read strike news"""
@@ -527,3 +578,74 @@ class DatabaseManager:
                     "SELECT * FROM clinic_early_warnings ORDER BY sent_at DESC"
                 ).fetchall()
             return [dict(r) for r in rows]
+
+    def write_weather_alerts(self, alerts: List[Dict[str, Any]]) -> int:
+        """Insert weather alert records into weather_alerts table"""
+        if not alerts:
+            return 0
+        rows = []
+        for a in alerts:
+            rows.append((
+                a.get("session_id"),
+                a.get("city_name") or a.get("city", "Unknown"),
+                a.get("state", ""),
+                a.get("alert_type", "WEATHER_ALERT"),
+                a.get("alert_message") or a.get("message", ""),
+                a.get("severity", "MEDIUM"),
+                a.get("triggered_at") or datetime.now().isoformat()
+            ))
+        with self.connection() as conn:
+            conn.executemany("""
+                INSERT INTO weather_alerts (
+                    session_id, city_name, state, alert_type, alert_message, severity, triggered_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, rows)
+            return len(rows)
+
+    def write_daily_summary(self, summary: Dict[str, Any]) -> int:
+        """Insert a daily summary record into daily_summaries table"""
+        with self.connection() as conn:
+            cur = conn.execute("""
+                INSERT INTO daily_summaries (
+                    summary_date, city_name, state, avg_temperature, max_temperature,
+                    min_temperature, avg_humidity, total_rainfall, avg_wind_speed,
+                    dominant_weather, strike_count, high_severity_count
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                summary.get("summary_date", datetime.now().strftime("%Y-%m-%d")),
+                summary.get("city_name", "Unknown"),
+                summary.get("state", ""),
+                summary.get("avg_temperature"),
+                summary.get("max_temperature"),
+                summary.get("min_temperature"),
+                summary.get("avg_humidity"),
+                summary.get("total_rainfall", 0.0),
+                summary.get("avg_wind_speed"),
+                summary.get("dominant_weather", "Clear"),
+                summary.get("strike_count", 0),
+                summary.get("high_severity_count", 0)
+            ))
+            return cur.lastrowid
+
+    def get_carrier_debit_memos(self, order_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Retrieve carrier accounts-payable debit memos for an order or all records"""
+        with self.connection() as conn:
+            if order_id:
+                rows = conn.execute(
+                    "SELECT * FROM carrier_debit_memos WHERE order_id = ? ORDER BY created_at DESC",
+                    (str(order_id),)
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM carrier_debit_memos ORDER BY created_at DESC"
+                ).fetchall()
+            return [dict(r) for r in rows]
+
+    def update_carrier_debit_memo_status(self, memo_id: int, status: str) -> bool:
+        """Update settlement/reconciliation status of a carrier debit memo"""
+        with self.connection() as conn:
+            cur = conn.execute(
+                "UPDATE carrier_debit_memos SET status = ? WHERE memo_id = ?",
+                (str(status), int(memo_id))
+            )
+            return cur.rowcount > 0

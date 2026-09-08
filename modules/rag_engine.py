@@ -74,7 +74,7 @@ except ImportError:
 class DocumentLoader:
     """Loads documents from multiple formats"""
     
-    SUPPORTED = [".txt", ".pdf", ".docx", ".csv", ".xlsx"]
+    SUPPORTED = [".txt", ".pdf", ".docx", ".csv", ".xlsx", ".md"]
 
     def __init__(self, docs_dir: Path = DOCS_DIR):
         self.docs_dir = docs_dir
@@ -119,7 +119,7 @@ class DocumentLoader:
     def _load_one(self, file_path: Path) -> Optional[str]:
         try:
             ext = file_path.suffix.lower()
-            if ext == ".txt":
+            if ext in [".txt", ".md"]:
                 return file_path.read_text(encoding="utf-8", errors="ignore")
             elif ext == ".pdf":
                 reader = PdfReader(file_path)
@@ -219,7 +219,7 @@ class ClauseAwareChunker:
         raw_sections = re.split(r'(?=\n(?:[0-9]+\.[0-9]*\s+|TICKET\s+|SECTION\s+|INC-[0-9]+\s+|[A-Z\s]{4,}:))|\n\n+', text)
         
         current_chunk = ""
-        header_context = filename.replace(".docx", "").replace(".txt", "")
+        header_context = filename.replace(".docx", "").replace(".txt", "").replace(".md", "")
         
         for section in raw_sections:
             sec_clean = section.strip()
@@ -414,8 +414,6 @@ class VectorStore:
         faiss.write_index(self.index, str(self.INDEX_FILE))
         with open(self.META_FILE, "wb") as f:
             pickle.dump(self.metadata, f)
-        with open(self.CHUNKS_FILE, "wb") as f:
-            pickle.dump(chunks, f)
         with open(self.BM25_FILE, "wb") as f:
             pickle.dump(self.bm25, f)
         

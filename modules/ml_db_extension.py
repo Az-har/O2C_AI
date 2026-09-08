@@ -21,6 +21,20 @@ try:
 except ImportError:
     from config import DB_PATH, BASE_DIR
 
+def vectorized_haversine(lat1: Any, lon1: Any, lat2: Any, lon2: Any) -> np.ndarray:
+    """
+    Vectorized Haversine distance computation across NumPy arrays / scalars in kilometers.
+    High-performance replacement for scalar row-by-row math.
+    """
+    R = 6371.0
+    lat1_r, lon1_r = np.radians(lat1), np.radians(lon1)
+    lat2_r, lon2_r = np.radians(lat2), np.radians(lon2)
+    dlat = lat2_r - lat1_r
+    dlon = lon2_r - lon1_r
+    a = np.sin(dlat / 2.0)**2 + np.cos(lat1_r) * np.cos(lat2_r) * np.sin(dlon / 2.0)**2
+    c = 2.0 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
+    return R * c
+
 
 class MLDatabaseExtension:
     """
@@ -34,23 +48,18 @@ class MLDatabaseExtension:
         "lfa1", "mara"
     ]
 
-    def __init__(self, db_path: Optional[Path] = None):
-        if db_path is None:
-            self.db_path = Path(db_path or (BASE_DIR / "database" / "india_monitor.db"))
+    def __init__(self, db_path: Optional[Path] = None, db_manager: Optional[Any] = None):
+        if db_manager is not None:
+            self.db_manager = db_manager
+            self.db_path = Path(db_manager.db_path)
         else:
-            self.db_path = Path(db_path)
+            from modules.database_manager import DatabaseManager
+            self.db_path = Path(db_path or (BASE_DIR / "database" / "india_monitor.db"))
+            self.db_manager = DatabaseManager(db_path=self.db_path)
         
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
-        self.conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
-        self.conn.row_factory = sqlite3.Row
-        try:
-            self.conn.execute("PRAGMA journal_mode=WAL;")
-            self.conn.execute("PRAGMA synchronous=NORMAL;")
-            self.conn.execute("PRAGMA cache_size=-64000;")
-            self.conn.execute("PRAGMA mmap_size=268435456;")
-            self.conn.execute("PRAGMA temp_store=MEMORY;")
-        except Exception:
-            pass
+        # Reuse thread-safe connection from DatabaseManager pool
+        self.conn = self.db_manager._get_connection()
         self._cached_ml_df = None
         self._order_lookup_dict = {}
         self._build_sap_schema()
@@ -248,6 +257,12 @@ class MLDatabaseExtension:
                     df[col] = df[col].astype(str).str.strip()
 
             df.to_sql(table_name, self.conn, if_exists="replace", index=False)
+            if table_name == "sap_vbak":
+                try:
+                    self.conn.execute("ALTER TABLE sap_vbak ADD COLUMN lifsk TEXT DEFAULT '00'")
+                    self.conn.execute("CREATE INDEX IF NOT EXISTS idx_vbak_kunnr ON sap_vbak(kunnr)")
+                except sqlite3.OperationalError:
+                    pass
             stats[table_name] = len(df)
 
         self.conn.commit()
@@ -375,24 +390,24 @@ class MLDatabaseExtension:
         origin_lat = 19.0760  # Default Mumbai central DC
         origin_lon = 72.8777
 
-        def calc_haversine(city_name: str) -> float:
-            c_clean = str(city_name).lower().strip()
+        # Vectorized Haversine distance computation using NumPy
+        dest_cities = df['dest_city'].astype(str).str.lower().str.strip()
+        unique_cities = dest_cities.unique()
+        distance_lookup = {}
+        for c_clean in unique_cities:
             if c_clean in city_coords:
                 lat2, lon2 = city_coords[c_clean]
+                dlat = np.radians(lat2 - origin_lat)
+                dlon = np.radians(lon2 - origin_lon)
+                a = (np.sin(dlat / 2.0) ** 2 +
+                     np.cos(np.radians(origin_lat)) * np.cos(np.radians(lat2)) * np.sin(dlon / 2.0) ** 2)
+                c_val = 2.0 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
+                distance_lookup[c_clean] = float(6371.0 * c_val)
             else:
                 # Deterministic synthetic distance based on hash for unmapped cities
-                return float(350.0 + (abs(hash(c_clean)) % 900))
-            
-            import math
-            R = 6371.0  # Earth radius in km
-            dlat = math.radians(lat2 - origin_lat)
-            dlon = math.radians(lon2 - origin_lon)
-            a = (math.sin(dlat / 2.0) ** 2 +
-                 math.cos(math.radians(origin_lat)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2.0) ** 2)
-            c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
-            return float(R * c)
+                distance_lookup[c_clean] = float(350.0 + (abs(hash(c_clean)) % 900))
 
-        df['haversine_distance_km'] = df['dest_city'].apply(calc_haversine)
+        df['haversine_distance_km'] = dest_cities.map(distance_lookup).fillna(500.0).astype(float)
         df['required_transit_speed_kmh'] = np.round(
             df['haversine_distance_km'] / np.maximum(1.0, df['order_to_delivery_days'] * 24.0), 1
         )
@@ -443,30 +458,32 @@ class MLDatabaseExtension:
         df['customer_tier'] = df['customer_tier'].fillna('Independent').astype(str)
         df['shipping_type'] = df['shipping_type'].fillna('Road (FTL)').astype(str)
 
-        # Cache dataset and pre-index dictionary for O(1) instantaneous lookups
+        # Cache dataset and index map for O(1) instantaneous lookups without duplicate memory dictionary
         self._cached_ml_df = df
-        try:
-            self._order_lookup_dict = {str(row['order_id']): row for row in df.to_dict(orient='records')}
-        except Exception:
-            self._order_lookup_dict = {}
+        self._order_id_to_idx = {str(val): idx for idx, val in enumerate(df['order_id'])}
+        self._order_lookup_dict = {}
 
         return df
 
     def get_order_details(self, order_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve full joined record for a specific sales order in O(1) time"""
-        if not self._order_lookup_dict:
+        if self._cached_ml_df is None or not hasattr(self, "_order_id_to_idx") or not self._order_id_to_idx:
             self.get_ml_ready_dataset()
 
         ord_key = str(order_id).strip()
-        if ord_key in self._order_lookup_dict:
-            return self._order_lookup_dict[ord_key]
+        if ord_key in self._order_id_to_idx:
+            idx = self._order_id_to_idx[ord_key]
+            return self._cached_ml_df.iloc[idx].to_dict()
 
         # Suffix matching fallback if short ID passed
-        for k, v in self._order_lookup_dict.items():
+        for k, idx in self._order_id_to_idx.items():
             if k.endswith(ord_key):
-                return v
+                return self._cached_ml_df.iloc[idx].to_dict()
 
         return None
+
+    # Backward-compatible alias for agent tools
+    get_order_context = get_order_details
 
     def record_prediction(self, prediction: Dict[str, Any]) -> int:
         """Store an Engine A prediction in ml_predictions table"""
@@ -540,6 +557,16 @@ class MLDatabaseExtension:
             return set()
 
     def close(self):
-        """Close SQLite database connection"""
-        if self.conn:
-            self.conn.close()
+        """Release SQLite database connection back to pool"""
+        if hasattr(self, "conn") and self.conn and hasattr(self, "db_manager") and self.db_manager:
+            try:
+                self.db_manager._release_connection(self.conn)
+            except Exception:
+                pass
+            self.conn = None
+        elif self.conn:
+            try:
+                self.conn.close()
+            except Exception:
+                pass
+            self.conn = None

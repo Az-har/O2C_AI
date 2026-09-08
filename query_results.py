@@ -83,6 +83,72 @@ def show_summary():
     conn.close()
 
 
+def show_disruptions(limit: int = 15, category: str = None, mode: str = None):
+    """Retrieve and display live global multimodal transport disruptions from database"""
+    conn = get_db_connection()
+    c = conn.cursor()
+    
+    query = """
+        SELECT title, 
+               COALESCE(transport_mode, 'Multimodal') as mode,
+               COALESCE(disruption_category, 'Disruption') as category,
+               COALESCE(country_mentioned, 'Global') as country,
+               COALESCE(city_mentioned, 'International Corridor') as hub,
+               severity, published_date, source_name, url
+        FROM strike_news
+    """
+    conditions = []
+    params = []
+    if category:
+        conditions.append("disruption_category LIKE ?")
+        params.append(f"%{category}%")
+    if mode:
+        conditions.append("transport_mode LIKE ?")
+        params.append(f"%{mode}%")
+        
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+        
+    query += " ORDER BY published_date DESC LIMIT ?"
+    params.append(limit)
+    
+    c.execute(query, tuple(params))
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+
+    filter_desc = ""
+    if category or mode:
+        filter_parts = []
+        if mode: filter_parts.append(f"Mode: {mode}")
+        if category: filter_parts.append(f"Category: {category}")
+        filter_desc = f" (Filtered by {', '.join(filter_parts)})"
+
+    print("\n" + "=" * 80)
+    print(f"🌐 GLOBAL MULTIMODAL TRANSPORTATION DISRUPTIONS{filter_desc}")
+    print("=" * 80)
+    if not rows:
+        print("ℹ️  No disruption records found. Run main pipeline or news fetcher first.")
+        print("=" * 80 + "\n")
+        return
+
+    for idx, r in enumerate(rows, 1):
+        sev_icon = "🔴" if "HIGH" in str(r.get("severity", "")).upper() else ("🟡" if "MED" in str(r.get("severity", "")).upper() else "🟢")
+        mode = r.get("mode", "Multimodal")
+        cat = r.get("category", "Disruption")
+        hub = r.get("hub", "Global Corridor")
+        country = r.get("country", "Global")
+        pub = r.get("published_date", "N/A")
+        src = r.get("source_name", "News")
+        title = r.get("title", "No title")
+
+        print(f"{sev_icon} [{mode.upper()} | {cat}] {title}")
+        print(f"   📍 Location: {hub} ({country}) | 📅 Date: {pub} | 📰 Source: {src}")
+        if r.get("url"):
+            print(f"   🔗 {r['url']}")
+        print("-" * 80)
+    print("=" * 80 + "\n")
+
+
 def query_order(order_id: str):
     """Retrieve in-depth prediction and multi-agent analysis for a specific order ID"""
     conn = get_db_connection()
@@ -407,16 +473,21 @@ def main():
     parser.add_argument("--export-both", action="store_true", help="Export BOTH summary and in-depth detailed Markdown reports simultaneously")
     parser.add_argument("--export-csv", action="store_true", help="Export predictions to CSV")
     parser.add_argument("--detailed", action="store_true", help="Include full multi-agent reasoning, XAI attributions, and executive brief in Markdown export")
+    parser.add_argument("--disruptions", action="store_true", help="Display latest global multimodal transportation disruptions")
+    parser.add_argument("--category", type=str, default=None, help="Filter disruptions by category (e.g. 'Natural Disaster', 'Cyber', 'Strike', 'Congestion')")
+    parser.add_argument("--mode", type=str, default=None, help="Filter disruptions by transport mode (e.g. 'Air Freight', 'Maritime', 'Rail Freight', 'Canal')")
     args = parser.parse_args()
 
     # Default action if no arguments provided
-    if not any([args.summary, args.order, args.list, args.delayed, args.export_md, args.export_detailed, args.export_both, args.export_csv]):
+    if not any([args.summary, args.order, args.list, args.delayed, args.export_md, args.export_detailed, args.export_both, args.export_csv, args.disruptions]):
         show_summary()
         list_orders(limit=args.limit or 10)
         return
 
     if args.summary:
         show_summary()
+    if args.disruptions:
+        show_disruptions(limit=args.limit or 15, category=args.category, mode=args.mode)
     if args.order:
         query_order(args.order)
     if args.list or args.delayed:

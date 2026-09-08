@@ -87,12 +87,16 @@ class PredictiveEngine:
             """).fetchall()
             self._weather_cache = {r["city"]: dict(r) for r in w_rows}
 
-            # 2. Strike cache
+            # 2. Multimodal Disruption cache
             s_rows = conn.execute("""
-                SELECT LOWER(COALESCE(city_mentioned, '')) as city, title, strike_type
+                SELECT LOWER(COALESCE(city_mentioned, '')) as city,
+                       LOWER(COALESCE(country_mentioned, '')) as country,
+                       COALESCE(transport_mode, 'Multimodal') as transport_mode,
+                       COALESCE(disruption_category, 'Disruption') as disruption_category,
+                       title, severity, strike_type
                 FROM strike_news
                 ORDER BY published_date DESC
-                LIMIT 50
+                LIMIT 100
             """).fetchall()
             self._strike_cache = [dict(r) for r in s_rows]
         except Exception:
@@ -416,16 +420,41 @@ class PredictiveEngine:
                 root_causes.append(f"Low visibility fog hazard ({vis:.1f}km in {dest_city})")
                 weather_alert = "Low Visibility Fog"
 
-        # Check strikes & transport disruptions from in-memory cache or fallback
+        # Check multimodal global transport disruptions from in-memory cache
         strike_alert = None
-        s_matched = next((s for s in self._strike_cache if s.get("city") == city_clean or city_clean in s.get("title", "").lower()), None)
+        s_matched = next((
+            s for s in self._strike_cache 
+            if s.get("city") == city_clean 
+            or (city_clean and city_clean in s.get("title", "").lower())
+            or (s.get("country") and s.get("country") == city_clean)
+        ), None)
+
+        # Correlate global high-severity chokepoint / port / air disruptions with international carriers
+        if not s_matched:
+            critical_global = next((
+                s for s in self._strike_cache 
+                if "HIGH" in str(s.get("severity", "")).upper() 
+                and s.get("transport_mode") in ["Canal / Chokepoint", "Maritime / Ocean Port", "Air Freight"]
+            ), None)
+            if critical_global and any(k in carrier_mode.lower() for k in ["air", "ocean", "sea", "express", "multimodal", "freight"]):
+                s_matched = critical_global
+
         if s_matched:
-            stype = s_matched.get('strike_type') or 'Transport'
-            root_causes.append(f"Active transport disruption ({stype} strike in {dest_city})")
-            strike_alert = f"{stype} Strike: {s_matched.get('title', '')[:60]}"
-            if will_delayed:
-                delay_hours += 12.0
-                delay_prob = min(0.99, delay_prob + 0.10)
+            t_mode = s_matched.get('transport_mode') or 'Transport'
+            d_cat = s_matched.get('disruption_category') or 'Disruption'
+            hub_name = s_matched.get('city') or dest_city
+            if "Natural Disaster" in d_cat:
+                root_causes.append(f"Act of God / Natural Disaster ({t_mode} hazard in {hub_name})")
+                strike_alert = f"Natural Disaster [{t_mode}]: {s_matched.get('title', '')[:60]}"
+                if will_delayed:
+                    delay_hours += 18.0
+                    delay_prob = min(0.99, delay_prob + 0.15)
+            else:
+                root_causes.append(f"Active multimodal disruption ({t_mode} - {d_cat} in {hub_name})")
+                strike_alert = f"{t_mode} [{d_cat}]: {s_matched.get('title', '')[:60]}"
+                if will_delayed:
+                    delay_hours += 14.0
+                    delay_prob = min(0.99, delay_prob + 0.12)
 
         if not root_causes:
             root_causes.append("Standard transit variability")
@@ -619,3 +648,7 @@ class PredictiveEngine:
             "total_financial_risk_usd": float(np.sum(financial_risks)),
             "high_risk_orders": high_risk
         }
+
+    # Backward compatibility alias
+    predict_order_delay = predict_delivery_delay
+
