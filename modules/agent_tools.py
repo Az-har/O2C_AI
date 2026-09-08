@@ -403,7 +403,50 @@ def dispatch_teams_approval_card(
         return {"status": "ERROR", "order_id": order_id, "message": str(e)}
 
 
-# Master Toolset for Agent Binding
+# ============================================================================
+# Tool 8: Query Historical Incident & Resolution Memory (ChromaDB)
+# ============================================================================
+
+class QueryIncidentMemoryInput(BaseModel):
+    query_text: str = Field(description="Search description of the incident, delay conditions, or arbitration query")
+    carrier_name: Optional[str] = Field(default=None, description="Optional carrier name filter (e.g. 'DHL Supply Chain')")
+    dest_city: Optional[str] = Field(default=None, description="Optional destination city filter (e.g. 'Mumbai')")
+    top_k: int = Field(default=3, description="Number of precedent resolutions to retrieve")
+
+@tool(args_schema=QueryIncidentMemoryInput)
+def query_historical_incident_memory(
+    query_text: str,
+    carrier_name: Optional[str] = None,
+    dest_city: Optional[str] = None,
+    top_k: int = 3
+) -> Dict[str, Any]:
+    """
+    Retrieve historical incident precedents, dispute resolutions, and carrier performance
+    records from the ChromaDB long-term episodic memory store.
+    Provides legal and operational precedents for Force Majeure claims and mitigation authorizations.
+    """
+    try:
+        from modules.incident_memory import EpisodicMemoryStore
+        store = EpisodicMemoryStore()
+        precedents = store.query_precedents(
+            query_text=query_text,
+            carrier_name=carrier_name,
+            dest_city=dest_city,
+            top_k=top_k
+        )
+        return {
+            "status": "SUCCESS",
+            "query": query_text,
+            "precedents_found": len(precedents),
+            "count": len(precedents),
+            "precedents": precedents
+        }
+    except Exception as e:
+        logger.error(f"Error querying episodic incident memory: {e}")
+        return {"status": "ERROR", "query": query_text, "precedents_found": 0, "count": 0, "precedents": [], "message": str(e)}
+
+
+# Master Toolset for Agent Binding (8 Production Tools)
 ALL_AGENT_TOOLS = [
     query_sap_order,
     fetch_corridor_weather,
@@ -412,4 +455,6 @@ ALL_AGENT_TOOLS = [
     calculate_adjudicated_sla,
     post_sap_block_or_date,
     dispatch_teams_approval_card,
+    query_historical_incident_memory,
 ]
+

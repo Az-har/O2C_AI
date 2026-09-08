@@ -44,6 +44,7 @@ india_monitor_data/database/*.db*
 *.pkl
 *.pickle
 india_monitor_data/rag/vector_store/*
+india_monitor_data/rag/incident_memory/*
 india_monitor_data/models/*.pkl
 
 # Logs and temporary files

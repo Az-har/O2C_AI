@@ -31,7 +31,8 @@ from modules.agent_specialists import (
     RouteSupervisorAgent,
     ContractAdjudicatorAgent,
     QualityMitigationAgent,
-    LLMReasoningEngine
+    LLMReasoningEngine,
+    negotiate_inter_agent_consensus
 )
 from modules.action_execution_engine import (
     SAPActionExecutor,
@@ -51,9 +52,12 @@ class O2CAgentState(TypedDict):
     order_id: str
     order_data: Dict[str, Any]
     prediction_payload: Dict[str, Any]
+    active_plan: List[str]
     route_findings: Dict[str, Any]
     legal_findings: Dict[str, Any]
     quality_findings: Dict[str, Any]
+    negotiation_history: List[Dict[str, Any]]
+    precedents_consulted: List[Dict[str, Any]]
     proposed_actions: List[Dict[str, Any]]
     total_mitigation_cost: float
     requires_human_approval: bool
@@ -69,21 +73,48 @@ class O2CAgentState(TypedDict):
 # ============================================================================
 
 def supervisor_router_node(state: O2CAgentState) -> Dict[str, Any]:
-    """Node 1: Supervisor Router - Inspects order context and initiates multi-agent assessment"""
+    """Node 1: Supervisor Router - Inspects order context and formulates dynamic specialist execution plan"""
     order_id = state["order_id"]
     pred = state.get("prediction_payload", {})
+    order_data = state.get("order_data", {})
     customer = pred.get("customer_name", "Valued Customer")
     tier = pred.get("customer_tier", "Tier 1")
     will_delay = pred.get("will_be_delayed", False)
     delay_hrs = pred.get("delay_hours", 0.0)
+    delay_prob = float(pred.get("delay_probability", 0.0))
+    has_specialty = bool(pred.get("has_specialty_diet", order_data.get("has_specialty_diet", False)))
 
-    log_entry = (
-        f"[{datetime.now().strftime('%H:%M:%S')}] SupervisorRouter: Order {order_id} ({customer}, {tier}) "
-        f"queued. Predicted status: {'DELAYED by ' + f'{delay_hrs:.1f}h' if will_delay else 'ON SCHEDULE'}."
-    )
-    return {
-        "audit_trail": [log_entry]
-    }
+    is_fast_track = (not will_delay) and (delay_prob < 0.35) and (not has_specialty)
+    
+    if is_fast_track:
+        plan = ["FAST_TRACK_EXECUTION"]
+        brief = (
+            f"Order {order_id} destined for {customer} ({tier}) is ON SCHEDULE "
+            f"(Delay Probability: {delay_prob:.1%}). Fast-track autonomous execution approved; "
+            f"standard transit milestones and SAP delivery schedule maintained."
+        )
+        log_entry = (
+            f"[{datetime.now().strftime('%H:%M:%S')}] SupervisorRouter: Order {order_id} qualifies for FAST-TRACK "
+            f"(On-schedule, low risk). Routing directly to Action Execution."
+        )
+        return {
+            "active_plan": plan,
+            "final_decision": brief,
+            "requires_human_approval": False,
+            "total_mitigation_cost": 0.0,
+            "audit_trail": [log_entry]
+        }
+    else:
+        plan = ["ROUTE_SUPERVISION", "CONTRACT_ADJUDICATION", "QUALITY_MITIGATION", "INTER_AGENT_NEGOTIATION", "CONSENSUS_DEBATE", "GOVERNANCE_EXECUTION"]
+        priority_label = "CRITICAL CLINICAL PRIORITY" if has_specialty else ("HIGH DELAY RISK" if will_delay else "CORRIDOR INSPECTION")
+        log_entry = (
+            f"[{datetime.now().strftime('%H:%M:%S')}] SupervisorRouter: Order {order_id} ({customer}, {tier}) "
+            f"assigned FULL SPECIALIST INVESTIGATION [{priority_label}]. Predicted delay: {delay_hrs:.1f}h (Prob: {delay_prob:.1%})."
+        )
+        return {
+            "active_plan": plan,
+            "audit_trail": [log_entry]
+        }
 
 
 def route_specialist_node(state: O2CAgentState) -> Dict[str, Any]:
@@ -146,6 +177,50 @@ def quality_mitigation_node(state: O2CAgentState) -> Dict[str, Any]:
     }
 
 
+def inter_agent_negotiation_node(state: O2CAgentState) -> Dict[str, Any]:
+    """
+    Node 4B: Inter-Agent Negotiation Protocol (Phase 6 / Level 4)
+    Multi-turn adversarial dialogue between ContractAdjudicator and QualityMitigation to reconcile
+    SLA financial penalties with clinical emergency freight and product integrity mandates.
+    """
+    contract_agent = ContractAdjudicatorAgent()
+    quality_agent = QualityMitigationAgent()
+
+    negotiation_res = negotiate_inter_agent_consensus(
+        contract_agent=contract_agent,
+        quality_agent=quality_agent,
+        prediction_payload=state["prediction_payload"],
+        order_data=state["order_data"],
+        route_analysis=state.get("route_findings", {}),
+        notice_given_12h=True
+    )
+
+    outcome = negotiation_res.get("negotiation_outcome", {})
+    turns = outcome.get("turns", [])
+
+    # Aggregate precedents consulted from all specialist agents
+    all_precedents = []
+    all_precedents.extend(state.get("route_findings", {}).get("precedents_consulted", []))
+    all_precedents.extend(state.get("legal_findings", {}).get("precedents_consulted", []))
+    all_precedents.extend(state.get("quality_findings", {}).get("precedents_consulted", []))
+
+    cost = float(outcome.get("final_mitigation_cost_usd", state.get("total_mitigation_cost", 0.0)))
+
+    log_entry = (
+        f"[{datetime.now().strftime('%H:%M:%S')}] InterAgentNegotiation: Concluded {len(turns)} dialogue turns. "
+        f"Consensus: Mitigation=${cost:.2f}, "
+        f"Net SLA Penalty=${outcome.get('final_sla_penalty_usd', 0.0):.2f}. "
+        f"Summary: {outcome.get('compromise_summary', '')[:90]}..."
+    )
+
+    return {
+        "negotiation_history": turns,
+        "precedents_consulted": all_precedents,
+        "total_mitigation_cost": cost,
+        "audit_trail": [log_entry]
+    }
+
+
 def consensus_debate_node(state: O2CAgentState) -> Dict[str, Any]:
     """
     Node 5: Multi-Agent Consensus & Trade-Off Debate Node
@@ -176,6 +251,11 @@ def consensus_debate_node(state: O2CAgentState) -> Dict[str, Any]:
         quality_analysis=quality,
         rag_citations=pred.get("rag_citations", ["Master Service Agreement"])
     )
+
+    # Append inter-agent debate compromise summary if available
+    negotiation = state.get("negotiation_history", [])
+    if negotiation:
+        brief += f"\nInter-Agent Debate: Reconciled across {len(negotiation)} specialist dialogue turns."
 
     # Governance Gate Check: Expense > $500 or QA Quarantine requires Director sign-off
     requires_approval = (cost > 500.0) or qa_hold or (legal.get("sla_delay_penalty_usd", 0.0) > 1000.0)
@@ -260,8 +340,26 @@ def human_approval_checkpoint(state: O2CAgentState) -> Dict[str, Any]:
 
 
 # ============================================================================
-# Conditional Edge Router
+# Conditional Edge Routers (Dynamic Supervisor & Governance)
 # ============================================================================
+
+def supervisor_dynamic_router(state: O2CAgentState) -> str:
+    """
+    Dynamic Supervisor Router (Phase 6 / Level 4 Agent-First Architecture):
+    Inspects predictive risk indicators to dynamically determine workflow path:
+    - fast_track: On-schedule, low delay risk, no clinical priority -> directly to ERP auto-execution
+    - full_investigation: High disruption risk, perishable cargo, or contract breach -> specialist pipeline
+    """
+    pred = state.get("prediction_payload", {})
+    order_data = state.get("order_data", {})
+    will_delay = pred.get("will_be_delayed", False)
+    delay_prob = float(pred.get("delay_probability", 0.0))
+    has_specialty = bool(pred.get("has_specialty_diet", order_data.get("has_specialty_diet", False)))
+
+    if not will_delay and delay_prob < 0.35 and not has_specialty:
+        return "fast_track"
+    return "full_investigation"
+
 
 def route_by_governance(state: O2CAgentState) -> str:
     """Routes state based on financial and clinical risk thresholds"""
@@ -275,26 +373,37 @@ def route_by_governance(state: O2CAgentState) -> str:
 # ============================================================================
 
 def create_o2c_agentic_graph() -> StateGraph:
-    """Build the LangGraph multi-agent state machine"""
+    """Build the LangGraph multi-agent state machine with dynamic supervisor routing"""
     workflow = StateGraph(O2CAgentState)
 
-    # 1. Add Nodes
+    # 1. Add Specialist & Router Nodes
     workflow.add_node("supervisor_router", supervisor_router_node)
     workflow.add_node("route_specialist", route_specialist_node)
     workflow.add_node("contract_adjudicator", contract_adjudicator_node)
     workflow.add_node("quality_mitigation", quality_mitigation_node)
+    workflow.add_node("inter_agent_negotiation", inter_agent_negotiation_node)
     workflow.add_node("consensus_debate", consensus_debate_node)
     workflow.add_node("action_execution_node", action_execution_node)
     workflow.add_node("human_approval_checkpoint", human_approval_checkpoint)
 
-    # 2. Add Deterministic Sequence Edges
+    # 2. Dynamic Supervisor Conditional Routing
     workflow.add_edge(START, "supervisor_router")
-    workflow.add_edge("supervisor_router", "route_specialist")
+    workflow.add_conditional_edges(
+        "supervisor_router",
+        supervisor_dynamic_router,
+        {
+            "fast_track": "action_execution_node",
+            "full_investigation": "route_specialist"
+        }
+    )
+
+    # 3. Specialist Investigation & Adversarial Negotiation Chain
     workflow.add_edge("route_specialist", "contract_adjudicator")
     workflow.add_edge("contract_adjudicator", "quality_mitigation")
-    workflow.add_edge("quality_mitigation", "consensus_debate")
+    workflow.add_edge("quality_mitigation", "inter_agent_negotiation")
+    workflow.add_edge("inter_agent_negotiation", "consensus_debate")
 
-    # 3. Add Conditional Edge for Governance Gate
+    # 4. Conditional Edge for Governance Approval Gate
     workflow.add_conditional_edges(
         "consensus_debate",
         route_by_governance,
@@ -304,7 +413,7 @@ def create_o2c_agentic_graph() -> StateGraph:
         }
     )
 
-    # 4. Terminal Edges
+    # 5. Terminal Edges
     workflow.add_edge("action_execution_node", END)
     workflow.add_edge("human_approval_checkpoint", END)
 
@@ -330,9 +439,12 @@ def run_order_graph(
         "order_id": str(order_id),
         "order_data": order_data or {},
         "prediction_payload": prediction_payload,
+        "active_plan": [],
         "route_findings": {},
         "legal_findings": {},
         "quality_findings": {},
+        "negotiation_history": [],
+        "precedents_consulted": [],
         "proposed_actions": [],
         "total_mitigation_cost": 0.0,
         "requires_human_approval": False,
@@ -346,3 +458,4 @@ def run_order_graph(
     config = {"configurable": {"thread_id": f"order_{order_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"}}
     final_state = compiled_o2c_graph.invoke(initial_state, config=config)
     return final_state
+
