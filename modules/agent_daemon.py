@@ -13,8 +13,9 @@ Endpoints:
 import os
 import sys
 import time
+import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 import urllib.request
 import json
@@ -39,6 +40,18 @@ from modules.action_execution_engine import (
 
 logger = logging.getLogger("AgentDaemon")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+
+# ============================================================================
+# Local GPU Concurrency Guard (TODO 7.7)
+# Enforce strictly <= 2 parallel LLM calls to keep VRAM < 7.8 GB on AMD RX 6600
+# ============================================================================
+_gpu_llm_semaphore = asyncio.Semaphore(2)
+
+async def throttled_llm_invoke(llm: Any, prompt_messages: List[Any]) -> Any:
+    """Acquires GPU semaphore before prompting Ollama, preventing local VRAM context thrashing"""
+    async with _gpu_llm_semaphore:
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, llm.invoke, prompt_messages)
 
 # Initialize FastAPI application
 app = FastAPI(
@@ -112,6 +125,7 @@ class HealthCheckResponse(BaseModel):
     chromadb_record_count: int
     database_status: str
     ollama_status: str
+    gpu_concurrency_slots: int = 2
     agent_pipeline_version: str
     timestamp: str
 
@@ -122,6 +136,26 @@ class AuditTrailResponse(BaseModel):
     audit_events: List[Dict[str, Any]]
 
 
+class ManagerFeedbackRequest(BaseModel):
+    manager_id: str = Field(description="Identity of the logistics manager/director (e.g. 'DIR_LOGISTICS_SOUTH')")
+    feedback: str = Field(description="Natural language instruction (e.g. 'Authorize $400 for local express courier, but disallow expensive air freight and keep QA hold.')")
+    override_budget_usd: Optional[float] = Field(default=None, description="Direct cap on mitigation expense if specified")
+    force_qa_quarantine: Optional[bool] = Field(default=None, description="Direct requirement for QA quarantine")
+
+
+class ManagerCollaborationResponse(BaseModel):
+    order_id: str
+    status: str
+    manager_id: str
+    feedback_received: str
+    revised_governance_status: str
+    revised_mitigation_cost_usd: float
+    revised_final_decision: str
+    executed_erp_actions: List[Dict[str, Any]] = []
+    precedents_consulted: List[Dict[str, Any]] = []
+    timestamp: str
+
+
 # ============================================================================
 # API Endpoints
 # ============================================================================
@@ -130,7 +164,7 @@ class AuditTrailResponse(BaseModel):
 def health_check():
     """
     Returns live health of ChromaDB episodic incident memory, SQLite database,
-    Ollama LLM inference daemon, and agent pipeline state.
+    Ollama LLM inference daemon, GPU semaphore status, and agent pipeline state.
     """
     db = DatabaseManager()
     db_status = "CONNECTED"
@@ -169,6 +203,7 @@ def health_check():
         chromadb_record_count=record_count,
         database_status=db_status,
         ollama_status=ollama_status,
+        gpu_concurrency_slots=2,
         agent_pipeline_version="4.0.0-level4-agent-first",
         timestamp=datetime.now().isoformat()
     )
@@ -309,6 +344,91 @@ def handle_approval_callback(order_id: str, callback: ApprovalCallbackRequest):
         status="EXECUTED",
         erp_writeback_status="SUCCESS",
         actions_executed=executed_actions,
+        timestamp=now_iso
+    )
+
+
+@app.post("/api/v1/orders/{order_id}/collaborate", response_model=ManagerCollaborationResponse, tags=["Human-In-The-Loop"])
+def handle_manager_collaboration(order_id: str, request: ManagerFeedbackRequest):
+    """
+    Bidirectional Conversational Human-in-the-Loop (TODO 7.6):
+    Ingests natural language feedback or strategic overrides from human logistics managers,
+    re-invokes the multi-agent graph with manager constraints, and records the collaborative
+    iteration in the SAP audit ledger.
+    """
+    db = DatabaseManager()
+    now_iso = datetime.now().isoformat()
+    
+    # Retrieve order context
+    try:
+        from modules.ml_db_extension import MLDatabaseExtension
+        ml_db = MLDatabaseExtension()
+        order_data = ml_db.get_order_details(order_id) or {}
+    except Exception:
+        order_data = {}
+
+    pred_payload = {
+        "order_id": order_id,
+        "customer_name": order_data.get("customer_name", "Valued Healthcare Partner"),
+        "customer_tier": order_data.get("customer_tier", "Standard"),
+        "carrier_name": order_data.get("carrier_name", "Regional Carrier"),
+        "shipping_type": order_data.get("shipping_type", "Road (FTL)"),
+        "dest_city": order_data.get("dest_city", "Mumbai"),
+        "delay_probability": 0.65,
+        "will_be_delayed": True,
+        "delay_hours": 36.0,
+        "predicted_eta": (datetime.now() + timedelta(hours=36)).strftime("%Y-%m-%d 14:00"),
+        "root_causes": ["Corridor congestion", "Prescription cargo urgency"]
+    }
+
+    # Re-run multi-agent graph with manager_feedback constraint
+    try:
+        revised_state = run_order_graph(
+            order_id=order_id,
+            prediction_payload=pred_payload,
+            order_data=order_data,
+            manager_feedback=request.feedback
+        )
+    except Exception as e:
+        logger.error(f"Failed to execute collaborative re-planning for order {order_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Collaborative Re-planning Error: {str(e)}"
+        )
+
+    revised_cost = float(revised_state.get("total_mitigation_cost", 0.0))
+    if request.override_budget_usd is not None:
+        revised_cost = min(revised_cost, request.override_budget_usd)
+
+    req_approval = revised_state.get("requires_human_approval", False)
+    gov_status = "DIRECTOR_APPROVAL_REQUIRED" if req_approval else "AUTONOMOUSLY_APPROVED"
+    revised_decision = revised_state.get("final_decision", "Collaborative re-planning complete.")
+
+    # Record collaboration in database audit log
+    try:
+        db.record_sap_action(
+            order_id=order_id,
+            action_type="MANAGER_COLLABORATION_FEEDBACK",
+            sap_table="SAP_BKPF",
+            sap_field="FEEDBACK",
+            previous_value="INITIAL_PROPOSAL",
+            new_value=f"${revised_cost:,.2f} | {request.feedback[:60]}",
+            reason=f"Manager {request.manager_id}: {request.feedback}",
+            executed_at=now_iso
+        )
+    except Exception as e:
+        logger.warning(f"Could not log manager collaboration to audit table: {e}")
+
+    return ManagerCollaborationResponse(
+        order_id=order_id,
+        status="COLLABORATION_RATIFIED",
+        manager_id=request.manager_id,
+        feedback_received=request.feedback,
+        revised_governance_status=gov_status,
+        revised_mitigation_cost_usd=revised_cost,
+        revised_final_decision=revised_decision,
+        executed_erp_actions=revised_state.get("executed_erp_actions", []),
+        precedents_consulted=revised_state.get("precedents_consulted", []),
         timestamp=now_iso
     )
 

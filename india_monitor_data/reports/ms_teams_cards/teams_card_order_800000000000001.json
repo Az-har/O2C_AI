@@ -39,7 +39,7 @@
         },
         {
           "title": "Mitigation Cost:",
-          "value": "$1,000.00 USD"
+          "value": "$0.00 USD"
         },
         {
           "title": "Urgency Level:",
@@ -49,20 +49,20 @@
     },
     {
       "type": "TextBlock",
-      "text": "**Recommended Action:** EMERGENCY_AIR_FREIGHT: Authorized $1,000 replacement pallet via expedited air courier to prevent critical prescription diet stock-out.",
+      "text": "**Recommended Action:** Review mitigation plan",
       "wrap": true
     }
   ],
   "actions": [
     {
       "type": "Action.Submit",
-      "title": "\u2705 Approve Expense ($1,000)",
+      "title": "\u2705 Approve Expense ($0)",
       "style": "positive",
       "data": {
         "action": "APPROVE_MITIGATION",
         "order_id": "800000000000001",
-        "approved_amount": 1000.0,
-        "timestamp": "2026-09-05T12:11:54.166047"
+        "approved_amount": 0.0,
+        "timestamp": "2026-09-08T16:28:04.320871"
       }
     },
     {
@@ -72,7 +72,7 @@
       "data": {
         "action": "REJECT_MITIGATION",
         "order_id": "800000000000001",
-        "timestamp": "2026-09-05T12:11:54.166047"
+        "timestamp": "2026-09-08T16:28:04.320871"
       }
     }
   ]

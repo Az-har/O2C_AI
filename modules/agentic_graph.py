@@ -66,6 +66,11 @@ class O2CAgentState(TypedDict):
     executed_erp_actions: List[Dict[str, Any]]
     final_decision: Optional[str]
     audit_trail: Annotated[List[str], operator.add]
+    audit_passed: bool
+    audit_violations: List[str]
+    correction_guidance: Optional[str]
+    reflection_count: int
+    manager_feedback: Optional[str]
 
 
 # ============================================================================
@@ -192,7 +197,9 @@ def inter_agent_negotiation_node(state: O2CAgentState) -> Dict[str, Any]:
         prediction_payload=state["prediction_payload"],
         order_data=state["order_data"],
         route_analysis=state.get("route_findings", {}),
-        notice_given_12h=True
+        notice_given_12h=True,
+        correction_guidance=state.get("correction_guidance"),
+        manager_feedback=state.get("manager_feedback")
     )
 
     outcome = negotiation_res.get("negotiation_outcome", {})
@@ -278,6 +285,94 @@ def consensus_debate_node(state: O2CAgentState) -> Dict[str, Any]:
         "approval_reason": approval_reason,
         "audit_trail": [log_entry]
     }
+
+
+def pre_execution_guardrail_node(state: O2CAgentState) -> Dict[str, Any]:
+    """
+    Node 5B: Metacognitive Pre-Execution Verification Guardrail (Phase 7 / Level 4 Autonomy - TODO 7.5)
+    Audits synthesized multi-agent actions, SLA chargebacks, freight budgets, and QA holds against
+    hard corporate governance and constitutional safety rules before any ERP write-backs or Teams cards
+    are executed.
+    
+    If violations are detected, triggers a reflection cycle back to inter-agent negotiation.
+    """
+    pred = state.get("prediction_payload", {})
+    order_data = state.get("order_data", {})
+    legal = state.get("legal_findings", {})
+    quality = state.get("quality_findings", {})
+    route = state.get("route_findings", {})
+    cost = float(state.get("total_mitigation_cost", 0.0))
+    qa_hold = bool(quality.get("qa_hold_required", False))
+    fm_waived = bool(legal.get("force_majeure_waived", False))
+    telematics_active = bool(route.get("telematics_active", True))
+    has_specialty = bool(pred.get("has_specialty_diet", order_data.get("has_specialty_diet", False)))
+    min_shelf_life = int(order_data.get("min_shelf_life_months", order_data.get("min_shelf_life", 12)))
+    delay_hours = float(pred.get("delay_hours", 0.0))
+    root_causes = pred.get("root_causes", pred.get("root_cause", []))
+    if isinstance(root_causes, str):
+        root_causes = [r.strip() for r in root_causes.split(";")]
+
+    violations = []
+
+    # Rule 1: Emergency Freight Budget Cap Rule
+    if cost > 1000.0 and not has_specialty:
+        violations.append(f"Budget Policy Breach: Freight expense (${cost:,.2f}) exceeds constitutional $1,000 limit for standard non-specialty freight.")
+    
+    # Rule 2: Cold-Chain & Perishable Quality Quarantine Policy
+    is_thermal_hazard = any("thermal" in r.lower() or "heatwave" in r.lower() or ">40" in r.lower() for r in root_causes)
+    if (is_thermal_hazard and delay_hours > 24.0) or (min_shelf_life < 6):
+        if not qa_hold:
+            violations.append("Cold-Chain Quality Policy Breach: QA quarantine hold is MANDATORY for heatwave exposure / short-dated product.")
+
+    # Rule 3: Force Majeure Integrity Policy
+    if fm_waived and not telematics_active:
+        violations.append("Force Majeure Policy Breach: Act of God waiver cannot be granted with disconnected telematics.")
+
+    # Rule 4: SLA Penalty Ceiling Policy
+    order_val = float(pred.get("net_value_usd", pred.get("order_value_usd", order_data.get("netwr", 2500.0))))
+    carrier_cb = float(legal.get("total_carrier_chargeback_usd", 0.0))
+    if carrier_cb > order_val * 1.5:
+        violations.append(f"Contract Ceiling Breach: Carrier chargeback (${carrier_cb:.2f}) exceeds 150% of invoice value (${order_val:.2f}).")
+
+    audit_passed = (len(violations) == 0)
+    ref_count = state.get("reflection_count", 0)
+    
+    if not audit_passed:
+        correction_guidance = f"Pre-Execution Audit Failed with {len(violations)} violation(s): " + "; ".join(violations)
+        log_entry = (
+            f"[{datetime.now().strftime('%H:%M:%S')}] PreExecutionGuardrail: VIOLATIONS DETECTED (Cycle {ref_count + 1}). "
+            f"{'; '.join(violations)}. Routing to reflection loop for self-correction."
+        )
+    else:
+        correction_guidance = None
+        log_entry = (
+            f"[{datetime.now().strftime('%H:%M:%S')}] PreExecutionGuardrail: PASSED. All constitutional policies verified "
+            f"(Budget, Cold-chain QA, Force Majeure, SLA limits). Proceeding to execution."
+        )
+
+    return {
+        "audit_passed": audit_passed,
+        "audit_violations": violations,
+        "correction_guidance": correction_guidance,
+        "reflection_count": ref_count + (0 if audit_passed else 1),
+        "audit_trail": [log_entry]
+    }
+
+
+def guardrail_reflection_router(state: O2CAgentState) -> str:
+    """
+    Evaluates pre-execution guardrail outcome (TODO 7.5). If violations exist and reflection count <= 2,
+    routes back to inter_agent_negotiation for self-correction; otherwise routes to governance.
+    """
+    audit_passed = state.get("audit_passed", True)
+    ref_count = state.get("reflection_count", 0)
+
+    if not audit_passed and ref_count <= 2:
+        return "renegotiate"
+    
+    if state.get("requires_human_approval", False):
+        return "human_approval_checkpoint"
+    return "action_execution_node"
 
 
 def action_execution_node(state: O2CAgentState) -> Dict[str, Any]:
@@ -373,16 +468,17 @@ def route_by_governance(state: O2CAgentState) -> str:
 # ============================================================================
 
 def create_o2c_agentic_graph() -> StateGraph:
-    """Build the LangGraph multi-agent state machine with dynamic supervisor routing"""
+    """Build the LangGraph multi-agent state machine with dynamic supervisor routing and pre-execution guardrails"""
     workflow = StateGraph(O2CAgentState)
 
-    # 1. Add Specialist & Router Nodes
+    # 1. Add Specialist, Guardrail, & Router Nodes
     workflow.add_node("supervisor_router", supervisor_router_node)
     workflow.add_node("route_specialist", route_specialist_node)
     workflow.add_node("contract_adjudicator", contract_adjudicator_node)
     workflow.add_node("quality_mitigation", quality_mitigation_node)
     workflow.add_node("inter_agent_negotiation", inter_agent_negotiation_node)
     workflow.add_node("consensus_debate", consensus_debate_node)
+    workflow.add_node("pre_execution_guardrail", pre_execution_guardrail_node)
     workflow.add_node("action_execution_node", action_execution_node)
     workflow.add_node("human_approval_checkpoint", human_approval_checkpoint)
 
@@ -402,12 +498,14 @@ def create_o2c_agentic_graph() -> StateGraph:
     workflow.add_edge("contract_adjudicator", "quality_mitigation")
     workflow.add_edge("quality_mitigation", "inter_agent_negotiation")
     workflow.add_edge("inter_agent_negotiation", "consensus_debate")
+    workflow.add_edge("consensus_debate", "pre_execution_guardrail")
 
-    # 4. Conditional Edge for Governance Approval Gate
+    # 4. Conditional Edge for Pre-Execution Verification & Reflection Loop (TODO 7.5)
     workflow.add_conditional_edges(
-        "consensus_debate",
-        route_by_governance,
+        "pre_execution_guardrail",
+        guardrail_reflection_router,
         {
+            "renegotiate": "inter_agent_negotiation",
             "action_execution_node": "action_execution_node",
             "human_approval_checkpoint": "human_approval_checkpoint"
         }
@@ -428,12 +526,13 @@ compiled_o2c_graph = create_o2c_agentic_graph().compile(checkpointer=_memory_sav
 def run_order_graph(
     order_id: str,
     prediction_payload: Dict[str, Any],
-    order_data: Optional[Dict[str, Any]] = None
+    order_data: Optional[Dict[str, Any]] = None,
+    manager_feedback: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Execute the compiled LangGraph multi-agent workflow for a single sales order.
     Returns the complete terminal state including specialist findings, executive brief,
-    and governance action results.
+    guardrail verification results, and governance action results.
     """
     initial_state: O2CAgentState = {
         "order_id": str(order_id),
@@ -452,10 +551,16 @@ def run_order_graph(
         "escalation_payload": None,
         "executed_erp_actions": [],
         "final_decision": None,
-        "audit_trail": [f"[{datetime.now().strftime('%H:%M:%S')}] Workflow initialized for Order {order_id}"]
+        "audit_trail": [f"[{datetime.now().strftime('%H:%M:%S')}] Workflow initialized for Order {order_id}"],
+        "audit_passed": True,
+        "audit_violations": [],
+        "correction_guidance": None,
+        "reflection_count": 0,
+        "manager_feedback": manager_feedback
     }
 
     config = {"configurable": {"thread_id": f"order_{order_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"}}
     final_state = compiled_o2c_graph.invoke(initial_state, config=config)
     return final_state
+
 

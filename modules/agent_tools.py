@@ -446,7 +446,53 @@ def query_historical_incident_memory(
         return {"status": "ERROR", "query": query_text, "precedents_found": 0, "count": 0, "precedents": [], "message": str(e)}
 
 
-# Master Toolset for Agent Binding (8 Production Tools)
+# ============================================================================
+# Tool 9: Interactive Counterfactual What-If Route Simulation (Phase 7 / Level 4 Autonomy)
+# ============================================================================
+
+class SimulateAlternativeRouteInput(BaseModel):
+    order_id: str = Field(description="The SAP Sales Order ID to run counterfactual simulation on (e.g. '800000000000001' or '1')")
+    carrier_name: Optional[str] = Field(default=None, description="Alternative carrier to evaluate (e.g. 'Bluedart Air Expedited', 'DHL Express', 'SafeLogistics FTL')")
+    shipping_type: Optional[str] = Field(default=None, description="Alternative transport mode (e.g. 'Air Freight', 'Road (FTL)', 'Rail Intermodal')")
+    departure_offset_hours: float = Field(default=0.0, description="Departure schedule shift in hours (negative for early departure, positive for delay)")
+
+@tool(args_schema=SimulateAlternativeRouteInput)
+def simulate_alternative_route_risk(
+    order_id: str,
+    carrier_name: Optional[str] = None,
+    shipping_type: Optional[str] = None,
+    departure_offset_hours: float = 0.0
+) -> Dict[str, Any]:
+    """
+    Run interactive counterfactual what-if simulation on an SAP Sales Order using Engine A's Two-Stage Hurdle ML model.
+    Evaluates alternative carriers, shipping modes (e.g., Road to Air Freight), and departure schedule offsets.
+    Returns comparative delay probability, revised delay hours, projected ETA, financial penalty risk,
+    and net risk reduction relative to the baseline route.
+    """
+    try:
+        from modules.predictive_engine import PredictiveEngine
+        from modules.ml_db_extension import MLDatabaseExtension
+        ml_db = MLDatabaseExtension()
+        engine = PredictiveEngine(ml_db_extension=ml_db)
+        sim_res = engine.run_counterfactual_inference(
+            order_id=order_id,
+            carrier_name=carrier_name,
+            shipping_type=shipping_type,
+            departure_offset_hours=departure_offset_hours
+        )
+        sim_res["status"] = "SUCCESS"
+        return sim_res
+    except Exception as e:
+        logger.error(f"Error executing counterfactual route simulation for {order_id}: {e}")
+        return {
+            "status": "ERROR",
+            "order_id": order_id,
+            "message": str(e),
+            "recommendation": "NOT_RECOMMENDED"
+        }
+
+
+# Master Toolset for Agent Binding (9 Production Tools)
 ALL_AGENT_TOOLS = [
     query_sap_order,
     fetch_corridor_weather,
@@ -456,5 +502,7 @@ ALL_AGENT_TOOLS = [
     post_sap_block_or_date,
     dispatch_teams_approval_card,
     query_historical_incident_memory,
+    simulate_alternative_route_risk,
 ]
+
 

@@ -362,6 +362,7 @@ class PredictiveEngine:
                 dest_city = 'Unknown'
 
         shipping_type = str(order_data.get('shipping_type') or 'Road (FTL)')
+        carrier_mode = str(order_data.get('carrier_mode') or shipping_type or 'Road')
         customer_tier = str(order_data.get('customer_tier') or 'Independent')
         if customer_tier.lower() in ('nan', 'none', ''):
             customer_tier = 'Independent'
@@ -639,7 +640,7 @@ class PredictiveEngine:
         delay_hours = [p.get('delay_hours', 0.0) for p in predictions]
         financial_risks = [p.get('financial_risk_usd', 0.0) for p in predictions]
         high_risk = sum(1 for r in financial_risks if r > 500.0)
-
+ 
         return {
             "total_orders": total,
             "predicted_delays": delays,
@@ -647,6 +648,151 @@ class PredictiveEngine:
             "avg_delay_hours": float(np.mean(delay_hours)),
             "total_financial_risk_usd": float(np.sum(financial_risks)),
             "high_risk_orders": high_risk
+        }
+
+    def run_counterfactual_inference(
+        self,
+        order_id: str,
+        carrier_name: Optional[str] = None,
+        shipping_type: Optional[str] = None,
+        departure_offset_hours: float = 0.0,
+        order_data: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Executes counterfactual what-if simulation on an SAP Sales Order (Phase 7 / Level 4 Autonomy).
+        Perturbs logistics parameters (carrier selection, shipping mode, departure offset)
+        and evaluates the counterfactual delay probability, expected delay hours, projected ETA,
+        and contractual SLA penalty savings using Engine A's Two-Stage Hurdle Model.
+        """
+        if order_data is None:
+            if self.ml_db is None:
+                from modules.ml_db_extension import MLDatabaseExtension
+                self.ml_db = MLDatabaseExtension()
+            order_data = self.ml_db.get_order_details(order_id)
+
+        if not order_data:
+            return {"error": f"Order ID {order_id} not found for counterfactual simulation."}
+
+        # 1. Baseline prediction
+        baseline = self.predict_delivery_delay(order_id, order_data=order_data)
+
+        # 2. Construct perturbed counterfactual features
+        cf_data = dict(order_data)
+        
+        target_carrier = carrier_name or order_data.get("carrier_name", "Baseline Carrier")
+        target_shipping_type = shipping_type or order_data.get("shipping_type", "Road (FTL)")
+        
+        cf_data["carrier_name"] = target_carrier
+        cf_data["shipping_type"] = target_shipping_type
+
+        # Mode-based feature perturbation
+        is_air_upgrade = any(k in target_shipping_type.lower() for k in ["air", "express", "flight", "courier"])
+        is_ftl_upgrade = "ftl" in target_shipping_type.lower() and "ltl" in str(order_data.get("shipping_type", "")).lower()
+
+        if is_air_upgrade:
+            cf_data["shipping_risk_code"] = 0
+            cf_data["is_unrealistic_speed"] = 0
+            cf_data["shipment_status"] = "in transit"
+            curr_lead = float(cf_data.get("order_to_delivery_days", 4.0))
+            cf_data["order_to_delivery_days"] = max(1.0, curr_lead * 0.4)
+            cf_data["required_transit_speed_kmh"] = 45.0
+        elif is_ftl_upgrade:
+            cf_data["shipping_risk_code"] = 1
+            curr_lead = float(cf_data.get("order_to_delivery_days", 4.0))
+            cf_data["order_to_delivery_days"] = max(1.5, curr_lead * 0.75)
+
+        # Departure offset perturbation
+        if departure_offset_hours != 0.0:
+            offset_days = departure_offset_hours / 24.0
+            cf_data["order_to_departure_days"] = max(0.0, float(cf_data.get("order_to_departure_days", 1.0)) + offset_days)
+            cf_data["days_until_delivery"] = max(0.0, float(cf_data.get("days_until_delivery", 2.0)) - offset_days)
+
+        # 3. Compute counterfactual prediction
+        cf_pred = self.predict_delivery_delay(order_id, order_data=cf_data)
+
+        # If air upgrade was modeled, reflect the significant transit speedup
+        if is_air_upgrade and baseline.get("will_be_delayed", False):
+            reduced_delay_hrs = max(0.0, round(float(baseline.get("delay_hours", 0.0)) * 0.25, 1))
+            reduced_prob = max(0.05, round(float(baseline.get("delay_probability", 0.5)) * 0.35, 3))
+            cf_pred["delay_hours"] = reduced_delay_hrs
+            cf_pred["delay_probability"] = reduced_prob
+            cf_pred["will_be_delayed"] = reduced_prob >= 0.40
+            
+            rdd_str = str(cf_data.get('requested_delivery_date', ''))
+            try:
+                rdd = datetime.strptime(rdd_str[:10], "%Y-%m-%d")
+            except Exception:
+                rdd = datetime.now() + timedelta(days=2)
+            if cf_pred["will_be_delayed"] and reduced_delay_hrs > 0:
+                cf_pred["predicted_eta"] = (rdd + timedelta(hours=reduced_delay_hrs)).strftime("%Y-%m-%d %H:%M")
+            else:
+                cf_pred["predicted_eta"] = rdd.strftime("%Y-%m-%d %H:%M")
+
+            delay_days = max(0.0, (reduced_delay_hrs - 24.0) / 24.0) if reduced_delay_hrs > 24.0 else 0.0
+            customer_tier = str(cf_data.get("customer_tier", "Independent"))
+            order_val = float(cf_data.get("order_value", 2500.0) or 2500.0)
+            if cf_pred["will_be_delayed"] and delay_days > 0:
+                if customer_tier.lower() == "platinum":
+                    cf_pred["financial_risk_usd"] = float(np.ceil(delay_days) * 500.0)
+                else:
+                    cf_pred["financial_risk_usd"] = float(min(0.25 * order_val, np.ceil(delay_days) * 0.05 * order_val))
+            else:
+                cf_pred["financial_risk_usd"] = 0.0
+
+        base_prob = float(baseline.get("delay_probability", 0.0))
+        cf_prob = float(cf_pred.get("delay_probability", 0.0))
+        base_delay_hrs = float(baseline.get("delay_hours", 0.0))
+        cf_delay_hrs = float(cf_pred.get("delay_hours", 0.0))
+        base_fin = float(baseline.get("financial_risk_usd", 0.0))
+        cf_fin = float(cf_pred.get("financial_risk_usd", 0.0))
+
+        prob_delta = round(base_prob - cf_prob, 3)
+        hours_saved = round(base_delay_hrs - cf_delay_hrs, 1)
+        fin_saved = round(base_fin - cf_fin, 2)
+
+        is_recommended = (hours_saved > 0.0) or (prob_delta > 0.15) or (fin_saved > 0.0)
+        recommendation = "RECOMMENDED" if is_recommended else "NOT_RECOMMENDED"
+
+        explanation = (
+            f"Counterfactual simulation switching to {target_carrier} ({target_shipping_type}) "
+            f"with departure offset {departure_offset_hours:+.1f}h: "
+            f"Delay probability shifts from {base_prob:.1%} -> {cf_prob:.1%} (Δ {prob_delta:+.1%}), "
+            f"expected delay shaves {hours_saved:.1f} hours ({base_delay_hrs:.1f}h -> {cf_delay_hrs:.1f}h), "
+            f"saving ${fin_saved:,.2f} in contractual SLA penalty risk."
+        )
+
+        return {
+            "order_id": str(order_id),
+            "counterfactual_params": {
+                "carrier_name": target_carrier,
+                "shipping_type": target_shipping_type,
+                "departure_offset_hours": departure_offset_hours
+            },
+            "baseline": {
+                "delay_probability": base_prob,
+                "delay_hours": base_delay_hrs,
+                "financial_risk_usd": base_fin,
+                "predicted_eta": baseline.get("predicted_eta"),
+                "will_be_delayed": baseline.get("will_be_delayed"),
+                "carrier_name": baseline.get("carrier_name"),
+                "shipping_type": baseline.get("shipping_type")
+            },
+            "counterfactual": {
+                "delay_probability": cf_prob,
+                "delay_hours": cf_delay_hrs,
+                "financial_risk_usd": cf_fin,
+                "predicted_eta": cf_pred.get("predicted_eta"),
+                "will_be_delayed": cf_pred.get("will_be_delayed"),
+                "carrier_name": target_carrier,
+                "shipping_type": target_shipping_type
+            },
+            "delta": {
+                "delay_probability_reduction": prob_delta,
+                "delay_hours_saved": hours_saved,
+                "financial_risk_saved_usd": fin_saved
+            },
+            "recommendation": recommendation,
+            "explanation": explanation
         }
 
     # Backward compatibility alias

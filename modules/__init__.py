@@ -8,17 +8,20 @@ from .predictive_engine import PredictiveEngine
 from .weather_policy_generator import WeatherPolicyGenerator
 from .strike_intelligence_generator import StrikeIntelligenceGenerator
 
+from .agent_tools import simulate_alternative_route_risk
 from .agent_specialists import (
     RouteSupervisorAgent,
     ContractAdjudicatorAgent,
     QualityMitigationAgent,
     LLMReasoningEngine,
-    negotiate_inter_agent_consensus
+    negotiate_inter_agent_consensus,
+    CognitivePrecedentReflection,
+    ArbiterEvaluation
 )
 from .action_execution_engine import SAPActionExecutor, MSTeamsDispatcher, ClinicNotificationDispatcher
 from .agentic_orchestrator import AgenticOrchestrator
 from .incident_memory import EpisodicMemoryStore, get_incident_memory_store
-from .agentic_graph import run_order_graph, compiled_o2c_graph
+from .agentic_graph import run_order_graph, compiled_o2c_graph, pre_execution_guardrail_node
 
 __all__ = [
     "DatabaseManager",
@@ -40,6 +43,9 @@ __all__ = [
     "QualityMitigationAgent",
     "LLMReasoningEngine",
     "negotiate_inter_agent_consensus",
+    "CognitivePrecedentReflection",
+    "ArbiterEvaluation",
+    "simulate_alternative_route_risk",
     "SAPActionExecutor",
     "MSTeamsDispatcher",
     "ClinicNotificationDispatcher",
@@ -48,4 +54,5 @@ __all__ = [
     "get_incident_memory_store",
     "run_order_graph",
     "compiled_o2c_graph",
+    "pre_execution_guardrail_node",
 ]
