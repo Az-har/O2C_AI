@@ -161,6 +161,67 @@ class EpisodicMemoryStore:
             "vector_db_path": str(self.persist_dir)
         }
 
+    def reflect_on_precedents(
+        self,
+        query_hypothesis: str,
+        carrier_name: Optional[str] = None,
+        dest_city: Optional[str] = None,
+        current_hazard: str = "",
+        top_k: int = 2
+    ) -> List[Dict[str, Any]]:
+        """
+        Formulates structured cognitive precedent reflections (TODO 7.4).
+        Performs semantic retrieval across episodic memory and synthesizes:
+        - precedent_id: Historic order reference
+        - similarity_score: Calculated cosine similarity
+        - factual_analogy: Shared environmental/operational conditions
+        - variance_justification: Legal/operational reasons for adopting or deviating from precedent
+        - legal_operational_clause: Relevant Master Agreement section
+        """
+        precedents = self.query_precedents(
+            query_text=query_hypothesis,
+            carrier_name=carrier_name,
+            dest_city=dest_city,
+            top_k=top_k
+        )
+        reflections = []
+        for p in precedents:
+            p_id = str(p.get("order_id", "PREC_HISTORICAL"))
+            dist = float(p.get("relevance_distance", 0.20))
+            sim_score = max(0.60, min(0.98, round(1.0 - dist, 2)))
+            p_text = p.get("precedent_text", "")
+            action = p.get("mitigation_action", "")
+
+            analogy = (
+                f"Historical order {p_id} ({p.get('carrier_name')} to {p.get('dest_city')}) encountered comparable "
+                f"transit conditions. "
+                f"Current scenario exhibits similar hazard: '{current_hazard or query_hypothesis}'."
+            )
+
+            # Determine clause and justification
+            if "force majeure" in p_text.lower() or "act of god" in p_text.lower():
+                clause = "Carrier Logistics Master Agreement Section 8.1 (Force Majeure & Excusable Delay)"
+                justification = f"Precedent validates full or partial SLA waiver when external natural disaster or corridor blockade occurs with required 12h telematics notice."
+            elif "telematics" in p_text.lower() or "blind" in p_text.lower():
+                clause = "Carrier Logistics Master Agreement Section 7.4 (Continuous Telematics & GPS Compliance)"
+                justification = f"Precedent mandates $200 telematics disconnect fee and disqualifies carrier from asserting Force Majeure relief when GPS signal was lost."
+            elif "heatwave" in p_text.lower() or "thermal" in p_text.lower() or "quarantine" in p_text.lower():
+                clause = "Global Quality Assurance & Cold-Chain Perishables Standard Operating Procedure (QA-SOP-204)"
+                justification = f"Precedent ratifies immediate SAP QA quarantine hold and emergency alternative dispatch for temperature-sensitive veterinary clinical diets."
+            else:
+                clause = "Master Services Agreement Clause 4.2 (Standard Delivery Performance & SLA Penalties)"
+                justification = f"Precedent resolution '{action[:90]}' guides proportionate liquidated damages calculation and carrier chargeback assignment."
+
+            reflections.append({
+                "precedent_id": p_id,
+                "similarity_score": sim_score,
+                "factual_analogy": analogy,
+                "variance_justification": justification,
+                "legal_operational_clause": clause,
+                "raw_precedent": p
+            })
+        return reflections
+
     def seed_default_precedents(self) -> None:
         """Seed initial authoritative supply chain precedents into ChromaDB"""
         initial_precedents = [

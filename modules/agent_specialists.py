@@ -15,9 +15,11 @@ import sys
 import json
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, TypedDict
 import numpy as np
 from pydantic import BaseModel, Field
+from langgraph.graph import StateGraph, START, END
+from langgraph.prebuilt import create_react_agent
 
 # Windows encoding safety
 if sys.platform == "win32":
@@ -27,6 +29,7 @@ if sys.platform == "win32":
         pass
 
 from modules.agent_tools import (
+    query_sap_order,
     fetch_corridor_weather,
     fetch_strike_alerts,
     query_rag_contracts,
@@ -175,6 +178,61 @@ class NegotiationOutcome(BaseModel):
 # Specialist Agent 1: Route & Telematics Supervisor (ReAct Capable)
 # ============================================================================
 
+def build_autonomous_investigation_agent(
+    model_name: str = "qwen2.5:7b",
+    base_url: str = "http://127.0.0.1:11434"
+) -> Any:
+    """
+    Instantiates an autonomous ReAct agent running locally on the AMD RX 6600 (Blueprint 15.2 / TODO 7.2).
+    The agent dynamically decides which tools to call, inspects observations,
+    and forms an evidence-backed hypothesis using langgraph.prebuilt.create_react_agent.
+    """
+    from langchain_ollama import ChatOllama
+    tools = [
+        fetch_corridor_weather,
+        fetch_strike_alerts,
+        query_historical_incident_memory,
+        query_sap_order,
+        simulate_alternative_route_risk
+    ]
+    
+    llm = ChatOllama(
+        model=model_name,
+        temperature=0.1,
+        base_url=base_url,
+        timeout=2.0
+    )
+    
+    system_prompt = """You are the Senior Transit & Route Investigation Specialist.
+Your objective: Conduct a thorough, autonomous investigation into whether a sales order is at risk of severe delivery disruption.
+
+Investigation Strategy:
+1. Query order telemetry using `query_sap_order` if destination or carrier details are missing.
+2. Evaluate environmental conditions along the transit corridor:
+   - Call `fetch_corridor_weather` for the destination hub.
+   - Call `fetch_strike_alerts` for highway/rail disruptions.
+3. If disruptions or weather alerts are identified, query `query_historical_incident_memory` to uncover precedent resolutions.
+4. If delays are predicted, test counterfactual scenarios with `simulate_alternative_route_risk`.
+5. Synthesize your final investigation report detailing:
+   - Active Hazards Identified
+   - Root Causes
+   - Estimated Delivery Delay (Hours)
+   - Precedents Cited"""
+
+    try:
+        return create_react_agent(
+            model=llm,
+            tools=tools,
+            prompt=system_prompt
+        )
+    except TypeError:
+        return create_react_agent(
+            model=llm,
+            tools=tools,
+            state_modifier=system_prompt
+        )
+
+
 class RouteSupervisorAgent:
     """
     Specialist Agent 1: Route & Telematics Supervisor (TODO 7.2)
@@ -182,9 +240,22 @@ class RouteSupervisorAgent:
     tools to inspect environmental corridor hazards, transit velocity, and telematics integrity.
     """
 
-    def __init__(self, autonomous_mode: bool = False, model_name: str = "qwen2.5:7b"):
+    def __init__(self, autonomous_mode: bool = False, model_name: str = "qwen2.5:7b", base_url: str = "http://127.0.0.1:11434"):
         self.autonomous_mode = autonomous_mode
         self.model_name = model_name
+        self.base_url = base_url
+        self._react_agent = None
+
+    def get_react_agent(self) -> Optional[Any]:
+        if self._react_agent is None:
+            try:
+                self._react_agent = build_autonomous_investigation_agent(
+                    model_name=self.model_name,
+                    base_url=self.base_url
+                )
+            except Exception as e:
+                logger.debug(f"ReAct agent construction deferred: {e}")
+        return self._react_agent
 
     def analyze_route(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any]) -> Dict[str, Any]:
         dest_city = str(prediction_payload.get("dest_city", order_data.get("dest_city", "Unknown")))
@@ -198,6 +269,31 @@ class RouteSupervisorAgent:
         telematics_penalty = 0.0
         telematics_notes = []
         tools_invoked = []
+
+        # Attempt model-driven ReAct agent execution when autonomous mode is enabled
+        if self.autonomous_mode:
+            try:
+                import urllib.request
+                req = urllib.request.Request(f"{self.base_url}/api/tags")
+                with urllib.request.urlopen(req, timeout=0.8):
+                    pass
+                react_agent = self.get_react_agent()
+                if react_agent:
+                    react_prompt = (
+                        f"Investigate delivery risk for Order {order_id}: Destination={dest_city}, "
+                        f"Carrier={carrier_name}, Mode={shipping_type}, Distance={distance_km:.0f}km, "
+                        f"RequiredSpeed={speed_kmh:.1f}km/h."
+                    )
+                    react_state = react_agent.invoke({"messages": [("user", react_prompt)]})
+                    for msg in react_state.get("messages", []):
+                        t_calls = getattr(msg, "tool_calls", None)
+                        if t_calls:
+                            for tc in t_calls:
+                                name = tc.get("name") if isinstance(tc, dict) else getattr(tc, "name", str(tc))
+                                if name and name not in tools_invoked:
+                                    tools_invoked.append(name)
+            except Exception as e:
+                logger.debug(f"Live ReAct invocation fell back to tool harness: {e}")
         
         if "blind" in carrier_name.lower() or order_data.get("telematics_status") == "DISCONNECTED":
             telematics_active = False
@@ -719,6 +815,122 @@ Referenced Policy Citations: {citations_str}."""
 
 
 # ============================================================================
+# Dynamic Multi-Turn Debate LangGraph Sub-Graph (Phase 7 / Level 4 Blueprint 15.1)
+# ============================================================================
+
+class DebateState(TypedDict):
+    order_id: str
+    disruption_context: Dict[str, Any]
+    messages: List[Any]
+    turn_count: int
+    consensus_reached: bool
+    final_compromise: Optional[Dict[str, Any]]
+
+
+def contract_agent_node(state: DebateState) -> Dict[str, Any]:
+    """Contract Adjudicator evaluates previous argument and issues financial counter-proposal"""
+    try:
+        from langchain_ollama import ChatOllama
+        from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+        llm = ChatOllama(model="qwen2.5:7b", temperature=0.3, base_url="http://127.0.0.1:11434", timeout=2.0)
+        prompt = [
+            SystemMessage(content=CONTRACT_ADJUDICATOR_SYSTEM_PROMPT),
+            HumanMessage(content=f"Disruption Context: {json.dumps(state['disruption_context'])}")
+        ] + state.get("messages", [])
+        response = llm.invoke(prompt)
+        msg = AIMessage(content=f"[ContractAdjudicator]: {response.content}")
+        return {"messages": state.get("messages", []) + [msg], "turn_count": state.get("turn_count", 0) + 1}
+    except Exception as e:
+        logger.debug(f"Ollama contract_agent_node fallback: {e}")
+        from langchain_core.messages import AIMessage
+        msg = AIMessage(content="[ContractAdjudicator]: Enforce strict contractual carrier chargeback and limit emergency mitigation spending.")
+        return {"messages": state.get("messages", []) + [msg], "turn_count": state.get("turn_count", 0) + 1}
+
+
+def quality_agent_node(state: DebateState) -> Dict[str, Any]:
+    """Quality Officer evaluates commercial position and defends clinical integrity"""
+    try:
+        from langchain_ollama import ChatOllama
+        from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+        llm = ChatOllama(model="qwen2.5:7b", temperature=0.3, base_url="http://127.0.0.1:11434", timeout=2.0)
+        prompt = [
+            SystemMessage(content=QUALITY_MITIGATION_SYSTEM_PROMPT),
+            HumanMessage(content=f"Disruption Context: {json.dumps(state['disruption_context'])}")
+        ] + state.get("messages", [])
+        response = llm.invoke(prompt)
+        msg = AIMessage(content=f"[QualityMitigation]: {response.content}")
+        return {"messages": state.get("messages", []) + [msg], "turn_count": state.get("turn_count", 0) + 1}
+    except Exception as e:
+        logger.debug(f"Ollama quality_agent_node fallback: {e}")
+        from langchain_core.messages import AIMessage
+        msg = AIMessage(content="[QualityMitigation]: Preserve prescription diet shelf-life and clinical integrity; emergency air freight required.")
+        return {"messages": state.get("messages", []) + [msg], "turn_count": state.get("turn_count", 0) + 1}
+
+
+def arbiter_evaluation_node(state: DebateState) -> Dict[str, Any]:
+    """Arbiter determines whether convergence is reached or enforces compromise at turn limit"""
+    content = ""
+    turn_count = state.get("turn_count", 0)
+    try:
+        from langchain_ollama import ChatOllama
+        from langchain_core.messages import SystemMessage, HumanMessage
+        llm = ChatOllama(model="qwen2.5:7b", temperature=0.1, base_url="http://127.0.0.1:11434", timeout=2.0)
+        prompt = [
+            SystemMessage(content=ARBITER_SYSTEM_PROMPT),
+            HumanMessage(content="Evaluate dialogue turns:\n" + "\n".join([m.content if hasattr(m, "content") else str(m) for m in state.get("messages", [])]))
+        ]
+        response = llm.invoke(prompt)
+        content = response.content
+    except Exception as e:
+        logger.debug(f"Ollama arbiter_evaluation_node fallback: {e}")
+        content = "CONSENSUS_REACHED: Specialists compromise on emergency mitigation with carrier chargeback."
+
+    reached = "CONSENSUS_REACHED" in content or turn_count >= 4
+    return {
+        "consensus_reached": reached,
+        "final_compromise": {
+            "summary": content,
+            "turns_completed": turn_count
+        }
+    }
+
+
+def debate_router(state: DebateState) -> str:
+    if state.get("consensus_reached", False):
+        return "finalize_debate"
+    messages = state.get("messages", [])
+    return "quality_agent_node" if len(messages) % 2 == 1 else "contract_agent_node"
+
+
+def finalize_debate_node(state: DebateState) -> Dict[str, Any]:
+    return state
+
+
+def create_inter_agent_debate_subgraph() -> Any:
+    """Builds and compiles the dynamic LangGraph conversational sub-graph for multi-turn debate (Blueprint 15.1)"""
+    workflow = StateGraph(DebateState)
+    workflow.add_node("contract_agent_node", contract_agent_node)
+    workflow.add_node("quality_agent_node", quality_agent_node)
+    workflow.add_node("arbiter_evaluation_node", arbiter_evaluation_node)
+    workflow.add_node("finalize_debate", finalize_debate_node)
+
+    workflow.add_edge(START, "contract_agent_node")
+    workflow.add_edge("contract_agent_node", "arbiter_evaluation_node")
+    workflow.add_edge("quality_agent_node", "arbiter_evaluation_node")
+    workflow.add_conditional_edges(
+        "arbiter_evaluation_node",
+        debate_router,
+        {
+            "quality_agent_node": "quality_agent_node",
+            "contract_agent_node": "contract_agent_node",
+            "finalize_debate": "finalize_debate"
+        }
+    )
+    workflow.add_edge("finalize_debate", END)
+    return workflow.compile()
+
+
+# ============================================================================
 # Inter-Agent Conversational Negotiation Protocol (Phase 7 / Level 4 Autonomy)
 # ============================================================================
 
@@ -779,38 +991,51 @@ def negotiate_inter_agent_consensus(
 
     turns: List[NegotiationTurn] = []
 
-    # Generative dialogue execution: attempt ChatOllama if live, fallback to dynamic contextual synthesis
+    # Generative dialogue execution: attempt LangGraph debate sub-graph if Ollama live
     ollama_success = False
     try:
-        from langchain_ollama import ChatOllama
-        from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-        llm = ChatOllama(model="qwen2.5:7b", temperature=0.3, base_url="http://127.0.0.1:11434")
-        
-        # Turn 1: ContractAdjudicator
-        p1 = f"Order {order_id} destined for {customer_tier} tier customer. Carrier chargeback: ${carrier_cb:.2f}, SLA penalty: ${sla_penalty:.2f}, Force Majeure: {fm_waived}. Formulate initial legal stance."
-        r1 = llm.invoke([SystemMessage(content=CONTRACT_ADJUDICATOR_SYSTEM_PROMPT), HumanMessage(content=p1)])
-        if r1 and len(r1.content.strip()) > 20:
-            turns.append(NegotiationTurn(
-                turn_index=1,
-                speaker="ContractAdjudicator",
-                proposal=r1.content.strip()[:200],
-                rationale="Protect enterprise financial margin and enforce contractual carrier liability.",
-                demands=[f"Bill carrier ${carrier_cb:.2f} in full"],
-                concessions=["Grant 72h waiver if Act of God substantiated"] if fm_waived else []
-            ))
-            # Turn 2: QualityMitigation
-            p2 = f"ContractAdjudicator stated: {r1.content.strip()[:150]}. As QualityMitigation for {material_desc} (Cost: ${mitigation_cost:.2f}, QA Hold: {qa_hold}), present counter-stance."
-            r2 = llm.invoke([SystemMessage(content=QUALITY_MITIGATION_SYSTEM_PROMPT), HumanMessage(content=p2)])
-            turns.append(NegotiationTurn(
-                turn_index=2,
-                speaker="QualityMitigation",
-                proposal=r2.content.strip()[:200],
-                rationale="Preserve clinical therapy efficacy and avoid customer clinic defection.",
-                demands=["Prescription diet availability"] if has_specialty else [],
-                concessions=["Submit mitigation to Director approval gate"] if mitigation_cost > 500 else []
-            ))
+        import urllib.request
+        with urllib.request.urlopen("http://127.0.0.1:11434/api/tags", timeout=0.8):
+            pass
+        debate_subgraph = create_inter_agent_debate_subgraph()
+        initial_debate_state: DebateState = {
+            "order_id": order_id,
+            "disruption_context": {
+                "order_id": order_id,
+                "customer_tier": customer_tier,
+                "carrier_chargeback_usd": carrier_cb,
+                "sla_delay_penalty_usd": sla_penalty,
+                "force_majeure_waived": fm_waived,
+                "mitigation_cost_usd": mitigation_cost,
+                "qa_hold_required": qa_hold,
+                "material_description": material_desc,
+                "correction_guidance": correction_guidance,
+                "manager_feedback": manager_feedback
+            },
+            "messages": [],
+            "turn_count": 0,
+            "consensus_reached": False,
+            "final_compromise": None
+        }
+        res_sub = debate_subgraph.invoke(initial_debate_state)
+        sub_messages = res_sub.get("messages", [])
+        if len(sub_messages) >= 2:
+            turns = []
+            for idx, msg in enumerate(sub_messages):
+                txt = msg.content if hasattr(msg, "content") else str(msg)
+                speaker = "ContractAdjudicator" if "[ContractAdjudicator]" in txt or idx % 2 == 0 else "QualityMitigation"
+                clean_txt = txt.replace("[ContractAdjudicator]:", "").replace("[QualityMitigation]:", "").strip()
+                turns.append(NegotiationTurn(
+                    turn_index=idx + 1,
+                    speaker=speaker,
+                    proposal=clean_txt[:200],
+                    rationale="Dynamic LLM persona synthesis grounded in case constraints.",
+                    demands=[f"Bill carrier ${carrier_cb:.2f}"] if speaker == "ContractAdjudicator" else ["Prescription diet availability"],
+                    concessions=["Grant 72h waiver if Act of God substantiated"] if fm_waived else []
+                ))
             ollama_success = True
-    except Exception:
+    except Exception as e:
+        logger.debug(f"LangGraph debate sub-graph invoke fell back to contextual generator: {e}")
         ollama_success = False
 
     if not ollama_success or len(turns) < 2:

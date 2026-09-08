@@ -16,7 +16,10 @@ from .agent_specialists import (
     LLMReasoningEngine,
     negotiate_inter_agent_consensus,
     CognitivePrecedentReflection,
-    ArbiterEvaluation
+    ArbiterEvaluation,
+    build_autonomous_investigation_agent,
+    create_inter_agent_debate_subgraph,
+    DebateState
 )
 from .action_execution_engine import SAPActionExecutor, MSTeamsDispatcher, ClinicNotificationDispatcher
 from .agentic_orchestrator import AgenticOrchestrator
@@ -45,6 +48,9 @@ __all__ = [
     "negotiate_inter_agent_consensus",
     "CognitivePrecedentReflection",
     "ArbiterEvaluation",
+    "build_autonomous_investigation_agent",
+    "create_inter_agent_debate_subgraph",
+    "DebateState",
     "simulate_alternative_route_risk",
     "SAPActionExecutor",
     "MSTeamsDispatcher",

@@ -70,6 +70,12 @@ def test_suite_1_react_tool_execution():
     for t in tools_invoked:
         print(f"      • Tool: {t}")
 
+    # Verify build_autonomous_investigation_agent compiles cleanly
+    from modules.agent_specialists import build_autonomous_investigation_agent
+    react_compiled = build_autonomous_investigation_agent()
+    print(f"   ✅ LangGraph create_react_agent investigation agent compiled: {type(react_compiled).__name__}")
+    assert react_compiled is not None, "Expected compiled ReAct investigation agent"
+
     assert "fetch_corridor_weather" in tools_invoked, "Expected fetch_corridor_weather in tool trace"
     assert "fetch_strike_alerts" in tools_invoked, "Expected fetch_strike_alerts in tool trace"
     assert "query_historical_incident_memory" in tools_invoked, "Expected query_historical_incident_memory in tool trace"
@@ -84,8 +90,15 @@ def test_suite_2_generative_dialogue_and_arbiter():
     from modules.agent_specialists import (
         ContractAdjudicatorAgent,
         QualityMitigationAgent,
-        negotiate_inter_agent_consensus
+        negotiate_inter_agent_consensus,
+        create_inter_agent_debate_subgraph,
+        DebateState
     )
+
+    # Verify LangGraph debate sub-graph compilation
+    debate_subgraph = create_inter_agent_debate_subgraph()
+    print(f"   ✅ LangGraph Inter-Agent Debate Sub-Graph compiled successfully: {type(debate_subgraph).__name__}")
+    assert debate_subgraph is not None, "Expected compiled debate sub-graph"
 
     contract_agent = ContractAdjudicatorAgent()
     quality_agent = QualityMitigationAgent()
@@ -168,6 +181,18 @@ def test_suite_3_counterfactual_simulation_tool():
     assert sim_res.get("status") == "SUCCESS", "Expected simulation success"
     assert sim_res.get("recommendation") == "RECOMMENDED", "Air freight upgrade should be recommended for high delay order"
     assert float(sim_res.get("delta", {}).get("delay_hours_saved", 0.0)) > 0, "Expected positive hours saved"
+
+    # Also test proposed_carrier and proposed_shipping_mode aliases (Blueprint 15.3 schema)
+    sim_res_aliases = simulate_alternative_route_risk.invoke({
+        "order_id": "800000000000001",
+        "proposed_carrier": "Bluedart Air Expedited",
+        "proposed_shipping_mode": "Air Freight",
+        "departure_offset_hours": 0.0
+    })
+    print(f"   ✅ Tool 9 invocation with proposed_carrier & proposed_shipping_mode aliases: {sim_res_aliases.get('status')}")
+    assert sim_res_aliases.get("status") == "SUCCESS"
+    assert "simulated_delay_probability" in sim_res_aliases
+    assert "risk_category" in sim_res_aliases
     return True
 
 
@@ -178,6 +203,23 @@ def test_suite_4_cognitive_precedent_reflection():
         ContractAdjudicatorAgent,
         QualityMitigationAgent
     )
+    from modules.incident_memory import get_incident_memory_store
+
+    # Test direct episodic memory reflection method (Deliverable 4)
+    mem_store = get_incident_memory_store()
+    direct_reflections = mem_store.reflect_on_precedents(
+        query_hypothesis="Severe heatwave and thermal degradation",
+        dest_city="Hyderabad",
+        current_hazard="Thermal extreme >40C",
+        top_k=2
+    )
+    print(f"   ✅ EpisodicMemoryStore.reflect_on_precedents returned {len(direct_reflections)} structured reflections:")
+    for r in direct_reflections:
+        print(f"      • [{r['precedent_id']}] (Score: {r['similarity_score']}): {r['factual_analogy'][:80]}...")
+        print(f"        Clause: {r['legal_operational_clause']}")
+    assert len(direct_reflections) > 0, "Expected direct reflections from memory store"
+    assert "factual_analogy" in direct_reflections[0]
+    assert "legal_operational_clause" in direct_reflections[0]
 
     pred_payload = {
         "order_id": "800000000000001",
