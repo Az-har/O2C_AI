@@ -8,7 +8,7 @@
 - [SECTION I: SYSTEM ARCHITECTURE & UNIFIED 3-TIER TOPOLOGY](#section-i-system-architecture--unified-3-tier-topology)
   - [1.1 Executive System Overview](#11-executive-system-overview)
   - [1.2 Unified 3-Tier End-to-End System Topology (Mermaid Diagram)](#12-unified-3-tier-end-to-end-system-topology)
-  - [1.3 Master Module Inventory (All 15 Modules & 119+ Functions)](#13-master-module-inventory-all-15-modules--119-functions)
+  - [1.3 Master Module Inventory (All 17 Modules & 135+ Functions)](#13-master-module-inventory-all-17-modules--135-functions)
 - [SECTION II: TIER 1 — REAL-TIME SENSORY INGESTION & DOCUMENT SYNTHESIS](#section-ii-tier-1--real-time-sensory-ingestion--document-synthesis)
   - [2.1 Data Topography: Where Data Lives](#1-🗺️-data-topography-where-data-lives)
   - [2.2 Data Flow: What Happens to the Data in Tier 1](#2-🔄-data-flow-what-happens-to-the-data-in-part-1)
@@ -34,19 +34,21 @@
     - [Module 10: `modules/ollama_service.py`](#module-10-modulesollamaservicepy)
   - [3.7 Tier 2 Data Summary Matrix & Dual-Engine Synergy](#5-📊-data-summary-matrix-for-part-2)
 - [SECTION IV: TIER 3 — MULTI-AGENT SPECIALIST REASONING, ERP ACTIONS & ORCHESTRATION](#section-iv-tier-3--multi-agent-specialist-reasoning-erp-actions--orchestration)
-  - [4.1 LangGraph Multi-Agent Architecture & Decision State Machine](#2-🤖-multi-agent-specialist-persona--decision-matrices)
-  - [4.2 Centralized Agent Tool Registry (7 Production Tools)](#42-centralized-agent-tool-registry-7-production-tools)
-  - [4.3 Detailed Function Breakdown: Multi-Agent & Execution Modules (Modules 11–15)](#3-🧩-detailed-function-by-function-code-breakdown)
+  - [4.1 LangGraph Multi-Agent Architecture & Decision State Machine (9 Nodes)](#2-🤖-multi-agent-specialist-persona--decision-matrices)
+  - [4.2 Centralized Agent Tool Registry (9 Production Tools)](#42-centralized-agent-tool-registry-7-production-tools)
+  - [4.3 Detailed Function Breakdown: Multi-Agent & Execution Modules (Modules 11–17)](#3-🧩-detailed-function-by-function-code-breakdown)
     - [Module 11: `modules/agent_tools.py`](#module-11-modulesagenttoolspy)
     - [Module 12: `modules/agent_specialists.py`](#module-12-modulesagentspecialistspy)
     - [Module 13: `modules/agentic_graph.py`](#module-13-modulesagenticgraphpy)
     - [Module 14: `modules/action_execution_engine.py`](#module-14-modulesactionexecutionenginepy)
     - [Module 15: `modules/agentic_orchestrator.py`](#module-15-modulesagenticorchestratorpy)
+    - [Module 16: `modules/incident_memory.py`](#module-16-modulesincidentmemorypy)
+    - [Module 17: `modules/agent_daemon.py`](#module-17-modulesagentdaemonpy)
   - [4.4 Tier 3 Data Summary Matrix](#4-📊-data-summary-matrix-for-part-3)
 - [SECTION V: COMPLETE END-TO-END SYSTEM INTEGRATION & VERIFICATION](#section-v-complete-end-to-end-system-integration)
   - [5.1 The Complete End-to-End Trace: How an Order Travels Through the LangGraph Engine](#5-🔬-the-complete-end-to-end-trace-how-an-order-travels-through-parts-1-2-and-3)
-  - [5.2 Master System Audit Matrix (All 15 Modules, 119+ Validated Functions)](#6-🏆-summary-of-master-3-part-technical-series)
-  - [5.3 Hardware Optimization Profile (AMD Ryzen 3 3200G + Radeon RX 6600)](#53-hardware-optimization-profile-amd-ryzen-3-3200g--radeon-rx-6600)
+  - [5.2 Master System Audit Matrix (All 17 Modules, 135+ Validated Functions)](#6-🏆-summary-of-master-3-part-technical-series)
+  - [5.3 Hardware Optimization Profile & 31-Suite Verification (AMD Ryzen 3 3200G + Radeon RX 6600)](#53-hardware-optimization-profile-amd-ryzen-3-3200g--radeon-rx-6600)
 
 ---
 
@@ -64,8 +66,8 @@ In modern global logistics operations, delayed shipments trigger severe operatio
 
 The O2C Copilot resolves these enterprise challenges by fusing:
 1. **Tier 1 (Real-Time Ingestion):** Continuous concurrent Open-Meteo weather telemetry ($<300$ms) and global multimodal disruption scraping (maritime, canal chokepoints, air cargo, freight rail, trucking, customs, and natural disasters), transformed into 23 high-density Word regulatory policy protocols with discrete rule IDs (`[RULE-W-*]`, `[RULE-S-*]`).
-2. **Tier 2 (Predictive ML & RAG Core):** A 10-table SAP relational feature store with pure NumPy vectorized Haversine math (1.803s dataset load) feeding an enterprise **Two-Stage Hurdle ML Architecture (97.10% accuracy, 0.9958 ROC-AUC, 5.63h MAE)** and a **Hybrid Dense/Sparse RAG Engine (82 documents, 909 chunks)** operating on FAISS Cosine Similarity and Okapi BM25 Reciprocal Rank Fusion (RRF) with native Markdown (`.md`) support.
-3. **Tier 3 (LangGraph Multi-Agent Orchestration & Execution):** A 7-node collaborative state machine (`modules/agentic_graph.py`) orchestrated by LangGraph with `MemorySaver` checkpointing, 7 production LangChain tools (`modules/agent_tools.py`), autonomous ReAct specialists with strict Pydantic schemas (`RouteAnalysisOutput`, `ContractAdjudicationOutput`, `QualityMitigationOutput`), an abstract `ERPActionInterface` (`SQLiteSAPMockAdapter` and `SAPODataAdapter`), and interactive Microsoft Teams Adaptive Cards (v1.4) with a 2-hour executive approval SLA.
+2. **Tier 2 (Predictive ML, RAG Core & Episodic Memory):** A 10-table SAP relational feature store with pure NumPy vectorized Haversine math (1.803s dataset load) feeding an enterprise **Two-Stage Hurdle ML Architecture (97.10% accuracy, 0.9958 ROC-AUC, 5.63h MAE)**, an interactive **Counterfactual Simulation Engine (Tool 9)**, a **Hybrid Dense/Sparse RAG Engine (82 documents, 909 chunks)** with FAISS Cosine Similarity and Okapi BM25 Reciprocal Rank Fusion, and a **ChromaDB Episodic Memory Store** indexing historical resolutions and formulating cognitive precedent reflections.
+3. **Tier 3 (LangGraph Autonomous Multi-Agent State Machine & Execution):** A 9-node collaborative state machine (`modules/agentic_graph.py`) orchestrated by LangGraph with Fast-Track conditional routing, model-driven ReAct investigation agents (`build_autonomous_investigation_agent`), a compiled inter-agent debate sub-graph (`create_inter_agent_debate_subgraph`) with generative LLM dialogue and semantic arbiter convergence ($\ge 0.85$), metacognitive pre-execution guardrails with self-correcting feedback loops, an abstract `ERPActionInterface` (`SQLiteSAPMockAdapter` and `SAPODataAdapter`), interactive Microsoft Teams Adaptive Cards (v1.4) with a 2-hour SLA, and an event-driven FastAPI microservice daemon (`modules/agent_daemon.py`) with bidirectional conversational HITL and a local GPU concurrency guard (`asyncio.Semaphore(2)`).
 
 ---
 
@@ -74,9 +76,10 @@ The O2C Copilot resolves these enterprise challenges by fusing:
 ```mermaid
 graph TD
     subgraph "TIER 1: REAL-TIME SENSORY INGESTION & DOCUMENT SYNTHESIS"
-        A1["Open-Meteo & OWM Concurrent Radar<br/>(ThreadPoolExecutor, <300ms)"] --> A2["WeatherService (fetch_current / fetch_historical)"]
+        A1["Open-Meteo & OWM Concurrent Radar<br/>(ThreadPoolExecutor, under 300ms)"] --> A2["WeatherService (fetch_current / fetch_historical)"]
         B1["Global Multimodal Disruption Stream<br/>(Maritime, Air, Rail, Road, Disasters)"] --> B2["NewsService (Pre-Compiled Regexes & Taxonomy)"]
-        A2 & B2 --> C1["DatabaseManager (ACID WAL Mode SQLite, Batch Inserts)"]
+        A2 --> C1["DatabaseManager (ACID WAL Mode SQLite, Batch Inserts)"]
+        B2 --> C1
         C1 --> D1["weather_readings & weather_alerts"]
         C1 --> D2["strike_news & daily_summaries"]
         D1 --> E1["WeatherPolicyGenerator (Hybrid Rule + Qwen2.5)"]
@@ -85,42 +88,59 @@ graph TD
         E2 --> F2["17 Word Strike Briefs ([RULE-S-*])"]
     end
 
-    subgraph "TIER 2: SAP FEATURE STORE, TWO-STAGE ML & HYBRID RAG"
+    subgraph "TIER 2: SAP FEATURE STORE, TWO-STAGE ML & HYBRID RAG & MEMORY"
         G1["10 SAP ERP CSV Exports"] --> G2["MLDatabaseExtension (Vectorized Haversine Math, 1.803s Load)"]
         G2 --> G3["19-Feature Vector Space (Lightweight Integer Index Cache)"]
         G3 --> H1["PredictiveEngine: Stage 1 RandomForest Gate (100 Trees, Depth 6)"]
         G3 --> H2["PredictiveEngine: Stage 2 Conditional Huber Regressor (Delayed Subset)"]
-        H1 & H2 --> H3["Two-Stage Gated Delay Prediction (Acc: 97.10%, MAE: 5.63h)"]
-        H3 --> H4["Explainable AI (feature_importances.json Attribution Breakdowns)"]
+        H1 --> H3["Two-Stage Gated Delay Prediction (Acc: 97.10%, MAE: 5.63h)"]
+        H2 --> H3
+        H3 --> H4["Counterfactual Route Simulation (run_counterfactual_inference)"]
         
-        F1 & F2 & J1["82 Corpus Policy Documents (.docx, .pdf, .md)"] --> J2["DocumentLoader & ClauseAwareChunker"]
+        F1 --> J2["DocumentLoader & ClauseAwareChunker"]
+        F2 --> J2
+        J1["82 Corpus Policy Documents (.docx, .pdf, .md)"] --> J2
         J2 --> J3["909 Granular Semantic Chunks"]
         J3 --> K1["Dense Vector Store: SentenceTransformer + FAISS FlatIP (384-dim)"]
         J3 --> K2["Sparse Lexicon: Okapi BM25 Index (k1=1.5, b=0.75)"]
-        K1 & K2 --> K3["Hybrid Reciprocal Rank Fusion (RRF Search)"]
-        H3 & K3 --> L1["Enriched Multi-Engine Risk Payload"]
+        K1 --> K3["Hybrid Reciprocal Rank Fusion (RRF Search)"]
+        K2 --> K3
+        
+        M0["ChromaDB Episodic Memory Store"] --> M0B["Historical Dispute Precedents & reflect_on_precedents"]
+        
+        H3 --> L1["Enriched Multi-Engine Risk & Precedent Payload"]
+        K3 --> L1
+        M0B --> L1
     end
 
     subgraph "TIER 3: LANGGRAPH MULTI-AGENT STATE MACHINE & ERP EXECUTION"
-        L1 --> M1["supervisor_router (Order Context & Telemetry Inspection)"]
-        M1 --> N1["route_specialist (GPS Telematics Audit & $200 Breach Penalty)"]
-        N1 --> N2["contract_adjudicator (SLA Math, 12h Notice Credit, 72h FM Waiver)"]
-        N2 --> N3["quality_mitigation ($1,000 Air Freight Pallet & QA Hold LIFSK='01')"]
-        N3 --> P1["consensus_debate (Trade-Off Synthesis & Governance Routing)"]
+        L1 --> M1["1. supervisor_router<br/>(Dynamic Context & Risk Assessment)"]
         
-        P1 -->|Expense <= $500 & No QA Hold| Q1["action_execution_node<br/>(ERPActionInterface / SQLiteSAPMockAdapter)"]
-        P1 -->|Expense > $500 or QA Quarantine| Q2["human_approval_checkpoint<br/>(MSTeamsDispatcher Adaptive Card v1.4, 2h SLA)"]
+        M1 -->|"P(delay) < 0.35: Fast-Track"| Q1["8. action_execution_node<br/>(Instant Autonomous ERP Commit, under 5ms)"]
+        M1 -->|"P(delay) >= 0.35: Investigation"| N1["2. route_specialist<br/>(ReAct Autonomous Agent: Live Tools 1-9)"]
+        
+        N1 --> N2["3. contract_adjudicator<br/>(SLA Math, 12h Notice, FM Waiver, Precedent Citation)"]
+        N2 --> N3["4. quality_mitigation<br/>($1,000 Air Pallet, QA Hold LIFSK='01', Shelf-Life)"]
+        N3 --> P0["5. inter_agent_negotiation<br/>(Compiled Debate Subgraph: Generative LLM & Arbiter >= 0.85)"]
+        P0 --> P1["6. consensus_debate<br/>(Trade-Off Synthesis & Executive Brief)"]
+        P1 --> P2["7. pre_execution_guardrail<br/>(Metacognitive Policy Enforcement)"]
+        
+        P2 -->|"Policy Violation: Self-Correction Loop"| P0
+        P2 -->|"Guardrails Passed & Expense <= $500"| Q1
+        P2 -->|"Guardrails Passed & Expense > $500 or QA Hold"| Q2["9. human_approval_checkpoint<br/>(MSTeamsDispatcher Adaptive Card v1.4, 2h SLA)"]
         
         Q1 --> R1["Daily Executive Audit Report & SAP AP Debit Memos"]
         Q2 --> R1
+        
+        S0["FastAPI Agent Daemon"] -->|"Webhooks & Conversational HITL"| M1
     end
 ```
 
 ---
 
-### 1.3 Master Module Inventory (All 15 Modules & 119+ Functions)
+### 1.3 Master Module Inventory (All 17 Modules & 135+ Functions)
 
-The unified platform comprises **15 dedicated Python modules** across 3 architectural tiers:
+The unified platform comprises **17 dedicated Python modules** across 3 architectural tiers:
 
 | Tier | Module # | File Location | Class Name / Component | Key Responsibility | Functions Validated |
 |---|---|---|---|---|---|
@@ -131,15 +151,17 @@ The unified platform comprises **15 dedicated Python modules** across 3 architec
 | **Tier 1** | **Module 5** | `modules/weather_policy_generator.py` | `WeatherPolicyGenerator` | Generates 6 Word protocols with `[RULE-W-*]` IDs | 6 |
 | **Tier 1** | **Module 6** | `modules/strike_intelligence_generator.py` | `StrikeIntelligenceGenerator` | Generates 17 Word briefs with `[RULE-S-*]` IDs | 8 |
 | **Tier 2** | **Module 7** | `modules/ml_db_extension.py` | `MLDatabaseExtension` | Vectorized NumPy Haversine math (1.803s), integer index memory caching, 19 features | 9 |
-| **Tier 2** | **Module 8** | `modules/predictive_engine.py` | `PredictiveEngine` | Two-Stage Hurdle ML models, Huber regressor, XAI attributions | 10 |
+| **Tier 2** | **Module 8** | `modules/predictive_engine.py` | `PredictiveEngine` | Two-Stage Hurdle ML models, Huber regressor, XAI attributions, counterfactual route simulation | 11 |
 | **Tier 2** | **Module 9** | `modules/rag_engine.py` | `RAGEngine` (6 Classes) | Multi-format loading (`.docx`/`.pdf`/`.md`), chunking, FAISS + BM25 hybrid RRF retrieval, single pickle persistence | 27 |
 | **Tier 2** | **Module 10** | `modules/ollama_service.py` | `OllamaService` | Local Qwen2.5 daemon interface on AMD RX 6600 (8 GB VRAM Vulkan compute) with anti-hallucination prompt | 3 |
-| **Tier 3** | **Module 11** | `modules/agent_tools.py` | Centralized Tool Registry | 7 production LangChain `@tool` functions with Pydantic argument schemas | 7 |
-| **Tier 3** | **Module 12** | `modules/agent_specialists.py` | 4 Specialist Agents | ReAct Specialists with Pydantic schemas (`RouteAnalysisOutput`, `ContractAdjudicationOutput`, `QualityMitigationOutput`) & `LLMReasoningEngine` | 6 |
-| **Tier 3** | **Module 13** | `modules/agentic_graph.py` | LangGraph State Machine | 7-node collaborative state graph (`O2CAgentState`), conditional governance edge, `MemorySaver` checkpointer | 5 |
+| **Tier 3** | **Module 11** | `modules/agent_tools.py` | Centralized Tool Registry | 9 production LangChain `@tool` functions with Pydantic argument schemas (including Tool 8 & Tool 9) | 9 |
+| **Tier 3** | **Module 12** | `modules/agent_specialists.py` | 4 Specialist Agents & Debate Subgraph | Model-driven ReAct investigation agent (`build_autonomous_investigation_agent`), compiled debate subgraph (`create_inter_agent_debate_subgraph`), `CognitivePrecedentReflection` | 13 |
+| **Tier 3** | **Module 13** | `modules/agentic_graph.py` | LangGraph State Machine | 9-node collaborative state graph (`O2CAgentState`), Fast-Track routing, Pre-Execution Guardrails, `MemorySaver` checkpointer | 10 |
 | **Tier 3** | **Module 14** | `modules/action_execution_engine.py` | ERP Action Interface | Pluggable `ERPActionInterface`, `SQLiteSAPMockAdapter`, `SAPODataAdapter`, `MSTeamsDispatcher`, `ClinicNotificationDispatcher` | 11 |
-| **Tier 3** | **Module 15** | `modules/agentic_orchestrator.py` | `AgenticOrchestrator` | 6-stage autonomous daily lifecycle, report publishing | 6 |
-| **TOTAL** | **15 Modules** | **Unified Core** | **Enterprise Copilot** | **Autonomous Order-to-Cash Logistics Governance** | **119+ / 119+ Validated** |
+| **Tier 3** | **Module 15** | `modules/agentic_orchestrator.py` | `AgenticOrchestrator` | 6-stage autonomous daily lifecycle, graph synthesis, report publishing | 6 |
+| **Tier 3** | **Module 16** | `modules/incident_memory.py` | `EpisodicMemoryStore` | ChromaDB vector store, incident resolution archiving, active cognitive precedent reflection (`reflect_on_precedents`) | 6 |
+| **Tier 3** | **Module 17** | `modules/agent_daemon.py` | Event-Driven FastAPI Daemon | Microservice daemon, `/order-event`, `/approval`, `/collaborate` (Conversational HITL), `/audit`, GPU concurrency semaphore | 8 |
+| **TOTAL** | **17 Modules** | **Unified Core** | **Enterprise Copilot** | **Autonomous Order-to-Cash Logistics Governance** | **135+ / 135+ Validated** |
 
 *(Note: `modules/rag_evaluator.py` is preserved as a backward-compatible stub re-exporting from `evaluation/rag_evaluator.py`.)*
 
@@ -843,8 +865,8 @@ graph TD
         E2 --> F2["Predicts Delay Duration: 12.0 to 96.0 hrs"]
     end
 
-    F1 -->|If P < 0.40 (On-Time)| G1["Predicted Delay = 0.0 hrs (Zero False-Alarm Ghost Error)"]
-    F1 -->|If P >= 0.40 (Delayed)| F2
+    F1 -->|"If P < 0.40 (On-Time)"| G1["Predicted Delay = 0.0 hrs (Zero False-Alarm Ghost Error)"]
+    F1 -->|"If P >= 0.40 (Delayed)"| F2
 ```
 
 #### 📊 Two-Stage Hurdle Performance Summary:
@@ -1079,7 +1101,8 @@ graph TD
     subgraph "Hybrid Query Execution"
         G["User / Agent Query"] --> H1["Dense Search (Top 5 Vectors)"]
         G --> H2["BM25 Search (Top 5 Keywords)"]
-        H1 & H2 --> I["Reciprocal Rank Fusion (RRF)<br/>Score = RRF_Dense + RRF_BM25"]
+        H1 --> I["Reciprocal Rank Fusion (RRF)<br/>Score = RRF_Dense + RRF_BM25"]
+        H2 --> I
         I --> J["RAGQueryEngine Synthesis (Answer + Sources + Confidence)"]
     end
 ```
@@ -1412,29 +1435,35 @@ sequenceDiagram
 
 ---
 
-## SECTION IV: TIER 3 — MULTI-AGENT SPECIALIST REASONING, ERP ACTIONS & ORCHESTRATION
+### SECTION IV: TIER 3 — MULTI-AGENT SPECIALIST REASONING, ERP ACTIONS & ORCHESTRATION
 
-### 4.1 LangGraph Multi-Agent Architecture & Decision State Machine
+### 4.1 LangGraph Multi-Agent Architecture & Decision State Machine (9 Nodes)
 
-The multi-agent framework replaces legacy procedural scripting with an enterprise **Agent-First State Machine** engineered on **LangGraph**. The architecture features cyclic state graph navigation, thread-safe memory checkpointing via `MemorySaver`, autonomous ReAct specialists, consensus trade-off debate, and strict Pydantic structured output validation (`RouteAnalysisOutput`, `ContractAdjudicationOutput`, `QualityMitigationOutput`).
+The multi-agent framework replaces legacy procedural scripting with an enterprise **Level 4/5 Cognitive Multi-Agent State Machine** engineered on **LangGraph**. The architecture features cyclic state graph navigation, Fast-Track dynamic routing, thread-safe memory checkpointing via `MemorySaver`, model-driven ReAct specialists, a compiled inter-agent debate sub-graph with semantic arbiter convergence, metacognitive pre-execution guardrails with self-correction feedback loops, and strict Pydantic structured output validation (`RouteAnalysisOutput`, `ContractAdjudicationOutput`, `QualityMitigationOutput`, `CognitivePrecedentReflection`).
 
 #### Master Multi-Agent State Machine Topology:
 
 ```mermaid
 graph TD
-    START --> Node1["1. supervisor_router<br/>(Inspects order context & telemetry)"]
-    Node1 --> Node2["2. route_specialist<br/>(GPS integrity, $200 blind penalty, corridor hazards)"]
-    Node2 --> Node3["3. contract_adjudicator<br/>(Tiered SLA calculation, 12h notice, 72h FM waiver)"]
+    startNode(["START"]) --> Node1["1. supervisor_router<br/>(Inspects order context, telemetry & ML risk)"]
+    
+    Node1 -->|"P(delay) < 0.35 & On-Schedule: Fast-Track"| Node8["8. action_execution_node<br/>(Instant Autonomous ERP Commit, under 5ms)"]
+    Node1 -->|"P(delay) >= 0.35 or Disrupted: Full Investigation"| Node2["2. route_specialist<br/>(ReAct Autonomous Agent: Live Tools 1-9 & Telematics)"]
+    
+    Node2 --> Node3["3. contract_adjudicator<br/>(Tiered SLA calculation, 12h notice, 72h FM waiver, Precedent Reflection)"]
     Node3 --> Node4["4. quality_mitigation<br/>(MHDRZ shelf-life, QA hold '01', $1,000 air pallet)"]
-    Node4 --> Node5["5. consensus_debate<br/>(Trade-off synthesis & governance evaluation)"]
+    Node4 --> Node5["5. inter_agent_negotiation<br/>(Compiled LangGraph Debate Subgraph: Generative LLM & Arbiter >= 0.85)"]
+    Node5 --> Node6["6. consensus_debate<br/>(Trade-off synthesis & governance evaluation)"]
+    Node6 --> Node7["7. pre_execution_guardrail<br/>(Metacognitive Constitutional Policy Verification)"]
     
-    Node5 --> Check{"Governance Gate<br/>Cost > $500 or QA Hold?"}
+    Node7 -->|"Policy Violation: Self-Correction Loop"| Node5
+    Node7 -->|"Guardrails Passed"| Check{"Governance Gate<br/>Cost > $500 or QA Hold?"}
     
-    Check -->|No: Expense <= $500 & No QA Hold| Node6A["6A. action_execution_node<br/>(Pluggable ERPActionInterface / SQLiteSAPMockAdapter)"]
-    Check -->|Yes: High Expense or QA Hold| Node6B["6B. human_approval_checkpoint<br/>(MSTeamsDispatcher Adaptive Card v1.4, 2h SLA)"]
+    Check -->|"No: Expense <= $500 & No QA Hold"| Node8
+    Check -->|"Yes: High Expense or QA Hold"| Node9["9. human_approval_checkpoint<br/>(MSTeamsDispatcher Adaptive Card v1.4, 2h SLA)"]
     
-    Node6A --> END
-    Node6B --> END
+    Node8 --> endNode(["END"])
+    Node9 --> endNode(["END"])
 ```
 
 #### Shared Multi-Agent Graph State: `O2CAgentState`
@@ -1456,6 +1485,10 @@ class O2CAgentState(TypedDict):
     executed_erp_actions: List[Dict[str, Any]]
     final_decision: Optional[str]
     audit_trail: Annotated[List[str], operator.add]
+    precedents_consulted: List[Dict[str, Any]]
+    negotiation_history: List[Dict[str, Any]]
+    guardrail_status: Optional[str]
+    guardrail_violations: List[str]
 ```
 
 #### Specialist Decision Matrices & Enterprise Rules:
@@ -1464,15 +1497,17 @@ class O2CAgentState(TypedDict):
 3. **Receiving Window Dock Overtime Rule:** If the predicted delivery ETA breaches receiving dock closing hours ($\ge 17:00$), assesses a mandatory **\$150 redelivery fee** charged back to the logistics carrier.
 4. **Specialty Perishable Diet Protection Rule:** If an order containing prescription pet food or biologic therapeutics (`has_specialty_diet = 1`) is delayed $>48\text{h}$, authorizes a **\$1,000 emergency Air Freight replacement shipment** from an alternate regional distribution center.
 5. **Cold-Chain Quarantine Rule:** If transit temperature exceeds $40^\circ\text{C}$ or remaining shelf-life decays below 6 months (`MHDRZ`), triggers a mandatory **SAP Delivery Block (`VBAK-LIFSK = '01'`)** and orders a laboratory HPLC vitamin assay before release.
-6. **Tiered Governance Gate Rule:**
+6. **Dynamic Supervisor Fast-Track Rule:** Orders with delay probability $< 0.35$ and zero corridor disruption alerts bypass specialist LLM reasoning and execute direct ERP commit in $<5$ms.
+7. **Constitutional Guardrail Verification Rule:** Prior to ERP write-back, 4 non-negotiable policies are enforced: Budget Cap ($\le \$500$), Cold-Chain QA Quarantine ($\ge 48$h delay), Telematics Compliance (no FM waiver without GPS), and SLA penalty limits. Violations trigger an autonomous self-correction loop back to negotiation.
+8. **Tiered Governance Gate Rule:**
    - **Autonomous Execution ($\le \$500$ & No QA Hold):** Automatically updates SAP delivery dates (`VBAK-VDATU`), posts carrier debit memos (`SAP_BKPF`), and logs to audit trail without human intervention.
    - **Director Approval Gate ($> \$500$ or QA Quarantine):** Formats and dispatches an interactive Microsoft Teams Adaptive Card v1.4 with a mandatory **2-Hour Executive Response SLA**.
 
 ---
 
-### 4.2 Centralized Agent Tool Registry (7 Production Tools)
+### 4.2 Centralized Agent Tool Registry (9 Production Tools)
 **File Location:** `d:\Progamming\O2C_AI\modules\agent_tools.py`  
-**Purpose:** Exposes 7 production-grade LangChain `@tool` decorated functions with Pydantic argument schemas, full docstrings, and robust error handling for autonomous LLM function calling across the multi-agent graph.
+**Purpose:** Exposes 9 production-grade LangChain `@tool` decorated functions with Pydantic argument schemas, full docstrings, and robust error handling for autonomous LLM function calling across the multi-agent graph.
 
 #### Tool Inventory:
 1. **`query_sap_order(order_id: str) -> Dict[str, Any]` (`QuerySAPOrderInput`)**:
@@ -1503,18 +1538,26 @@ class O2CAgentState(TypedDict):
    - **Purpose:** Generates interactive Microsoft Teams Adaptive Card v1.4 payloads with approval actions whenever mitigations exceed \$500 or trigger QA holds.
    - **Input:** `order_id (str)`, `escalation_reason (str)`, `financial_impact_usd (float)`, `proposed_action (str)`.
    - **Output:** `Dict[str, Any]` with card JSON summary and persistence path.
+8. **`query_historical_incident_memory(query_text: str, carrier_name: Optional[str] = None, dest_city: Optional[str] = None, top_k: int = 3) -> Dict[str, Any]` (`QueryIncidentMemoryInput`)**:
+   - **Purpose:** Queries ChromaDB episodic memory for past dispute resolutions, precedent outcomes, and Force Majeure adjudications.
+   - **Input:** `query_text (str)`, `carrier_name (str | None)`, `dest_city (str | None)`, `top_k (int)`.
+   - **Output:** `Dict[str, Any]` with relevant precedent citations, similarity distances, and historical resolutions.
+9. **`simulate_alternative_route_risk(order_id: str, proposed_carrier: Optional[str] = None, carrier_name: Optional[str] = None, proposed_shipping_mode: Optional[str] = None, shipping_type: Optional[str] = None, departure_offset_hours: float = 0.0) -> Dict[str, Any]` (`SimulateAlternativeRouteInput`)**:
+   - **Purpose:** Executes counterfactual what-if simulations against Engine A's Two-Stage Hurdle model to evaluate alternative carriers, modes (e.g. Air vs Road), and departure time offsets.
+   - **Input:** `order_id`, `proposed_carrier` / `carrier_name`, `proposed_shipping_mode` / `shipping_type`, `departure_offset_hours`.
+   - **Output:** `Dict[str, Any]` containing simulated delay probability, delay hours, hours saved delta, risk classification, and simulation confidence.
 
 ---
 
-### 4.3 Detailed Function Breakdown: Multi-Agent & Execution Modules (Modules 11–15)
+### 4.3 Detailed Function Breakdown: Multi-Agent & Execution Modules (Modules 11–17)
 
 ---
 
 ### Module 11: `modules/agent_tools.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\agent_tools.py`  
-**Classes:** `QuerySAPOrderInput`, `FetchWeatherInput`, `FetchStrikeAlertsInput`, `QueryRAGContractsInput`, `CalculateSLAInput`, `PostSAPActionInput`, `DispatchTeamsCardInput`  
-**Export:** `ALL_AGENT_TOOLS` (List of 7 LangChain tools)  
-**Purpose (Centralized Agent Tool Registry):** Bridges autonomous LLM reasoning to enterprise databases, weather radars, strike scrapers, RAG vector stores, ERP adapters, and MS Teams dispatchers.
+**Classes:** `QuerySAPOrderInput`, `FetchWeatherInput`, `FetchStrikeAlertsInput`, `QueryRAGContractsInput`, `CalculateSLAInput`, `PostSAPActionInput`, `DispatchTeamsCardInput`, `QueryIncidentMemoryInput`, `SimulateAlternativeRouteInput`  
+**Export:** `ALL_AGENT_TOOLS` (List of 9 LangChain tools)  
+**Purpose (Centralized Agent Tool Registry):** Bridges autonomous LLM reasoning to enterprise databases, weather radars, strike scrapers, RAG vector stores, ChromaDB episodic memory, Hurdle ML counterfactual inference, ERP adapters, and MS Teams dispatchers.
 
 #### Functions in `modules/agent_tools.py`:
 
@@ -1560,15 +1603,28 @@ class O2CAgentState(TypedDict):
 - **Output Return Type:** `Dict[str, Any]`.
 - **How it helps the data:** Enforces human-in-the-loop executive governance with a strict 2-hour response SLA.
 
+##### 8. `query_historical_incident_memory(query_text: str, carrier_name: Optional[str] = None, dest_city: Optional[str] = None, top_k: int = 3) -> Dict[str, Any]`
+- **Purpose:** Performs semantic search across ChromaDB episodic incident memory to retrieve precedent resolution strategies and legal adjudications.
+- **Input Parameters:** `query_text (str)`, `carrier_name (str | None)`, `dest_city (str | None)`, `top_k (int)`.
+- **Output Return Type:** `Dict[str, Any]`.
+- **How it helps the data:** Grounds decisions in prior legal and operational case history, preventing contradictory rulings.
+
+##### 9. `simulate_alternative_route_risk(order_id: str, proposed_carrier: Optional[str] = None, carrier_name: Optional[str] = None, proposed_shipping_mode: Optional[str] = None, shipping_type: Optional[str] = None, departure_offset_hours: float = 0.0) -> Dict[str, Any]`
+- **Purpose:** Interactively queries Engine A's Two-Stage Hurdle model with what-if parameters to evaluate alternative routing options and calculate quantitative delay/penalty savings.
+- **Input Parameters:** `order_id`, `proposed_carrier`/`carrier_name`, `proposed_shipping_mode`/`shipping_type`, `departure_offset_hours`.
+- **Output Return Type:** `Dict[str, Any]`.
+- **How it helps the data:** Empowers specialists to evaluate and quantify mitigation options before committing financial resources.
+
 ---
 
 ### Module 12: `modules/agent_specialists.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\agent_specialists.py`  
-**Classes:** `RouteAnalysisOutput`, `ContractAdjudicationOutput`, `QualityMitigationOutput`, `RouteSupervisorAgent`, `ContractAdjudicatorAgent`, `QualityMitigationAgent`, `LLMReasoningEngine`  
-**Purpose (Autonomous ReAct Specialists):** Houses domain-specific AI agents equipped with tools and Pydantic structured output validation: route supervisor, contract lawyer, quality assurance planner, and executive brief synthesizer.
+**Classes & Schemas:** `RouteAnalysisOutput`, `ContractAdjudicationOutput`, `QualityMitigationOutput`, `CognitivePrecedentReflection`, `DebateState`, `ArbiterEvaluation`, `RouteSupervisorAgent`, `ContractAdjudicatorAgent`, `QualityMitigationAgent`, `LLMReasoningEngine`  
+**Key Functions:** `build_autonomous_investigation_agent`, `create_inter_agent_debate_subgraph`, `contract_agent_node`, `quality_agent_node`, `arbiter_evaluation_node`, `debate_router`, `finalize_debate_node`, `negotiate_inter_agent_consensus`  
+**Purpose (Autonomous ReAct Specialists & Inter-Agent Debate):** Houses domain-specific AI agents equipped with live tools, compiled debate subgraphs, and Pydantic structured output validation: model-driven ReAct investigation, contract legal analysis with precedent reflections, quality assurance planning, and dynamic persona debate with semantic arbiter convergence.
 
 #### Class 1: `RouteSupervisorAgent`
-**Purpose:** Monitors transit velocity, corridor weather, multimodal strike hazards, and GPS telematics continuity.
+**Purpose:** Monitors transit velocity, corridor weather, multimodal strike hazards, and GPS telematics continuity via autonomous ReAct execution.
 
 ##### Functions in `RouteSupervisorAgent`:
 ##### 1. `__init__(self, autonomous_mode: bool = False, model_name: str = "qwen2.5:7b")`
@@ -1576,7 +1632,7 @@ class O2CAgentState(TypedDict):
 - **Input Parameters:** `autonomous_mode (bool)`, `model_name (str)`.
 - **Output Return Type:** None.
 ##### 2. `analyze_route(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any]) -> Dict[str, Any]`
-- **Purpose:** Audits GPS tracking signal ($>12\text{h}$ loss assesses \$200 blind-tracking penalty), validates transit velocity feasibility ($\le 55\text{ km/h}$), and invokes weather/strike tools to detect corridor hazards. Emits validated `RouteAnalysisOutput`.
+- **Purpose:** Uses `build_autonomous_investigation_agent` to invoke tools (`fetch_corridor_weather`, `fetch_strike_alerts`, `query_historical_incident_memory`, `simulate_alternative_route_risk`), audit GPS continuity ($>12$h loss assesses \$200 penalty), and emit validated `RouteAnalysisOutput` with live `tools_invoked` traces.
 - **Input Parameters:** `prediction_payload (Dict[str, Any])`, `order_data (Dict[str, Any])`.
 - **Output Return Type:** `Dict[str, Any]` compliant with `RouteAnalysisOutput`.
 - **How it helps the data:** Detects GPS compliance breaches and flags corridor transit hazards before contract adjudication.
@@ -1592,7 +1648,7 @@ class O2CAgentState(TypedDict):
 - **Input Parameters:** `autonomous_mode (bool)`, `model_name (str)`.
 - **Output Return Type:** None.
 ##### 2. `adjudicate_contract(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any], route_analysis: Dict[str, Any], notice_given_12h: bool = True) -> Dict[str, Any]`
-- **Purpose:** Calculates customer SLA penalties ($500/day Platinum, 5%/day Gold capped at 25%), tests Force Majeure eligibility under Clause 4.2 / 8.4 (100% waiver if Act of God + 12h notice + telematics active), and charges carriers \$150 for receiving dock overtime. Emits validated `ContractAdjudicationOutput`.
+- **Purpose:** Cites episodic memory reflections via `EpisodicMemoryStore.reflect_on_precedents`, computes customer SLA penalties ($500/day Platinum, 5%/day Gold capped at 25%), tests Force Majeure eligibility under Clause 4.2 / 8.4 (100% waiver if Act of God + 12h notice + telematics active), and charges carriers \$150 for receiving dock overtime. Emits validated `ContractAdjudicationOutput`.
 - **Input Parameters:** `prediction_payload (Dict)`, `order_data (Dict)`, `route_analysis (Dict)`, `notice_given_12h (bool)`.
 - **Output Return Type:** `Dict[str, Any]` compliant with `ContractAdjudicationOutput`.
 - **How it helps the data:** Establishes exact, legally grounded financial liabilities and carrier chargeback debit memos.
@@ -1635,61 +1691,98 @@ class O2CAgentState(TypedDict):
 
 ---
 
+#### ReAct Agent, Debate Subgraph & Helper Functions:
+
+##### 1. `build_autonomous_investigation_agent(model_name: str = "qwen2.5:7b", base_url: str = "http://127.0.0.1:11434") -> Any`
+- **Purpose:** Constructs an autonomous ReAct model-driven agent using `langgraph.prebuilt.create_react_agent` bound with the 5 live investigation tools (`fetch_corridor_weather`, `fetch_strike_alerts`, `query_historical_incident_memory`, `query_sap_order`, `simulate_alternative_route_risk`).
+
+##### 2. `create_inter_agent_debate_subgraph(model_name: str = "qwen2.5:7b", base_url: str = "http://127.0.0.1:11434") -> StateGraph`
+- **Purpose:** Compiles a dedicated LangGraph sub-graph (`DebateState`) with alternating nodes (`contract_agent_node`, `quality_agent_node`), an arbiter node (`arbiter_evaluation_node`), and a conditional edge (`debate_router`) evaluating semantic convergence score $\ge 0.85$.
+
+##### 3. `contract_agent_node(state: DebateState) -> Dict[str, Any]`
+- **Purpose:** Formulates Contract persona arguments focusing on carrier accountability, Master Agreement terms, and Force Majeure evidentiary standards.
+
+##### 4. `quality_agent_node(state: DebateState) -> Dict[str, Any]`
+- **Purpose:** Formulates Quality persona arguments defending clinical shelf-life integrity, patient welfare, and emergency freight allocations.
+
+##### 5. `arbiter_evaluation_node(state: DebateState) -> Dict[str, Any]`
+- **Purpose:** Computes semantic convergence score, validates compromise package terms, and ratifies inter-agent agreement.
+
+##### 6. `debate_router(state: DebateState) -> str`
+- **Purpose:** Conditional router edge continuing debate if turns $< 4$ and convergence $< 0.85$, or routing to `finalize_debate` once consensus is achieved.
+
+##### 7. `negotiate_inter_agent_consensus(...) -> NegotiationOutcome`
+- **Purpose:** High-level coordinator that executes the compiled debate sub-graph with socket-level connectivity pre-checks and resilient deterministic fallback.
+
+---
+
+---
+
 ### Module 13: `modules/agentic_graph.py`
 **File Location:** `d:\Progamming\O2C_AI\modules\agentic_graph.py`  
 **State Schema:** `O2CAgentState` (TypedDict with immutable keys and `Annotated[List[str], operator.add]` audit trail)  
 **Checkpointer:** `MemorySaver` (thread-safe in-memory state persistence)  
-**Purpose (LangGraph Multi-Agent State Machine):** Orchestrates the collaborative 7-node cyclic decision graph, consensus debate, and conditional governance routing.
+**Purpose (LangGraph Multi-Agent State Machine):** Orchestrates the collaborative 9-node cyclic decision graph, Fast-Track conditional routing, inter-agent negotiation, pre-execution guardrails, and conditional governance routing.
 
 #### Graph Nodes in `modules/agentic_graph.py`:
 
 ##### 1. `supervisor_router_node(state: O2CAgentState) -> Dict[str, Any]`
-- **Purpose:** Node 1: Inspects incoming order context, customer tier, and ML risk predictions; initializes the graph audit log.
+- **Purpose:** Node 1: Inspects incoming order context, customer tier, and ML risk predictions. If $P < 0.35$ and zero corridor hazards, qualifies for Fast-Track and routes directly to `action_execution_node` in $<5$ms; otherwise initializes full multi-specialist investigation.
 - **Input Parameters:** `state (O2CAgentState)`.
 - **Output Return Type:** `Dict[str, Any]` with initial `audit_trail` entry.
 
 ##### 2. `route_specialist_node(state: O2CAgentState) -> Dict[str, Any]`
-- **Purpose:** Node 2: Invokes `RouteSupervisorAgent` to audit GPS telematics continuity, transit speed, and corridor weather/strike hazards.
+- **Purpose:** Node 2: Invokes `RouteSupervisorAgent` (model-driven ReAct agent) to audit GPS telematics continuity, transit speed, and corridor weather/strike hazards with live tool execution tracking (`tools_invoked`).
 - **Input Parameters:** `state (O2CAgentState)`.
 - **Output Return Type:** `Dict[str, Any]` updating `route_findings` and `audit_trail`.
 
 ##### 3. `contract_adjudicator_node(state: O2CAgentState) -> Dict[str, Any]`
-- **Purpose:** Node 3: Invokes `ContractAdjudicatorAgent` to evaluate customer SLAs, proactive 12-hour notification credits, and Force Majeure waivers.
+- **Purpose:** Node 3: Invokes `ContractAdjudicatorAgent` to cite episodic memory reflections, evaluate customer SLAs, proactive 12-hour notification credits, and Force Majeure waivers.
 - **Input Parameters:** `state (O2CAgentState)`.
-- **Output Return Type:** `Dict[str, Any]` updating `legal_findings` and `audit_trail`.
+- **Output Return Type:** `Dict[str, Any]` updating `legal_findings`, `precedents_consulted`, and `audit_trail`.
 
 ##### 4. `quality_mitigation_node(state: O2CAgentState) -> Dict[str, Any]`
 - **Purpose:** Node 4: Invokes `QualityMitigationAgent` to evaluate clinical nutrition stock-outs, emergency air freight (\$1,000 cap), and QA quarantine holds.
 - **Input Parameters:** `state (O2CAgentState)`.
 - **Output Return Type:** `Dict[str, Any]` updating `quality_findings`, `total_mitigation_cost`, and `audit_trail`.
 
-##### 5. `consensus_debate_node(state: O2CAgentState) -> Dict[str, Any]`
-- **Purpose:** Node 5: Synthesizes multi-agent trade-offs (balancing SLA fines vs. air freight expense), generates executive brief via `LLMReasoningEngine`, and evaluates the governance gate:
+##### 5. `inter_agent_negotiation_node(state: O2CAgentState) -> Dict[str, Any]`
+- **Purpose:** Node 5: Executes multi-turn inter-agent negotiation via `negotiate_inter_agent_consensus` using the compiled debate sub-graph, balancing financial liabilities against clinical product safety.
+- **Input Parameters:** `state (O2CAgentState)`.
+- **Output Return Type:** `Dict[str, Any]` updating `negotiation_history` and `audit_trail`.
+
+##### 6. `consensus_debate_node(state: O2CAgentState) -> Dict[str, Any]`
+- **Purpose:** Node 6: Synthesizes multi-agent trade-offs, generates executive brief via `LLMReasoningEngine`, and evaluates the governance gate:
   $$\text{Requires Approval} = (\text{Cost} > \$500) \lor \text{QA Hold} \lor (\text{SLA Penalty} > \$1,000)$$
 - **Input Parameters:** `state (O2CAgentState)`.
 - **Output Return Type:** `Dict[str, Any]` updating `final_decision`, `requires_human_approval`, `approval_reason`, and `audit_trail`.
 
-##### 6. `action_execution_node(state: O2CAgentState) -> Dict[str, Any]`
-- **Purpose:** Node 6A: Safe autonomous execution branch ($\le \$500$). Invokes `SAPActionExecutor` to write back confirmed dates (`VDATU`), apply delivery blocks (`LIFSK = '01'`), and post carrier debit memos.
+##### 7. `pre_execution_guardrail_node(state: O2CAgentState) -> Dict[str, Any]`
+- **Purpose:** Node 7: Metacognitive pre-execution verification verifying 4 constitutional corporate policies (Budget $\le \$500$, Cold-Chain QA $\ge 48$h, Telematics Integrity, and SLA limits).
+- **Input Parameters:** `state (O2CAgentState)`.
+- **Output Return Type:** `Dict[str, Any]` updating `guardrail_status`, `guardrail_violations`, and `audit_trail`.
+
+##### 8. `guardrail_reflection_router(state: O2CAgentState) -> str`
+- **Purpose:** Conditional router edge. If guardrails fail, routes back to `inter_agent_negotiation` with violation feedback; if passed, evaluates governance gate (`action_execution_node` vs `human_approval_checkpoint`).
+- **Input Parameters:** `state (O2CAgentState)`.
+- **Output Return Type:** `str` (`"inter_agent_negotiation"`, `"action_execution_node"`, or `"human_approval_checkpoint"`).
+
+##### 9. `action_execution_node(state: O2CAgentState) -> Dict[str, Any]`
+- **Purpose:** Node 8: Safe autonomous execution branch ($\le \$500$). Invokes `SAPActionExecutor` to write back confirmed dates (`VDATU`), apply delivery blocks (`LIFSK = '01'`), and post carrier debit memos.
 - **Input Parameters:** `state (O2CAgentState)`.
 - **Output Return Type:** `Dict[str, Any]` updating `executed_erp_actions` and `audit_trail`.
 
-##### 7. `human_approval_checkpoint(state: O2CAgentState) -> Dict[str, Any]`
-- **Purpose:** Node 6B: High-risk governance branch ($> \$500$ or QA Hold). Invokes `MSTeamsDispatcher` to format and dispatch interactive Adaptive Cards (v1.4) with a 2-hour response SLA.
+##### 10. `human_approval_checkpoint(state: O2CAgentState) -> Dict[str, Any]`
+- **Purpose:** Node 9: High-risk governance branch ($> \$500$ or QA Hold). Invokes `MSTeamsDispatcher` to format and dispatch interactive Adaptive Cards (v1.4) with a 2-hour response SLA.
 - **Input Parameters:** `state (O2CAgentState)`.
 - **Output Return Type:** `Dict[str, Any]` updating `escalation_payload` and `audit_trail`.
 
-##### 8. `route_by_governance(state: O2CAgentState) -> str`
-- **Purpose:** Conditional edge function evaluating `state["requires_human_approval"]` to route execution between `action_execution_node` and `human_approval_checkpoint`.
-- **Input Parameters:** `state (O2CAgentState)`.
-- **Output Return Type:** `str` (`"action_execution_node"` or `"human_approval_checkpoint"`).
-
-##### 9. `create_o2c_agentic_graph() -> StateGraph`
-- **Purpose:** Builds and compiles the LangGraph StateGraph instance with all 7 nodes, sequential edges, and conditional governance routing.
+##### 11. `create_o2c_agentic_graph() -> StateGraph`
+- **Purpose:** Builds and compiles the LangGraph StateGraph instance with all 9 nodes, Fast-Track conditional routing, guardrail reflection edges, and conditional governance routing.
 - **Input Parameters:** None.
 - **Output Return Type:** `StateGraph`.
 
-##### 10. `run_order_graph(order_id: str, prediction_payload: Dict[str, Any], order_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]`
+##### 12. `run_order_graph(order_id: str, prediction_payload: Dict[str, Any], order_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]`
 - **Purpose:** High-level execution entry point. Initializes `O2CAgentState`, executes the compiled LangGraph workflow with thread-safe `MemorySaver` checkpointing, and returns the complete terminal state.
 - **Input Parameters:** `order_id (str)`, `prediction_payload (Dict)`, `order_data (Dict | None)`.
 - **Output Return Type:** `Dict[str, Any]` — Complete terminal graph state.
@@ -1829,16 +1922,100 @@ class O2CAgentState(TypedDict):
 
 ---
 
+### Module 16: `modules/incident_memory.py`
+**File Location:** `d:\Progamming\O2C_AI\modules\incident_memory.py`  
+**Classes:** `EpisodicMemoryStore`, `IncidentResolutionRecord`  
+**Purpose (ChromaDB Episodic Supply Chain Incident Memory):** Provides persistent vector storage and semantic retrieval for historical supply chain incident resolutions, Force Majeure adjudications, and carrier performance disputes, enabling active cognitive precedent reflection.
+
+#### Class 1: `EpisodicMemoryStore`
+**Purpose:** Manages the embedded ChromaDB collection and sentence embeddings for incident precedents.
+
+##### Functions in `EpisodicMemoryStore`:
+##### 1. `__init__(self, persist_dir: Optional[Path] = None, collection_name: str = "o2c_incident_resolutions")`
+- **Purpose:** Initializes the ChromaDB persistent client, instantiates the `SentenceTransformer("all-MiniLM-L6-v2")` dense embedding model, and creates or retrieves the `o2c_incident_resolutions` collection.
+- **Input Parameters:** `persist_dir (Path | None)`, `collection_name (str)`.
+- **Output Return Type:** None.
+##### 2. `seed_default_precedents(self) -> None`
+- **Purpose:** Seeds 5 authoritative supply chain historical precedents covering monsoon flooding, driver strikes, cold-chain temperature spikes, port gate lockouts, and telematics disconnects into ChromaDB.
+- **Input Parameters:** None.
+- **Output Return Type:** None.
+##### 3. `record_incident_resolution(self, order_id: str, carrier_name: str, origin_hub: str, dest_city: str, disruption_types: List[str], delay_hours: float, customer_tier: str, root_cause_narrative: str, mitigation_action: str, financial_impact_saved_usd: float, legal_precedent_invoked: str, human_approved: bool = True) -> str`
+- **Purpose:** Indexes newly resolved disruption cases into ChromaDB with rich metadata and full contextual narratives for future case precedent retrieval.
+- **Input Parameters:** Order ID, carrier, route hubs, disruption categories, delay hours, tier, root-cause text, mitigation action, savings, legal clause, approval status.
+- **Output Return Type:** `str` — Generated ChromaDB document ID.
+##### 4. `query_precedents(self, query_text: str, carrier_name: Optional[str] = None, dest_city: Optional[str] = None, top_k: int = 3) -> List[Dict[str, Any]]`
+- **Purpose:** Performs semantic cosine-distance vector search across historical incident precedents with optional carrier and destination metadata filters.
+- **Input Parameters:** `query_text (str)`, `carrier_name (str | None)`, `dest_city (str | None)`, `top_k (int)`.
+- **Output Return Type:** `List[Dict[str, Any]]` — Ranked precedent records with similarity distance metrics.
+##### 5. `reflect_on_precedents(self, query_hypothesis: str, carrier_name: Optional[str] = None, dest_city: Optional[str] = None, current_hazard: str = "", top_k: int = 2) -> List[Dict[str, Any]]`
+- **Purpose:** Formulates structured cognitive precedent reflections synthesizing `precedent_id`, `similarity_score`, `factual_analogy`, `variance_justification`, and governing `legal_operational_clause` citations.
+- **Input Parameters:** `query_hypothesis (str)`, `carrier_name (str | None)`, `dest_city (str | None)`, `current_hazard (str)`, `top_k (int)`.
+- **Output Return Type:** `List[Dict[str, Any]]` — Structured reflections for multi-agent reasoning.
+##### 6. `get_stats(self) -> Dict[str, Any]`
+- **Purpose:** Returns total indexed incident count and physical vector database storage directory.
+- **Input Parameters:** None.
+- **Output Return Type:** `Dict[str, Any]`.
+
+---
+
+### Module 17: `modules/agent_daemon.py`
+**File Location:** `d:\Progamming\O2C_AI\modules\agent_daemon.py`  
+**Classes & Models:** `OrderEventPayload`, `HumanApprovalPayload`, `HumanCollaborationPayload`, `FastAPI Application`  
+**Purpose (Event-Driven Agent Daemon Microservice):** Asynchronous high-throughput REST API microservice exposing event-driven webhook ingestion, human-in-the-loop card callbacks, bidirectional conversational human collaboration, and local GPU VRAM concurrency throttling.
+
+#### Functions in `modules/agent_daemon.py`:
+
+##### 1. `throttled_llm_invoke(coro)`
+- **Purpose:** Wraps asynchronous LLM calls within `_gpu_llm_semaphore = asyncio.Semaphore(2)`, guaranteeing that no more than 2 concurrent inference sessions run simultaneously on the AMD Radeon RX 6600 GPU.
+- **Input Parameters:** `coro (Coroutine)`.
+- **Output Return Type:** Coroutine result.
+- **How it helps the data:** Prevents Vulkan context thrashing and keeps active VRAM strictly $<7.2$ GB.
+
+##### 2. `GET /api/v1/health -> Dict[str, Any]`
+- **Purpose:** System readiness health check returning operational status of SQLite database connection pool, ChromaDB episodic memory records, and local Ollama GPU inference server.
+- **Input Parameters:** None.
+- **Output Return Type:** `Dict[str, Any]`.
+
+##### 3. `POST /api/v1/order-event -> Dict[str, Any]`
+- **Purpose:** Webhook endpoint ingesting live order events. Applies Dynamic Supervisor Routing: routes low-risk orders ($P < 0.35$) via Fast-Track to instant ERP commit in $<5$ms, or initiates full LangGraph multi-specialist investigation.
+- **Input Parameters:** `OrderEventPayload (order_id, carrier_name, origin_hub, dest_city, promised_date, total_weight_kg, has_specialty_diet, customer_tier)`.
+- **Output Return Type:** `Dict[str, Any]` — Execution result and routing status.
+
+##### 4. `POST /api/v1/approval/{order_id} -> Dict[str, Any]`
+- **Purpose:** Human-in-the-loop callback endpoint for Regional Logistics Director sign-off from MS Teams Adaptive Cards (`APPROVED` vs `REJECTED`), executing pending ERP write-backs.
+- **Input Parameters:** `order_id (str)`, `HumanApprovalPayload (decision, approver_name, comments)`.
+- **Output Return Type:** `Dict[str, Any]` — Updated approval status and ERP execution log.
+
+##### 5. `POST /api/v1/orders/{order_id}/collaborate -> Dict[str, Any]`
+- **Purpose:** Bidirectional Conversational HITL endpoint. Ingests natural language directives from logistics directors, resumes LangGraph checkpointed state, triggers dynamic re-planning, and updates the SQLite audit log.
+- **Input Parameters:** `order_id (str)`, `HumanCollaborationPayload (manager_id, instruction, authorized_budget_override, force_mode)`.
+- **Output Return Type:** `Dict[str, Any]` — Re-planned actions, updated costs, and conversational response.
+
+##### 6. `GET /api/v1/orders/{order_id}/audit -> Dict[str, Any]`
+- **Purpose:** Queries SQLite to retrieve the complete immutable audit trail of automated actions, specialist findings, and human approvals for an order.
+- **Input Parameters:** `order_id (str)`.
+- **Output Return Type:** `Dict[str, Any]` — Ordered list of timestamped audit events.
+
+##### 7. `run_daemon(host: str = "0.0.0.0", port: int = 8000) -> None`
+- **Purpose:** Starts the Uvicorn ASGI server hosting the FastAPI agent daemon.
+- **Input Parameters:** `host (str)`, `port (int)`.
+- **Output Return Type:** None.
+
+---
+
 ### 4.4 Tier 3 Data Summary Matrix
 
 | Module / Component | Primary Input Data | Core Transformation / Function | Output Artifact | Downstream Consumer |
 |---|---|---|---|---|
-| **`modules/agent_tools.py`** | 7 Function Calls with Pydantic Argument Schemas | Deterministic DB, Weather, Strike, RAG, SLA, ERP, and Teams Tool Execution | Structured Dict payloads | ReAct Specialists & LangGraph Nodes |
-| **`modules/agent_specialists.py` (RouteSupervisor)** | Prediction payload & telematics status | GPS signal loss detection & speed feasibility check via tools | `RouteAnalysisOutput` (\$200 penalty, corridor hazards) | `contract_adjudicator` & Graph State |
-| **`modules/agent_specialists.py` (ContractAdjudicator)** | Route analysis, clinic notice flag, SLA tier | Multi-tier penalty math & Force Majeure waiver verification | `ContractAdjudicationOutput` (SLA penalty, carrier chargeback) | `quality_mitigation` & `action_execution_node` |
-| **`modules/agent_specialists.py` (QualityMitigation)** | Specialty diet flag, delay hours, shelf-life | Authorizes \$1,000 Air Freight & QA holds; evaluates \$500 approval gate | `QualityMitigationOutput` (mitigation actions, approval status) | `consensus_debate` & Action Nodes |
+| **`modules/agent_tools.py`** | 9 Function Calls with Pydantic Argument Schemas | Deterministic DB, Weather, Strike, RAG, SLA, ERP, Precedent, and Simulation Execution | Structured Dict payloads | ReAct Specialists & LangGraph Nodes |
+| **`modules/agent_specialists.py` (RouteSupervisor)** | Prediction payload & telematics status | Autonomous ReAct tool calling (`create_react_agent`) & GPS audit | `RouteAnalysisOutput` (\$200 penalty, corridor hazards, tools invoked) | `contract_adjudicator` & Graph State |
+| **`modules/agent_specialists.py` (ContractAdjudicator)** | Route analysis, clinic notice flag, SLA tier | Precedent citation, multi-tier penalty math & Force Majeure waiver | `ContractAdjudicationOutput` (SLA penalty, carrier chargeback) | `quality_mitigation` & `inter_agent_negotiation` |
+| **`modules/agent_specialists.py` (QualityMitigation)** | Specialty diet flag, delay hours, shelf-life | Authorizes \$1,000 Air Freight & QA holds; evaluates \$500 approval gate | `QualityMitigationOutput` (mitigation actions, approval status) | `inter_agent_negotiation` & Action Nodes |
+| **`modules/agent_specialists.py` (Debate Subgraph)** | Specialist proposals & conflicting constraints | Compiled LangGraph debate sub-graph with semantic arbiter convergence ($\ge 0.85$) | `NegotiationOutcome` (compromise package) | `consensus_debate` & Guardrails |
 | **`modules/agent_specialists.py` (LLMReasoning)** | Math + Rules + Master Data + RAG citations | Multi-model prompt construction & local Qwen2.5 / Databricks synthesis | `executive_decision_brief` string | Executive Reports & Teams Cards |
-| **`modules/agentic_graph.py`** | `O2CAgentState` & Prediction payload | 7-node collaborative cyclic graph with `MemorySaver` checkpointing | Complete terminal state & execution path | `AgenticOrchestrator` & Audit Logs |
+| **`modules/agentic_graph.py`** | `O2CAgentState` & Prediction payload | 9-node collaborative state graph, Fast-Track routing, Pre-Execution Guardrails | Complete terminal state & execution path | `AgenticOrchestrator` & Audit Logs |
+| **`modules/incident_memory.py`** | Supply chain incident records & queries | ChromaDB vector storage, semantic search & active cognitive reflection | `CognitivePrecedentReflection` records | Specialist Agents & Legal Adjudication |
+| **`modules/agent_daemon.py`** | Streaming order events & natural language directives | FastAPI microservice, Webhooks, Conversational HITL re-planning, GPU Semaphore(2) | Real-time JSON responses & SQLite audit logs | Enterprise TMS/ERP & Logistics Managers |
 | **`modules/action_execution_engine.py` (ERP Interface)** | ERP write-back requests | Pluggable abstraction (`SQLiteSAPMockAdapter` / `SAPODataAdapter`) | `sap_action_audit_log` & `carrier_debit_memos` | SAP ERP System & Financial Ledgers |
 | **`modules/action_execution_engine.py` (TeamsDispatcher)** | High-value escalation data (> \$500 expense or QA hold) | Schema-compliant Adaptive Card JSON generation (v1.4) | `reports/ms_teams_cards/teams_card_order_*.json` | Regional Logistics Director (MS Teams) |
 | **`modules/action_execution_engine.py` (ClinicNotifier)** | Order ID, Clinic name, City, ETA, Root causes | Generates early warning & logs timestamped record | `clinic_early_warnings` table & Force Majeure compliance | `ContractAdjudicatorAgent` |
@@ -1846,40 +2023,43 @@ class O2CAgentState(TypedDict):
 
 ---
 
-## SECTION V: COMPLETE END-TO-END SYSTEM INTEGRATION & VERIFICATION
+### SECTION V: COMPLETE END-TO-END SYSTEM INTEGRATION & VERIFICATION
 
 ### 5.1 The Complete End-to-End Trace: How an Order Travels Through the LangGraph Engine
 
-To understand how the entire architecture operates as a unified system, follow the complete lifecycle of distressed Order `800000000000001` across all three tiers:
+To understand how the entire architecture operates as a unified system, follow the complete lifecycle of distressed Order `800000000000001` across all three tiers with true cognitive autonomy:
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant Ext as Tier 1: Real-Time Ingestion (Open-Meteo & RSS)
-    participant Feat as Tier 2: Feature Store & RAG Core
+    participant Feat as Tier 2: Feature Store, RAG Core & ChromaDB
     participant Graph as Tier 3: LangGraph Multi-Agent State Machine
     participant ERP as Tier 3: ERP Action Layer (SAP & Teams)
 
-    Ext->>Ext: Ingest 41.5°C Heatwave & Highway Strike RSS (<300ms)
+    Ext->>Ext: Ingest 41.5°C Heatwave & Highway Strike RSS (under 300ms)
     Ext->>Ext: Generate Hyderabad_Weather_Protocol.docx ([RULE-W-HYD-01..04])
     Ext->>Feat: Index 909 Semantic Chunks into FAISS & BM25
     
     Feat->>Feat: MLDatabaseExtension joins 10 SAP Tables (1.803s Vectorized Load)
     Feat->>Feat: Two-Stage Hurdle Predicts: P(delay)=87.1%, Delay=67.0h (MAE: 5.63h)
     Feat->>Feat: Hybrid RAG retrieves Clause 4.2 Force Majeure & Platinum SLA
+    Feat->>Feat: EpisodicMemoryStore retrieves Precedent PREC_2025_001 (Mumbai monsoon)
     
-    Feat->>Graph: Enriched Multi-Engine Risk Payload enters LangGraph
-    Graph->>Graph: 1. supervisor_router: Order context verified, state initialized
-    Graph->>Graph: 2. route_specialist: GPS Active, 937 km corridor, weather hazard verified
+    Feat->>Graph: Enriched Multi-Engine Risk & Precedent Payload enters LangGraph
+    Graph->>Graph: 1. supervisor_router: Evaluates risk score (87.1% >= 35%); Routes to Full Investigation
+    Graph->>Graph: 2. route_specialist: ReAct autonomous agent invokes live weather, strike & Tool 9 simulation (Air saves 38.2h)
     Graph->>ERP: ClinicNotificationDispatcher: Sends proactive 12h early warning to clinic
-    Graph->>Graph: 3. contract_adjudicator: Force Majeure granted (Act of God + 12h notice) -> $1,000 SLA fee waived; $150 redelivery fee assessed
-    Graph->>Graph: 4. quality_mitigation: Specialty Diet >48h -> Authorizes $1,000 Emergency Air Freight; Sets QA Hold
-    Graph->>Graph: 5. consensus_debate: Synthesizes executive brief; Gate triggered ($1,000 > $500 & QA Hold)
+    Graph->>Graph: 3. contract_adjudicator: Precedent reflection validates 72h FM waiver; waives $1,000 SLA penalty; assesses $150 redelivery fee
+    Graph->>Graph: 4. quality_mitigation: Specialty Diet delay over 48h: Authorizes $1,000 Emergency Air Freight; Sets QA Hold
+    Graph->>Graph: 5. inter_agent_negotiation: Compiled Debate Subgraph runs generative LLM dialogue; Arbiter reaches consensus (0.90 >= 0.85)
+    Graph->>Graph: 6. consensus_debate: Synthesizes executive brief; Gate triggered (Expense $1,000 > $500 & QA Hold)
+    Graph->>Graph: 7. pre_execution_guardrail: Enforces Budget, QA, Telematics & SLA caps; Validates 4/4 constitutional policies
     
-    alt Safe Autonomous Path (Expense <= $500)
-        Graph->>ERP: 6A. action_execution_node: Direct SAP VBAK-VDATU update & AP debit memo
+    alt Safe Autonomous Path (Expense <= $500 & No QA Hold)
+        Graph->>ERP: 8. action_execution_node: Direct SAP VBAK-VDATU update & AP debit memo
     else Governance Gate Path (Expense > $500 or QA Hold)
-        Graph->>ERP: 6B. human_approval_checkpoint: Dispatches MS Teams Adaptive Card v1.4 (2h SLA)
+        Graph->>ERP: 9. human_approval_checkpoint: Dispatches MS Teams Adaptive Card v1.4 (2h SLA)
     end
     
     ERP->>ERP: SAP VBAK.LIFSK='01' (QA Hold), VBAK.VDATU=ETA, carrier_debit_memos logged
@@ -1888,7 +2068,7 @@ sequenceDiagram
 
 ---
 
-### 5.2 Master System Audit Matrix (All 15 Modules, 119+ Validated Functions)
+### 5.2 Master System Audit Matrix (All 17 Modules, 135+ Validated Functions)
 
 | Module Index | Module Name & File Location | Primary Classes & Schemas | Function Count | Operational Role | Verified Test Status |
 |:---:|---|---|:---:|---|:---:|
@@ -1899,28 +2079,34 @@ sequenceDiagram
 | **5** | [`modules/weather_policy_generator.py`](file:///d:/Progamming/O2C_AI/modules/weather_policy_generator.py) | `WeatherPolicyGenerator` | 4 functions | Generates Word weather protocols with deterministic rule IDs (`[RULE-W-*]`) | ✅ Passed (100%) |
 | **6** | [`modules/strike_intelligence_generator.py`](file:///d:/Progamming/O2C_AI/modules/strike_intelligence_generator.py) | `StrikeIntelligenceGenerator` | 4 functions | Generates Word strike briefs with deterministic rule IDs (`[RULE-S-*]`) | ✅ Passed (100%) |
 | **7** | [`modules/ml_db_extension.py`](file:///d:/Progamming/O2C_AI/modules/ml_db_extension.py) | `MLDatabaseExtension` | 7 functions | NumPy vectorized Haversine math (1.803s load), integer index map (`_order_id_to_idx`) | ✅ Passed (100%) |
-| **8** | [`modules/predictive_engine.py`](file:///d:/Progamming/O2C_AI/modules/predictive_engine.py) | `PredictiveEngine` | 10 functions | Two-Stage Hurdle ML (97.10% acc, 0.9958 ROC-AUC, 5.63h MAE), XAI feature attribution | ✅ Passed (100%) |
+| **8** | [`modules/predictive_engine.py`](file:///d:/Progamming/O2C_AI/modules/predictive_engine.py) | `PredictiveEngine` | 11 functions | Two-Stage Hurdle ML (97.10% acc, 0.9958 ROC-AUC, 5.63h MAE), XAI attribution, counterfactual simulation | ✅ Passed (100%) |
 | **9** | [`modules/rag_engine.py`](file:///d:/Progamming/O2C_AI/modules/rag_engine.py) | `DocumentLoader`, `ClauseAwareChunker`, `BM25Index`, `VectorStore`, `RAGQueryEngine`, `RAGEngine` | 23 functions | Hybrid FAISS + BM25 RRF search, `.md` format support, single `metadata.pkl` storage | ✅ Passed (100%) |
 | **10** | [`modules/ollama_service.py`](file:///d:/Progamming/O2C_AI/modules/ollama_service.py) | `OllamaService` | 3 functions | Local LLM inference (`qwen2.5:7b`), AMD Radeon RX 6600 Vulkan compute offload | ✅ Passed (100%) |
-| **11** | [`modules/agent_tools.py`](file:///d:/Progamming/O2C_AI/modules/agent_tools.py) | 7 Pydantic Schemas, Tool Functions | 7 `@tool` functions | Centralized LangChain agent tool registry for autonomous function calling | ✅ Passed (100%) |
-| **12** | [`modules/agent_specialists.py`](file:///d:/Progamming/O2C_AI/modules/agent_specialists.py) | `RouteSupervisorAgent`, `ContractAdjudicatorAgent`, `QualityMitigationAgent`, `LLMReasoningEngine` | 9 functions | Collaborative ReAct specialists with Pydantic structured output validation | ✅ Passed (100%) |
-| **13** | [`modules/agentic_graph.py`](file:///d:/Progamming/O2C_AI/modules/agentic_graph.py) | `O2CAgentState`, Graph Nodes & Routers | 10 functions | LangGraph Multi-Agent State Machine with `MemorySaver` checkpointing & governance gate | ✅ Passed (100%) |
+| **11** | [`modules/agent_tools.py`](file:///d:/Progamming/O2C_AI/modules/agent_tools.py) | 9 Pydantic Schemas, Tool Functions | 9 `@tool` functions | Centralized LangChain agent tool registry (including episodic memory & route simulation) | ✅ Passed (100%) |
+| **12** | [`modules/agent_specialists.py`](file:///d:/Progamming/O2C_AI/modules/agent_specialists.py) | `RouteSupervisorAgent`, `ContractAdjudicatorAgent`, `QualityMitigationAgent`, `LLMReasoningEngine`, Debate Subgraph | 13 functions | Autonomous ReAct investigation agent, compiled debate subgraph, precedent reflection | ✅ Passed (100%) |
+| **13** | [`modules/agentic_graph.py`](file:///d:/Progamming/O2C_AI/modules/agentic_graph.py) | `O2CAgentState`, 9 Graph Nodes & Routers | 12 functions | LangGraph 9-Node Multi-Agent State Machine with Fast-Track, Guardrails & `MemorySaver` | ✅ Passed (100%) |
 | **14** | [`modules/action_execution_engine.py`](file:///d:/Progamming/O2C_AI/modules/action_execution_engine.py) | `ERPActionInterface`, `SQLiteSAPMockAdapter`, `SAPODataAdapter`, `SAPActionExecutor`, `MSTeamsDispatcher`, `ClinicNotificationDispatcher` | 17 functions | Enterprise ERP integration layer, SAP write-backs, MS Teams Adaptive Cards v1.4 | ✅ Passed (100%) |
-| **15** | [`modules/agentic_orchestrator.py`](file:///d:/Progamming/O2C_AI/modules/agentic_orchestrator.py) | `LLMSynthesizer`, `AgenticOrchestrator` | 7 functions | Autonomous 6-stage daily operational cycle conductor and executive reporting | ✅ Passed (100%) |
+| **15** | [`modules/agentic_orchestrator.py`](file:///d:/Progamming/O2C_AI/modules/agentic_orchestrator.py) | `LLMSynthesizer`, `AgenticOrchestrator` | 7 functions | Autonomous 6-stage daily operational cycle conductor, graph synthesis, executive reporting | ✅ Passed (100%) |
+| **16** | [`modules/incident_memory.py`](file:///d:/Progamming/O2C_AI/modules/incident_memory.py) | `EpisodicMemoryStore`, `IncidentResolutionRecord` | 6 functions | ChromaDB episodic memory store, incident archiving, cognitive precedent reflection | ✅ Passed (100%) |
+| **17** | [`modules/agent_daemon.py`](file:///d:/Progamming/O2C_AI/modules/agent_daemon.py) | `FastAPI Application`, Pydantic Request Models | 8 functions | Event-driven microservice daemon, Conversational HITL (`/collaborate`), GPU Semaphore(2) | ✅ Passed (100%) |
+| **TOTAL** | **17 Modules** | **Unified Core** | **135+ Functions** | **Enterprise Order-to-Cash Logistics Governance** | 🏆 **Passed (100%)** |
 
 ---
 
-### 5.3 Hardware Optimization Profile (AMD Ryzen 3 3200G + Radeon RX 6600)
+### 5.3 Hardware Optimization Profile & Master Verification (AMD Ryzen 3 3200G + Radeon RX 6600)
 
 The entire platform is hardware-profiled and optimized for energy-efficient, edge-capable execution on consumer enterprise hardware:
 
 - **Host Processor:** AMD Ryzen 3 3200G (4 Physical Cores @ 3.6 GHz base / 4.0 GHz boost, Zen+ architecture).
 - **Dedicated Graphics / Compute Accelerator:** AMD Radeon RX 6600 (8 GB GDDR6 VRAM, RDNA 2 architecture, 128-bit memory bus @ 224 GB/s bandwidth).
-- **Compute Backend:** Ollama daemon configured with Vulkan compute offload backend, enabling full GPU layer acceleration for `qwen2.5:7b` (4.7 GB Q4_K_M GGUF) with zero cloud token egress cost.
+- **Compute Backend & Concurrency Protection:** Ollama daemon configured with Vulkan compute offload backend, enabling full GPU layer acceleration for `qwen2.5:7b` (4.7 GB Q4_K_M GGUF) with zero cloud token egress cost. Protected by `_gpu_llm_semaphore = asyncio.Semaphore(2)` in `modules/agent_daemon.py` maintaining active VRAM strictly $<7.2$ GB.
 - **System Memory Footprint:** Optimized from 850 MB down to **$<350$ MB RAM** via lightweight integer index mapping (`self._order_id_to_idx`), vectorized NumPy array slicing, and single-pickle RAG serialization.
 - **Concurrent Ingestion Latency:** Weather radar fetches across 6 major logistics hubs complete concurrently in **$<300$ milliseconds** via `ThreadPoolExecutor(max_workers=5)`.
 - **Feature Store Load Latency:** 62,299 historical ERP records processed with pure NumPy trigonometric Haversine math in **1.803 seconds** (down from 15.2 seconds).
-- **Comprehensive Verification Status:** All three test suites pass with 100% success rate:
+- **Master 31-Suite Verification Status:** All 5 enterprise test suites pass with 100% zero-error reliability:
   - `python validate_modules.py`: **7/7 Passed**
   - `python evaluation/verify_phase1_phase2.py`: **5/5 Passed**
-  - `python evaluation/verify_agent_first_pipeline.py`: **6/6 Passed**
+  - `python evaluation/verify_agent_first_pipeline.py`: **6/6 Passed**
+  - `python evaluation/verify_phase6_agent_first.py`: **6/6 Passed**
+  - `python evaluation/verify_true_autonomy.py`: **7/7 Passed**
+  - **Total Automated Test Suites:** 🏆 **31/31 Passed (100% Zero-Error Reliability)**

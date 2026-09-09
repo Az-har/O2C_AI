@@ -17,26 +17,30 @@ Traditional supply chain management systems (such as standard SAP ERP transactio
   - **Lost Carrier Chargebacks:** Without real-time telematics proof and verified meteorological data, enterprise claims against third-party logistics (3PL) freight carriers collapse during contract dispute arbitration.
 
 ### 1.2 The Proactive Closed-Loop AI Solution: Sense $\to$ Think $\to$ Act
-The O2C Delivery Risk Copilot replaces reactive manual tracking with an automated, agent-first closed-loop operational pipeline:
+The O2C Delivery Risk Copilot replaces reactive manual tracking with an automated, agent-first closed-loop operational pipeline with true cognitive autonomy:
 
 ```mermaid
 graph LR
     subgraph "1. SENSE (Real-Time Telemetry & Feeds)"
-        A1["Open-Meteo & OWM Weather Radar<br/>(Concurrent ThreadPool, <300ms)"] --> B["ACID SQLite Feature Vault<br/>(Pooled DB & Batch Inserts)"]
+        A1["Open-Meteo & OWM Weather Radar<br/>(Concurrent ThreadPool, under 300ms)"] --> B["ACID SQLite Feature Vault<br/>(Pooled DB & Batch Inserts)"]
         A2["Global News Disruption Stream<br/>(Maritime, Air, Rail, Road & Disasters)"] --> B
         A3["10 SAP ERP Business Tables<br/>(62,299 Orders, 19 Features)"] --> B
     end
 
-    subgraph "2. THINK (Dual-Engine AI Core)"
-        B --> C1["Engine A: Two-Stage Hurdle ML<br/>(97.10% Acc, 5.63h MAE, 0.9958 ROC-AUC)"]
+    subgraph "2. THINK (Dual-Engine AI Core & Memory)"
+        B --> C1["Engine A: Two-Stage Hurdle ML<br/>(97.10% Acc, 5.63h MAE, 0.9958 ROC-AUC)<br/>+ Counterfactual Simulator (Tool 9)"]
         B --> C2["Engine B: Hybrid Dense/Sparse RAG<br/>(82 Documents, 909 Chunks, FAISS + BM25)"]
-        C1 & C2 --> D["LangGraph Multi-Agent State Machine<br/>(7 Tools, ReAct Specialists, Pydantic)"]
+        B --> C3["ChromaDB Episodic Memory<br/>(Incident Vectors & Precedent Reflection)"]
+        C1 --> D["LangGraph State Machine (9 Nodes)<br/>- ReAct Autonomous Investigation Agent<br/>- Generative Debate Subgraph (Arbiter >= 0.85)<br/>- Pre-Execution Guardrail Reflection Loop"]
+        C2 --> D
+        C3 --> D
     end
 
     subgraph "3. ACT (Enterprise Closed-Loop Execution)"
         D --> E1["ERP Action Interface / Mock Adapter<br/>(VBAK-LIFSK Hold, VBAK-VDATU, BKPF Memos)"]
         D --> E2["12-Hour Proactive Clinic Notices<br/>(Preserves Statutory Force Majeure Defense)"]
         D --> E3["MS Teams Interactive Adaptive Cards<br/>(Director Approval Gate with 2-Hour SLA)"]
+        D --> E4["Event-Driven FastAPI Agent Daemon<br/>(Webhooks, Conversational HITL Re-Planning)"]
     end
 ```
 
@@ -49,15 +53,19 @@ graph LR
 | Layer | Technologies & Frameworks | Plain-English Role in the Enterprise Platform |
 |---|---|---|
 | **Programming Runtime** | Python 3.12 (64-bit) | The stable, high-performance foundation running across Windows, Linux, and Databricks cloud clusters. |
-| **Agent Orchestration** | `langgraph` (v0.2+), `langchain-core` | Cyclic state-machine graph orchestrating collaborative specialist agents, consensus debates, and checkpoints with `MemorySaver`. |
-| **Structured Output & Validation** | `pydantic` (v2.0+) | Type-safe structured output contracts ensuring zero hallucinated schemas across multi-agent handoffs (`RouteAnalysisOutput`, `ContractAdjudicationOutput`, `QualityMitigationOutput`). |
+| **Agent Orchestration** | `langgraph` (v0.2+), `langchain-core` | Cyclic state-machine graph orchestrating collaborative specialist agents, consensus debates, guardrail reflection loops, and checkpoints with `MemorySaver`. |
+| **Cognitive Autonomy** | `create_react_agent`, Debate Subgraph | Model-driven autonomous tool calling, alternating LLM persona debates (`ContractAdjudicator` vs `QualityMitigation`), and semantic arbiter convergence ($\ge 0.85$). |
+| **Episodic Incident Memory** | `chromadb` (v1.5+), SentenceTransformers | Persistent vector memory for historical supply chain incident resolutions, Force Majeure adjudications, and structured precedent reflections. |
+| **Structured Output & Validation** | `pydantic` (v2.0+) | Type-safe structured output contracts ensuring zero hallucinated schemas across multi-agent handoffs (`RouteAnalysisOutput`, `ContractAdjudicationOutput`, `QualityMitigationOutput`, `CognitivePrecedentReflection`). |
 | **Relational Feature Store** | `sqlite3`, `pandas` (v2.2+), `numpy` | Transactional database with pooled connections and vectorized NumPy trigonometric Haversine math (1.803s load time for 62,299 rows). |
-| **Two-Stage Machine Learning (Engine A)** | `scikit-learn` (v1.5+), `pickle` | The predictive core: Stage 1 `RandomForestClassifier` gate + Stage 2 `GradientBoostingRegressor` with Huber loss. |
+| **Two-Stage Machine Learning (Engine A)** | `scikit-learn` (v1.5+), `pickle` | The predictive core: Stage 1 `RandomForestClassifier` gate + Stage 2 `GradientBoostingRegressor` with Huber loss, plus what-if counterfactual simulation. |
 | **Dense Semantic Vector Store** | `faiss-cpu` (v1.8+), `sentence-transformers` | Deep-learning conceptual search engine (`all-MiniLM-L6-v2`, 384 dimensions) understanding legal context. |
 | **Sparse Lexical Search** | `rank_bm25` | Ultra-precise keyword and acronym index matching exact contract clauses (`Section 4.2`, `LIFSK = '01'`, `$500`). |
 | **Document Processing** | `python-docx`, `pypdf`, `openpyxl`, `markdown`, `re` | Ingests Word contracts, PDF regulations, Excel tariffs, and native Markdown files without XML overhead. |
 | **Streaming Sensory Ingestion** | `requests`, `beautifulsoup4`, `concurrent.futures` | High-throughput concurrent ingestion of global multimodal news and weather APIs with persistent HTTP sessions. |
 | **Local Private AI Reasoning** | Ollama Daemon (`qwen2.5:7b` / `qwen2.5:3b`) | On-premise language model running on AMD Radeon RX 6600 (8 GB VRAM Vulkan compute) with zero cloud latency and strict anti-hallucination prompts. |
+| **GPU Concurrency Guard** | `asyncio.Semaphore(2)` | Hardware governor strictly maintaining concurrent LLM inferences $\le 2$, capping VRAM consumption $<7.2$ GB. |
+| **Event-Driven Agent Daemon** | `FastAPI`, `Uvicorn`, `HTTPX` | Microservice daemon exposing `/api/v1/order-event`, `/api/v1/approval/{order_id}`, `/api/v1/orders/{order_id}/collaborate` (Conversational HITL), and SQLite audit endpoints. |
 | **ERP Enterprise Integration** | `ERPActionInterface` (`SQLiteSAPMockAdapter` & `SAPODataAdapter`) | Decoupled pluggable adapter architecture supporting simulated testing and production SAP S/4HANA OData / BAPI write-backs. |
 | **Enterprise Cloud Runtime** | Databricks WSFS Runtime | Dynamic cloud path resolution (`/Workspace/Users/*`, `/tmp/O2C_AI`, `Path.cwd()`) for scheduled cron execution. |
 | **Executive Actioning UI** | Microsoft Teams Adaptive Cards v1.4 | Interactive actionable notification cards with one-click "Approve" and "Reject" buttons for human directors. |
@@ -75,7 +83,7 @@ O2C_AI/
 │   ├── KNA1.csv, KNVV.csv            # Customer Master (Locations) & Sales Area (Tiers, Dock Hours)
 │   ├── LFA1.csv, MARA.csv            # Freight Carrier Master & Material Master (Shelf-Life, Diets)
 │
-├── modules/                          # 15 Dedicated Object-Oriented Software Modules
+├── modules/                          # 17 Dedicated Object-Oriented Software Modules
 │   ├── config.py                     # Central configuration & cross-platform dynamic root path resolution
 │   ├── database_manager.py           # Core SQLite schema, WAL mode, pooled connections, batch executemany
 │   ├── weather_service.py            # Concurrent ThreadPoolExecutor weather ingestion (<300ms) with Open-Meteo fallback
@@ -83,26 +91,32 @@ O2C_AI/
 │   ├── weather_policy_generator.py   # Compiles 6 Word regulatory weather protocols ([RULE-W-*])
 │   ├── strike_intelligence_generator.py # Compiles 17 Word transit disruption briefs ([RULE-S-*])
 │   ├── ml_db_extension.py            # Vectorized Haversine math, 10-table join, integer index memory caching
-│   ├── predictive_engine.py          # Two-Stage Hurdle ML models (97.10% Acc, 5.63h MAE), XAI attributions
+│   ├── predictive_engine.py          # Two-Stage Hurdle ML models, Huber regressor, XAI attributions, counterfactual inference
 │   ├── rag_engine.py                 # DocumentLoader (.docx/.pdf/.md), ClauseChunker, FAISS/BM25 VectorStore, Hybrid RRF
 │   ├── ollama_service.py             # Private local Qwen2.5 daemon interface on AMD RX 6600 Vulkan compute
-│   ├── agent_tools.py                # 7 LangChain @tool definitions with Pydantic typing for autonomous specialist calling
-│   ├── agent_specialists.py          # ReAct Specialists with Pydantic validation (Route, Contract, Quality, LLMReasoning)
-│   ├── agentic_graph.py              # LangGraph Multi-Agent State Machine (7 nodes, consensus debate, MemorySaver checkpointer)
+│   ├── agent_tools.py                # 9 LangChain @tool definitions with Pydantic typing for autonomous specialist calling
+│   ├── agent_specialists.py          # ReAct Autonomous Agent, LangGraph Debate Subgraph, Cognitive Precedent Reflection
+│   ├── agentic_graph.py              # LangGraph 9-node state machine (Fast-Track, Debate Subgraph, Pre-Execution Guardrails)
+│   ├── incident_memory.py            # ChromaDB episodic memory store with reflect_on_precedents for supply chain cases
+│   ├── agent_daemon.py               # FastAPI event-driven microservice daemon, Conversational HITL, GPU concurrency guard
 │   ├── action_execution_engine.py    # ERPActionInterface, SQLiteSAPMockAdapter, SAPODataAdapter, MS Teams cards, 12h notices
 │   ├── agentic_orchestrator.py       # Master 6-step autonomous daily workflow orchestrator & daily reports
 │   └── rag_evaluator.py              # Backward-compatible re-export stub (moved to evaluation/rag_evaluator.py)
 │
 ├── evaluation/                       # Engineering Evaluation & Verification Suites
 │   ├── architecture_critique.md      # Comprehensive 10-section audit resolution & optimization changelog
+│   ├── meta_prompt_agent_first.md    # Master specification for Level 4/5 cognitive autonomy and ReAct agents
 │   ├── rag_evaluator.py              # Isolated RAG benchmark evaluator (105.1% coverage, 0.505 confidence)
 │   ├── verify_phase1_phase2.py       # 5-suite verification (OSS, Ollama RX 6600 GPU, DB pool, Agent tools, LLM tool binding)
-│   └── verify_agent_first_pipeline.py# 6-suite verification (Pydantic ReAct, LangGraph, Safe Path, Teams Gate, NumPy Math)
+│   ├── verify_agent_first_pipeline.py# 6-suite verification (Pydantic ReAct, LangGraph, Safe Path, Teams Gate, NumPy Math)
+│   ├── verify_phase6_agent_first.py  # 6-suite verification (ChromaDB, Dynamic Router, Negotiation, Daemon, Specialists, Orchestrator)
+│   └── verify_true_autonomy.py       # 7-suite verification (ReAct Agent, Debate Subgraph, Tool 9, Precedents, Guardrails, HITL, GPU)
 │
 ├── india_monitor_data/               # Production Storage Vault
-│   ├── monitor.db                    # ACID SQLite Database (16 relational tables with schema migration tracking)
+│   ├── database/india_monitor.db     # ACID SQLite Database (16 relational tables with schema migration tracking)
 │   ├── models/                       # Trained ML binaries (rf_classifier.pkl, gb_regressor.pkl, feature_importances.json)
 │   ├── rag/                          # RAG knowledge corpus (82 docs), 909 chunks, and FAISS vector index
+│   ├── episodic_memory/              # ChromaDB embedded vector collection for historical supply chain incident resolutions
 │   └── reports/                      # Daily executive JSON reports and Microsoft Teams Adaptive Cards
 │
 ├── main_pipeline.py                  # Primary CLI operational entry point
@@ -142,6 +156,26 @@ O2C_AI/
   - **Pre-Compiled Alternation Regexes:** Compiled once at class definition (`COMPILED_MODE_PATTERNS`, `COMPILED_CATEGORY_PATTERNS`), eliminating repetitive in-loop regex compilations.
   - **Zero Artificial Starvation:** Eliminated artificial thread sleeping, allowing multi-threaded RSS querying to run at native wire speed.
 - **Relational Storage (`strike_news` table):** Stores article title, publisher, URL, timestamp, country, city/hub, transport mode, causal category, and NLP severity (`HIGH`, `MEDIUM`, `LOW`).
+
+---
+
+### 🧠 Deep Dive: How Sensory Ingestion Sees Highway Realities
+
+#### 1. What is Live Environmental Telemetry? (Plain English)
+- **Why It’s Needed:** An ERP system like SAP only knows internal numbers (e.g., *"Truck departed at 08:00 AM"*). It is completely blind to whether the highway 300 km ahead is currently flooded or blocked by a strike.
+- **Why Traditional Tracking Fails:** Most enterprises rely on truck drivers calling when they are *already* stuck in a 10-mile traffic jam or after medicine has spoiled in a 42°C heatwave. By then, the shipment is destroyed and customer surgeries are canceled.
+- **The Sensory Ingestion Solution:** Acts like a 24/7 radar satellite. Every morning before trucks roll out, the system sweeps live weather APIs and disruption news feeds to identify transit hazards before cargo leaves the dock.
+
+#### 2. Weather Ingestion vs. Disruption Scraping: What's the Difference?
+
+| Sensory Stream | Plain-English Analogy | What It Is Great At | Its Fatal Blindspot |
+|---|---|---|---|
+| **Live Weather Telemetry**<br/>*(Open-Meteo & OWM)* | **Like a thermometer and rain gauge on every highway.** | Catching physical environmental hazards ($>40^\circ\text{C}$ extreme heat waves, $>20\text{mm}$ cloudbursts, cyclone paths). | **Blind to human events.** A perfectly clear, sunny day can still have a 100% blocked highway if truckers are protesting at a toll plaza. |
+| **Disruption News Intelligence**<br/>*(Multimodal Ingestion)* | **Like an investigative reporter scanning police feeds, port logs, and union boards.** | Detecting human, geopolitical, and labor bottlenecks (truck strikes, customs worker walkouts, canal chokepoints). | **Blind to localized micro-climates.** A sudden flash flood on a state highway won't make national news, but it halts trucks. |
+
+#### 3. Why We Auto-Generate Regulatory Policies & Word Documents
+- Rather than leaving weather numbers in raw SQLite tables, Phase 1 automatically writes structured Microsoft Word briefs (`.docx`) for every corridor and transit mode.
+- It translates raw data into enforceable legal rules (e.g., `[RULE-W-01]`: *"If ambient temperature exceeds 40°C in Ahmedabad, perishable cold-chain shipments must halt or face QA quarantine"*), which Engine B can directly cite during arbitration.
 
 ---
 
@@ -276,15 +310,15 @@ In real-world logistics, **~80% of shipments arrive on time** ($0.0\text{ hours}
 graph TD
     A["19-Feature Input Vector"] --> B["Stage 1: RandomForestClassifier Gate<br/>(100 Trees, Depth 6, Class Weight Balanced)"]
     
-    B --> C{P(delay) >= 0.40?}
+    B --> C{"P(delay) >= 0.40?"}
     
-    C -->|No: P < 0.40| D["PREDICTED ON TIME<br/>• Delay: 0.00h (Ghost False Alarms Eliminated)<br/>• Risk: $0.00 (Stage 2 Bypassed)"]
+    C -->|"No: P < 0.40"| D["PREDICTED ON TIME<br/>- Delay: 0.00h (Ghost False Alarms Eliminated)<br/>- Risk: $0.00 (Stage 2 Bypassed)"]
     
-    C -->|Yes: P >= 0.40| E["Stage 2: Conditional Huber Regressor<br/>(GradientBoostingRegressor, loss='huber')"]
+    C -->|"Yes: P >= 0.40"| E["Stage 2: Conditional Huber Regressor<br/>(GradientBoostingRegressor, loss='huber')"]
     
     E --> F["Base Estimated Delay (>= 12.0h)"]
     
-    F --> G["Live Environmental Dynamic Modifiers<br/>• Live Severe Heat/Rain Alert: +12.0h, +0.10 P(delay)<br/>• Live Highway Strike Alert: +12.0h, +0.10 P(delay)"]
+    F --> G["Live Environmental Dynamic Modifiers<br/>- Live Severe Heat/Rain Alert: +12.0h, +0.10 P(delay)<br/>- Live Highway Strike Alert: +12.0h, +0.10 P(delay)"]
     
     G --> H["Final Calibrated Delay Hours, ETA & Risk Quantification"]
 ```
@@ -322,38 +356,67 @@ For every prediction, `explain_prediction()` translates the AI's mathematical we
 
 ---
 
+### 🧠 Deep Dive: How Engine A Predicts Delays Without False Alarms
+
+#### 1. The SAP Feature Store: Why 10 Tables Must Become 19 Features (Plain English)
+- **Why It’s Needed:** Delivery risk cannot be determined from a single column. To know if an order will be late, you must cross-reference 10 different SAP tables (Sales Headers `VBAK`, Line Items `VBAP`, Deliveries `LIKP`, Customers `KNA1`, Material Masters `MARA`, and Invoices `BKPF`).
+- **Why Traditional Querying Fails:** Running complex 10-table relational SQL joins on 60,000+ orders during a live morning dispatch causes database deadlocks and takes 15+ seconds per batch.
+- **The Feature Store Solution:** Acts like a **Formula 1 Pit Crew**. It pre-joins all relational data and computes **19 standardized features** (like required vehicle transit velocity and remaining shelf-life buffer) in 1.8 seconds using vectorized NumPy trigonometric arrays.
+
+#### 2. Single ML Regressor vs. Two-Stage Hurdle Model: What's the Difference?
+
+| Predictive Method | Plain-English Analogy | What It Is Great At | Its Fatal Blindspot |
+|---|---|---|---|
+| **Traditional Single Regressor**<br/>*(Standard Linear/Tree Model)* | **Like a thermometer that only measures the average temperature of a hospital.** | Predicting continuous numbers when data is evenly spread out. | **The Zero-Inflation Trap.** In healthy supply chains, 80%+ of shipments have **0 hours delay**. A single model averages zeros with 40-hour delays, hallucinating a **5.8-hour "ghost delay" on perfectly on-time orders!** |
+| **Two-Stage Hurdle Architecture**<br/>*(Classifier Gatekeeper + Conditional Huber Regressor)* | **Like a Bouncer paired with a Stopwatch.** | Eliminating false alarms while accurately measuring real delays. | Requires two distinct training pipelines, but completely eliminates ghost delays on on-time shipments. |
+
+#### 3. Why the "Hurdle" Architecture is Essential
+1. **Stage 1 (The Bouncer - Classification):** Asks: *"Will this order suffer a delay? Yes or No?"* If the probability is under 40%, the order stops right here. The delay is locked at strictly **$0.00\text{ hours}$**, and the order fast-tracks with zero false alarms.
+2. **Stage 2 (The Stopwatch - Regression):** Only orders that clear Hurdle 1 (flagged as delayed) are handed to the Stage 2 Huber Regressor, which asks: *"Exactly how many hours will this delay last?"*
+3. **Dynamic Post-ML Modifiers:** Historical models cannot know about this morning's flash storm. Dynamic modifiers bridge history and reality by adding $+12.0\text{ hours}$ and $+0.10$ probability if live Phase 1 sensors detect severe weather or highway protests.
+
+---
+
 ### Phase 4: LangGraph Multi-Agent Orchestration State Machine (`modules/agentic_graph.py`)
 
 The platform replaces procedural scripting with a true **Agent-First State Machine** engineered on **LangGraph** with cyclic flow, thread-safe `MemorySaver` checkpointing, autonomous ReAct specialists, and strict Pydantic structured output validation.
 
 ```mermaid
 graph TD
-    START --> Node1["1. supervisor_router<br/>(Inspects order context & telemetry)"]
-    Node1 --> Node2["2. route_specialist<br/>(GPS integrity, $200 blind penalty, corridor hazards)"]
+    startNode(["START"]) --> Node1["1. supervisor_router<br/>(Inspects order context, telemetry & risk score)"]
+    
+    Node1 -->|"P(delay) < 0.35 & On-Schedule: Fast-Track"| Node8["8. action_execution_node<br/>(Instant Autonomous ERP Commit, under 5ms)"]
+    Node1 -->|"P(delay) >= 0.35 or Disrupted: Full Investigation"| Node2["2. route_specialist<br/>(ReAct Autonomous Agent: Live Tools & Telematics Audit)"]
+    
     Node2 --> Node3["3. contract_adjudicator<br/>(Tiered SLA calculation, 12h notice, 72h FM waiver)"]
-    Node3 --> Node4["4. quality_mitigation<br/>(MHDRZ shelf-life, QA hold '01', $1000 air pallet)"]
-    Node4 --> Node5["5. consensus_debate<br/>(Trade-off synthesis & governance evaluation)"]
+    Node3 --> Node4["4. quality_mitigation<br/>(MHDRZ shelf-life, QA hold '01', $1,000 air pallet)"]
+    Node4 --> Node5["5. inter_agent_negotiation<br/>(Compiled LangGraph Debate Subgraph: Generative LLM & Arbiter >= 0.85)"]
+    Node5 --> Node6["6. consensus_debate<br/>(Trade-off synthesis & governance evaluation)"]
+    Node6 --> Node7["7. pre_execution_guardrail<br/>(Metacognitive Constitutional Policy Verification)"]
     
-    Node5 --> Check{"Governance Gate<br/>Cost > $500 or QA Hold?"}
+    Node7 -->|"Policy Violation: Self-Correction Loop"| Node5
+    Node7 -->|"Guardrails Passed"| Check{"Governance Gate<br/>Cost > $500 or QA Hold?"}
     
-    Check -->|No: Expense <= $500| Node6A["6A. action_execution_node<br/>(Autonomous ERP Write-Backs)"]
-    Check -->|Yes: High Expense or QA Hold| Node6B["6B. human_approval_checkpoint<br/>(MS Teams Adaptive Card v1.4, 2h SLA)"]
+    Check -->|"No: Expense <= $500 & No QA Hold"| Node8
+    Check -->|"Yes: High Expense or QA Hold"| Node9["9. human_approval_checkpoint<br/>(MS Teams Adaptive Card v1.4, 2h SLA)"]
     
-    Node6A --> END
-    Node6B --> END
+    Node8 --> endNode(["END"])
+    Node9 --> endNode(["END"])
 ```
 
-#### 1. The 7 Collaborative LangGraph Nodes:
-1. **`supervisor_router`:** Inspects incoming ERP order context, customer tier, and machine learning risk payload; initializes immutable graph state.
-2. **`route_specialist` (`RouteSupervisorAgent`):** Audits GPS telematics continuity (assesses \$200 blind-tracking penalty if disconnected $>12$h), validates transit speeds ($\le 55\text{ km/h}$), and queries live corridor weather and strike hazards. Emits validated `RouteAnalysisOutput`.
-3. **`contract_adjudicator` (`ContractAdjudicatorAgent`):** Adjudicates Master Service Agreements (MSAs). Verifies proactive 12-hour customer early warning credit (50% penalty discount), tests statutory Force Majeure criteria under Clause 4.2 / 8.4 (100% penalty waiver), and assesses \$150 receiving dock overtime fees. Emits validated `ContractAdjudicationOutput`.
+#### 1. The 9 Collaborative LangGraph Nodes:
+1. **`supervisor_router`:** Inspects incoming ERP order context, customer tier, and machine learning risk payload. If an order is low-risk ($P < 0.35$, zero transit hazards), it autonomously routes directly to Fast-Track ERP execution in $<5$ms; otherwise, it triggers deep multi-specialist investigation.
+2. **`route_specialist` (`RouteSupervisorAgent`):** Model-driven ReAct investigation agent (`build_autonomous_investigation_agent`). Dynamically queries live corridor weather, multimodal strike alerts, episodic incident memory, and counterfactual simulation tools.
+3. **`contract_adjudicator` (`ContractAdjudicatorAgent`):** Adjudicates Master Service Agreements (MSAs). Cites episodic memory reflections, verifies proactive 12-hour customer early warning credits (50% discount), evaluates statutory Force Majeure criteria under Clause 4.2 / 8.4 (100% waiver), and assesses \$150 receiving dock overtime fees. Emits validated `ContractAdjudicationOutput`.
 4. **`quality_mitigation` (`QualityMitigationAgent`):** Evaluates perishable prescription diet stock-out risks. Mandates SAP Delivery Block (`VBAK-LIFSK = '01'`) for thermal excursions ($>40^\circ\text{C}$) or shelf-life decay ($<6$ months). Evaluates emergency air freight pallets (\$1,000 cap). Emits validated `QualityMitigationOutput`.
-5. **`consensus_debate` (`LLMReasoningEngine`):** Multi-agent trade-off debate balancing SLA liabilities, air freight expenses, and QA holds to synthesize a unified executive brief. Evaluates governance thresholds: flags `requires_human_approval = True` if expense exceeds \$500 or QA quarantine is triggered.
-6. **`action_execution_node`:** Autonomous execution path for safe operational actions ($\le \$500$). Invokes `SAPActionExecutor` to write back confirmed dates and carrier chargebacks.
-7. **`human_approval_checkpoint`:** High-risk governance gate. Dispatches interactive Microsoft Teams Adaptive Cards (v1.4) with one-click approval buttons and enforces a 2-hour executive SLA.
+5. **`inter_agent_negotiation`:** Executes the compiled LangGraph debate sub-graph (`create_inter_agent_debate_subgraph`). Alternates generative LLM turns between `ContractAdjudicator` and `QualityMitigation` personas and ratifies compromise packages via semantic arbiter convergence ($\ge 0.85$).
+6. **`consensus_debate` (`LLMReasoningEngine`):** Multi-agent trade-off debate balancing SLA liabilities, air freight expenses, and QA holds to synthesize a unified executive brief. Evaluates governance thresholds: flags `requires_human_approval = True` if expense exceeds \$500 or QA quarantine is triggered.
+7. **`pre_execution_guardrail`:** Metacognitive pre-execution verification node. Verifies budget limits ($\le \$500$), cold-chain quality holds ($\ge 48$h), telematics integrity (no FM waiver if signal disconnected $>12$h), and contract SLA caps. Routes policy violations back to negotiation in a self-correcting feedback loop.
+8. **`action_execution_node`:** Autonomous execution path for safe operational actions ($\le \$500$). Invokes `SAPActionExecutor` to write back confirmed dates and carrier chargebacks.
+9. **`human_approval_checkpoint`:** High-risk governance gate. Dispatches interactive Microsoft Teams Adaptive Cards (v1.4) with one-click approval buttons and enforces a 2-hour executive SLA.
 
 #### 2. Centralized LangChain Agent Tool Registry (`modules/agent_tools.py`)
-All specialists invoke tools via 7 LangChain `@tool` functions backed by strict Pydantic argument schemas:
+All specialists invoke tools via 9 LangChain `@tool` functions backed by strict Pydantic argument schemas:
 1. `query_sap_order`: Retrieves live ERP customer details, tier, carrier, and line items.
 2. `fetch_corridor_weather`: Inspects real-time thermal hazards ($>40^\circ\text{C}$) and storm precipitation.
 3. `fetch_strike_alerts`: Queries multimodal disruptions (maritime, canal, air, rail, road, customs).
@@ -361,6 +424,33 @@ All specialists invoke tools via 7 LangChain `@tool` functions backed by strict 
 5. `calculate_adjudicated_sla`: Deterministically computes SLA late fees and Force Majeure credits.
 6. `post_sap_block_or_date`: Executes simulated or live SAP S/4HANA delivery blocks (`01`) and ETA reschedules.
 7. `dispatch_teams_approval_card`: Generates Microsoft Teams Adaptive Card v1.4 payloads with approval actions.
+8. `query_historical_incident_memory`: Queries ChromaDB episodic memory for precedent dispute resolutions.
+9. `simulate_alternative_route_risk`: Executes counterfactual what-if simulations against Engine A's Two-Stage Hurdle model to evaluate alternative carriers, modes, and schedule shifts with quantitative delay and cost deltas.
+
+---
+
+### 🧠 Deep Dive: How the Multi-Agent Courtroom Debates Supply Chain Crises
+
+#### 1. Why Multi-Agent Systems? (Plain English)
+- **Why It’s Needed:** A delayed order creates conflicting corporate priorities:
+  - **Logistics** wants to move cargo as fast as possible.
+  - **Legal/Finance** wants to charge the carrier late fees while shielding the company from customer penalties.
+  - **Quality Assurance** is terrified that heat exposure will spoil vaccines or pet food.
+- **Why Single AI Prompts Fail:** A single monolithic prompt tries to please everyone at once, resulting in hallucinations, ignored contract clauses, or dangerous compromises (e.g., speeding up delivery but delivering spoiled medication).
+- **The Multi-Agent Solution:** Creates a **Virtual Boardroom of Specialized Personas** that cross-examine each other in a structured debate before executing any action.
+
+#### 2. The Specialist Personas: Who Fights for What?
+
+| Specialist Persona | Real-World Role | What It Fights For | How It Investigates (Tools Used) |
+|---|---|---|---|
+| **`RouteSupervisorAgent`** | **The Fleet Inspector** | Transit physics, highway hazards, and telematics integrity. | • `fetch_corridor_weather`<br>• `fetch_strike_alerts`<br>• Levies **$200 telematics disconnect fine** if GPS signal lost $>12$h. |
+| **`ContractAdjudicatorAgent`** | **The Corporate Attorney** | Enforcing carrier contracts, claiming SLA credits, and applying Force Majeure waivers. | • `query_rag_contracts`<br>• `calculate_adjudicated_sla`<br>• Cites **Clause 4.2 Force Majeure** (100% waiver if 12h notice given). |
+| **`QualityMitigationAgent`** | **The Chief Pharmacist** | Product shelf-life, cold-chain integrity, and patient/pet safety. | • Inspects `MHDRZ` shelf-life buffers.<br>• Mandates **SAP Delivery Block `LIFSK = '01'`** (QA quarantine) if temp $>40^\circ\text{C}$. |
+| **`Arbiter Debate Subgraph`** | **The Supreme Court Judge** | Synthesizing an unassailable executive verdict backed by company precedent. | • Generative multi-turn LLM debate.<br>• Requires semantic consensus score **$\ge 0.85$** before actioning. |
+
+#### 3. Fast-Track vs. Full Investigation: Why We Don't Over-Think Every Order
+- **Fast-Track (Under 5ms):** 80%+ of shipments have low delay probability ($P < 0.35$) and clear corridors. The `supervisor_router` bypasses expensive LLM debate entirely, saving compute and completing in milliseconds.
+- **Full Investigation:** High-risk orders enter the full 9-node LangGraph state machine where specialists debate, simulate alternative routes, and generate audit-proof action packages.
 
 ---
 
@@ -383,6 +473,101 @@ The action execution layer bridges intelligence to operational enterprise system
    - Dispatches proactive early warning letters to receiving veterinary clinics detailing revised arrival windows, satisfying the statutory 12-hour requirement for Force Majeure late fee waivers.
 5. **Decoupled Database Architecture:**
    - Uses dependency injection (`db_manager: Optional[DatabaseManager]`) ensuring centralized connection pooling, WAL concurrency, and zero leaked file handles.
+
+---
+
+### 🧠 Deep Dive: How Closed-Loop Actions Protect the Business
+
+#### 1. What is Closed-Loop Execution? (Plain English)
+- **Why It’s Needed:** An AI that only sends email alerts or generates charts on a dashboard is incomplete. If an alert fires at 2:00 AM on Sunday, but nobody logs in until 9:00 AM on Monday, the spoiled medication has already reached the clinic dock.
+- **Why Dashboards Fail (Dashboard Fatigue):** Supply chain operators receive hundreds of automated alerts daily and suffer from alert fatigue. Alerts sit unread.
+- **The Closed-Loop Solution:** Gives the AI secure, authorized "hands" to write directly into SAP S/4HANA to lock bad shipments, update customer delivery dates, and debit negligent carriers automatically.
+
+#### 2. The 3 Core Autonomous Actions: What Happens in SAP?
+
+| Action Taken | Target SAP Table | What It Does Under the Hood | Operational & Financial Consequence |
+|---|---|---|---|
+| **Delivery Block Posting** | `VBAK-LIFSK = '01'` | Flips sales order status to **QA Quarantine Hold**. | Physically locks the warehouse staging bay, preventing spoiled or heat-damaged inventory from leaving the dock. |
+| **Promised Date Update** | `VBAK-VDATU` | Re-calculates and writes the updated ETA into the customer's sales order. | Prevents automatic breach-of-contract penalties and realigns hospital surgical schedules. |
+| **AP Carrier Debit Memo** | `SAP_BKPF` / `carrier_debit_memos` | Posts a financial deduction against the carrier's pending freight payout. | Automatically recovers $200 telematics fines or contractual late fees without months of manual dispute claims. |
+
+#### 3. The Safety Net: Human-in-the-Loop (HITL) via Microsoft Teams
+- **Low-Risk ($\le \$500$):** Standard ETA reschedules and $200 telematics fines execute **fully autonomously**.
+- **High-Risk ($> \$500$ or QA Spoilage):** Generates an interactive **Microsoft Teams Adaptive Card (v1.4)** with one-click **[Approve]** and **[Reject]** buttons for operations directors.
+- **The 2-Hour SLA:** If an executive does not respond within 2 hours, the platform automatically defaults to the safest pre-approved legal action to prevent supply chain paralysis.
+
+---
+
+### Phase 6: Level 4 Agent-First Autonomous Multi-Agent Architecture
+
+Phase 6 transitioned the platform from a scheduled batch pipeline into an event-driven, memory-augmented multi-agent system:
+
+1. **ChromaDB Episodic Incident Memory Store (`modules/incident_memory.py`):**
+   - Embedded local vector store indexing historical supply chain incident resolutions, Force Majeure disputes, and carrier contract claims.
+   - Enables agents to query historical precedents using semantic embeddings (`all-MiniLM-L6-v2`) via Tool 8 (`query_historical_incident_memory`).
+2. **Dynamic Supervisor Conditional Router (`modules/agentic_graph.py`):**
+   - Bypasses expensive multi-agent LLM reasoning for low-risk, on-schedule orders ($P < 0.35$), routing them via Fast-Track auto-approval directly to ERP commit in $<5$ms.
+   - Triggers full multi-specialist investigation only for at-risk orders.
+3. **4-Turn Inter-Agent Negotiation Protocol (`modules/agent_specialists.py`):**
+   - Structured multi-turn negotiation between `ContractAdjudicator` (carrier billing & legal liability) and `QualityMitigation` (clinical viability & air freight).
+   - Generates proposals, rationales, demands, and mutual concessions over 4 iterative rounds.
+4. **Event-Driven FastAPI Agent Daemon Microservice (`modules/agent_daemon.py`):**
+   - High-throughput REST API server exposing:
+     - `POST /api/v1/order-event`: Ingests live order telemetry from ERP/TMS message queues.
+     - `POST /api/v1/approval/{order_id}`: Human-in-the-loop callback for director sign-off on Adaptive Cards.
+     - `GET /api/v1/orders/{order_id}/audit`: Full immutable SQLite audit trail inspection.
+
+---
+
+### Phase 7: Level 4/5 True Cognitive Autonomy Implementation
+
+Phase 7 resolved the Level 3 "Simulated Agency" critique by implementing true cognitive autonomy across 7 architectural pillars:
+
+1. **Multi-Turn Generative LLM Dialogue & Semantic Arbiter Convergence:**
+   - Implemented compiled LangGraph debate sub-graph (`create_inter_agent_debate_subgraph`) in `modules/agent_specialists.py`.
+   - Replaced scripted f-strings with dynamic persona generation powered by `ChatOllama(model="qwen2.5:7b")`.
+   - Added `arbiter_evaluation_node` evaluating semantic convergence scores ($\ge 0.85$) to ratify compromises.
+2. **Autonomous Model-Driven ReAct Specialist Execution:**
+   - Engineered `build_autonomous_investigation_agent()` using native `langgraph.prebuilt.create_react_agent`.
+   - Specialist autonomously reasons and selects tools (`fetch_corridor_weather`, `fetch_strike_alerts`, `query_historical_incident_memory`, `query_sap_order`, `simulate_alternative_route_risk`), tracking live tool call traces (`tools_invoked`).
+3. **Interactive Counterfactual ML Simulator (Tool 9):**
+   - Registered `simulate_alternative_route_risk` allowing agents to simulate what-if scenarios (e.g., Road to Air Freight upgrade, carrier swaps, departure time offsets).
+   - Quantifies simulated delay hours saved, probability reductions, and financial penalty savings before committing mitigations.
+4. **Active Cognitive Precedent Reflection:**
+   - Implemented `EpisodicMemoryStore.reflect_on_precedents()` synthesizing structured `CognitivePrecedentReflection` records.
+   - Specialists cite specific historical precedent IDs, formulate detailed factual analogies, compute similarity scores, and provide legal variance justifications against carrier contract clauses.
+5. **Metacognitive Pre-Execution Verification Guardrails:**
+   - Implemented `pre_execution_guardrail_node` and `guardrail_reflection_router` in `modules/agentic_graph.py`.
+   - Enforces 4 constitutional policies: Budget Cap ($\le \$500$), Cold-Chain QA Quarantine ($\ge 48$h), Force Majeure Telematics Integrity, and Contract SLA Limits.
+   - Violations trigger an autonomous self-correcting reflection loop back to inter-agent negotiation.
+6. **Bidirectional Conversational Human-in-the-Loop:**
+   - Implemented `POST /api/v1/orders/{order_id}/collaborate` in `modules/agent_daemon.py`.
+   - Accepts natural language instructions from logistics directors (e.g., *"Cap emergency budget at $400 and negotiate road delivery"*), resumes LangGraph checkpointed state, triggers dynamic re-planning, and updates the audit trail.
+7. **Local GPU Concurrency Guard & VRAM Protection:**
+   - Implemented `_gpu_llm_semaphore = asyncio.Semaphore(2)` in `modules/agent_daemon.py`.
+   - Strictly limits concurrent LLM invocations to $\le 2$ slots, maintaining peak VRAM $\le 7.2$ GB on local AMD Radeon RX 6600 hardware.
+
+---
+
+### 🧠 Deep Dive: How the Copilot Remembers Past Crises & Simulates What-Ifs
+
+#### 1. Episodic Memory: Why AI Needs "Case Law" Memory (Plain English)
+- **Why It’s Needed:** Human supply chain lawyers never resolve a breach of contract from scratch. They consult corporate memory: *"In 2024, when Carrier ABC lost GPS connectivity during the Gujarat floods, how did we settle the dispute?"*
+- **Why Standard LLMs Fail:** Standard models have no institutional memory. They treat every day as Day 1 and make inconsistent, unpredictable rulings that anger freight carriers and customers.
+- **The Episodic Solution (ChromaDB):** Indexes past supply chain incidents and formal settlements into vector memory. When a crisis occurs, `reflect_on_precedents()` retrieves similar past cases, computes a similarity score, and synthesizes a structured **Cognitive Precedent Reflection** (factual analogy + legal clause) to ground today's decision in established corporate precedent.
+
+#### 2. Counterfactual Simulation (Tool 9): The Supply Chain "Time Machine"
+- Rather than guessing whether an expensive expedited reroute will solve a delay, agents invoke `simulate_alternative_route_risk`:
+  - *"What if we switch from Road (FTL) to Bluedart Air Freight and depart 4 hours earlier?"*
+  - The simulator re-evaluates the hypothetical order against Engine A's Two-Stage Hurdle models, returning exact quantitative deltas: **Saves 18.2 hours of delay, drops delay probability from 84% to 11%, and eliminates $1,200 in customer penalties.**
+
+#### 3. Metacognitive Pre-Execution Guardrails: The AI's Internal Conscience
+- Before any autonomous command touches SAP or dispatches an executive alert, Node 7 audits the proposal against 4 constitutional enterprise policies:
+  1. **Budget Cap:** Expenses must stay $\le \$500$ unless escalated to human directors.
+  2. **Cold-Chain Safety:** Any thermal delay $\ge 48$h must trigger an automatic QA quarantine hold.
+  3. **Telematics Integrity:** A carrier with disconnected GPS ($>12$h) cannot claim a Force Majeure waiver.
+  4. **Contract Caps:** Delay penalties cannot exceed contract maximums.
+- **Self-Correcting Feedback Loop:** If any policy is breached, the plan is rejected and routed back to inter-agent negotiation for autonomous self-correction.
 
 ---
 
@@ -417,35 +602,7 @@ The predictive engine was evaluated on a strict **80/20 Out-of-Sample Holdout Sp
 
 ---
 
-### 4.2 Real-World Operational Meaning of Evaluation Metrics
-
-#### 1. True Negatives ($\text{TN} = 9,834$)
-- **Plain-English Meaning:** On-time orders that were correctly predicted as on-time.
-- **Business Impact:** 9,834 shipments flowed smoothly through standard road corridors without wasting money on expensive air couriers or wasting customer service hours on unnecessary tracking calls.
-
-#### 2. True Positives ($\text{TP} = 2,230$)
-- **Plain-English Meaning:** Bottlenecked shipments that were caught days in advance.
-- **Business Impact:** 2,230 at-risk shipments were caught early, allowing proactive 12-hour clinic early warnings (saving \$500/day SLA penalties) and immediate emergency freight re-routing.
-
-#### 3. False Positives ($\text{FP} = 41$)
-- **Plain-English Meaning:** Shipments predicted delayed that would have arrived on time.
-- **Business Impact:** Represents an ultra-low false alarm rate of **$0.4\%$** ($41 / 9,875$). Operations managers are not bombarded with fake alerts, establishing deep trust in the AI system.
-
-#### 4. False Negatives ($\text{FN} = 355$)
-- **Plain-English Meaning:** Delayed shipments that the AI failed to forecast.
-- **Business Impact:** Represents sudden, unannounced black-swan events (such as immediate mechanical truck failure or sudden local accidents with no prior weather or news footprint).
-
-#### 5. Precision ($97.49\%$) vs. Recall ($86.45\%$)
-- **High Precision ($97.49\%$):** Guarantees that when the AI alerts a Regional Logistics Director, there is a $97.5\%$ probability that the operational crisis is genuine.
-- **High Recall ($86.45\%$):** Intercepts more than 86 out of every 100 distressed orders across the enterprise network.
-
-#### 6. Combined Pipeline Mean Absolute Error ($\text{MAE} = 5.63\text{ Hours}$)
-- **Plain-English Meaning:** Across all shipments, the average error between predicted delivery time and actual delivery time is just 5.6 hours.
-- **Business Impact:** Commercial veterinary clinics schedule receiving docks in half-day appointment slots ($08:00-12:00$ and $13:00-17:00$). An accuracy of 5.6 hours allows warehouse managers to reliably adjust dock schedules by a single half-day slot, eliminating dock congestion and avoiding \$150 overtime fees.
-
----
-
-### 4.3 Hybrid RAG Benchmark Results (Engine B)
+### 4.2 Hybrid RAG Benchmark Results (Engine B)
 
 Evaluated across the corporate policy corpus using automated test queries:
 
@@ -459,7 +616,7 @@ Evaluated across the corporate policy corpus using automated test queries:
 
 ---
 
-### 4.4 Hardware Optimization Profile & Verification Suite (AMD Ryzen + Radeon RX 6600)
+### 4.3 Hardware Optimization Profile & Concurrency Architecture
 
 The enterprise platform is tuned to maximize local edge execution efficiency on consumer and workstation hardware:
 
@@ -467,17 +624,22 @@ The enterprise platform is tuned to maximize local edge execution efficiency on 
 | :--- | :--- | :--- |
 | **CPU: AMD Ryzen 3 3200G** (4C / 4T) | Saturated by heavy multiprocessing. | Lightweight thread loops (`ThreadPoolExecutor(max_workers=5)` for weather, persistent HTTP sessions, vectorized NumPy array math). CPU stays responsive ($<35\%$ utilization) under full pipeline load. |
 | **RAM: 16 GB DDR4** | Budget: Userland tasks must stay $<6$ GB. | Replaced 62k dictionary clone caches with integer row mapping (`_order_id_to_idx`); deduplicated pickle writes (`metadata.pkl` only). Total active memory footprint reduced to $\approx 1.8$ GB. |
-| **GPU: AMD Radeon RX 6600** (8 GB VRAM) | Budget: 8 GB GDDR6 VRAM. | Local Ollama daemon running `qwen2.5:7b` Q4_K_M (4.7 GB) with 7.2 GiB allocatable VRAM on Vulkan compute offloading. Zero cloud latency, zero API costs, zero data exfiltration. |
+| **GPU: AMD Radeon RX 6600** (8 GB VRAM) | Budget: 8 GB GDDR6 VRAM. | Local Ollama daemon running `qwen2.5:7b` Q4_K_M (4.7 GB) with 7.2 GiB allocatable VRAM on Vulkan compute. Protected by `asyncio.Semaphore(2)` concurrency guard preventing out-of-memory errors. |
 
-#### Comprehensive Test Suite Verification
-All regression suites, module validators, and integration tests execute with a 100% pass rate:
+---
+
+### 4.4 Master 31-Suite Automated Verification Matrix
+
+All 5 enterprise test suites pass with a **100% Zero-Error Reliability rate (31/31 suites passed)**:
 
 | Test Suite / Script | Target Coverage | Status |
 | :--- | :--- | :--- |
-| **`validate_modules.py`** | 7 core verification checks (Imports, Config, DB Pool, RAG Docs, Generators, SAP Ingestion, ML Models) | ✅ **PASSED (7/7)** |
+| **`validate_modules.py`** | 7 core checks (Imports, Config, DB Pool, RAG Docs, Generators, SAP Ingestion, ML Models) | ✅ **PASSED (7/7)** |
 | **`evaluation/verify_phase1_phase2.py`** | 5 suites (OSS Packages, Ollama RX 6600 GPU, DB Decoupling, Agent Tool Registry, LLM Tool Binding) | ✅ **PASSED (5/5)** |
 | **`evaluation/verify_agent_first_pipeline.py`** | 6 suites (Pydantic ReAct Agents, LangGraph Compilation, Low-Risk Path, High-Risk Teams Approval Gate, NumPy Haversine Benchmark, Master Orchestrator Integration) | ✅ **PASSED (6/6)** |
-| **Live Order Execution (`800000000000001`)** | End-to-end multi-agent graph execution with executive brief generation and MS Teams Adaptive Card checkpoint | ✅ **PASSED** |
+| **`evaluation/verify_phase6_agent_first.py`** | 6 suites (ChromaDB Memory, Dynamic Router, Inter-Agent Negotiation, FastAPI Daemon, Specialists Memory, End-to-End Orchestrator) | ✅ **PASSED (6/6)** |
+| **`evaluation/verify_true_autonomy.py`** | 7 suites (Model-Driven ReAct Agent, Generative Debate Subgraph, Counterfactual ML Simulator, Cognitive Precedent Reflection, Metacognitive Guardrails, Conversational HITL, GPU Concurrency Guard) | ✅ **PASSED (7/7)** |
+| **TOTAL VERIFIED SUITES** | **Complete Full-System Verification** | 🏆 **PASSED (31/31)** |
 
 ---
 
@@ -492,8 +654,8 @@ python main_pipeline.py --all-orders
 # 2. Force re-prediction and re-evaluation of all orders in dataset
 python main_pipeline.py --all-orders --repredict
 
-# 3. Analyze a single specific order
-python main_pipeline.py --order 800000000000001
+# 3. Analyze a single specific order through full LangGraph state machine
+python main_pipeline.py --order 800000000000001 --agent-graph
 
 # 4. View overall summary metrics of stored predictions
 python query_results.py --summary
@@ -507,7 +669,7 @@ python query_results.py --export-md
 # 7. Export predictions to CSV spreadsheet
 python query_results.py --export-csv
 
-# 8. Run the full module validation test suite
+# 8. Run core module validation test suite
 python validate_modules.py
 
 # 9. Run Phase 1 & Phase 2 verification checks
@@ -515,6 +677,12 @@ python evaluation/verify_phase1_phase2.py
 
 # 10. Run Agent-First LangGraph pipeline verification
 python evaluation/verify_agent_first_pipeline.py
+
+# 11. Run Phase 6 Level 4 Agent-First verification
+python evaluation/verify_phase6_agent_first.py
+
+# 12. Run Phase 7 Level 4/5 True Cognitive Autonomy verification
+python evaluation/verify_true_autonomy.py
 ```
 
 ### 5.2 Databricks Cloud Execution
@@ -532,9 +700,14 @@ python evaluation/verify_agent_first_pipeline.py
 2. ✅ **Vectorized Feature Store (Engine A):** Pure NumPy trigonometric Haversine math accelerating 62,299-record processing from 15.2s down to 1.803s, paired with a lightweight integer index cache saving 150–200 MB RAM.
 3. ✅ **Two-Stage Hurdle Machine Learning:** $97.10\%$ accuracy, $0.9958$ ROC-AUC, and $5.63\text{ hours}$ MAE, completely eliminating on-time ghost false alarms.
 4. ✅ **Hybrid Dense/Sparse RAG (Engine B):** Indexes 82 documents and 909 semantic chunks with FAISS Cosine Similarity and Okapi BM25 Reciprocal Rank Fusion, with native Markdown (`.md`) support and deduplicated persistence.
-5. ✅ **Centralized Agent Tool Registry:** 7 production LangChain `@tool` functions with strict Pydantic schemas for autonomous specialist function calling.
-6. ✅ **LangGraph Multi-Agent State Machine:** 7-node cyclic graph featuring autonomous ReAct specialists, consensus trade-off debate, Pydantic structured output validation, and thread-safe `MemorySaver` checkpointing.
-7. ✅ **Tiered Governance Gate:** Safe mitigations ($\le \$500$) execute autonomously, while high-risk expenditures ($> \$500$) or clinical QA quarantine holds route to an interactive Microsoft Teams Adaptive Card v1.4 checkpoint with a 2-hour SLA.
-8. ✅ **Pluggable Enterprise ERP Abstraction:** Decoupled `ERPActionInterface` supporting local `SQLiteSAPMockAdapter` simulation and production `SAPODataAdapter` for live SAP S/4HANA OData / BAPI write-backs.
-9. ✅ **Hardware-Optimized Edge Inference:** Local Ollama daemon running `qwen2.5:7b` on AMD Radeon RX 6600 Vulkan compute offloading, eliminating cloud API costs and data exfiltration.
-10. ✅ **Verified Test Coverage:** 100% pass rate across `validate_modules.py` (7/7), `verify_phase1_phase2.py` (5/5), `verify_agent_first_pipeline.py` (6/6), and live order execution.
+5. ✅ **Centralized Agent Tool Registry (9 Tools):** 9 production LangChain `@tool` functions with strict Pydantic schemas for autonomous specialist function calling (including episodic memory queries and counterfactual route simulations).
+6. ✅ **LangGraph Multi-Agent State Machine (9 Nodes):** 9-node state machine featuring Fast-Track conditional routing, model-driven ReAct investigation, compiled debate subgraphs, metacognitive pre-execution guardrails, and thread-safe `MemorySaver` checkpointing.
+7. ✅ **Compiled Debate Subgraph & Arbiter Convergence:** Generative multi-turn LLM dialogue between `ContractAdjudicator` and `QualityMitigation` personas converging at semantic arbiter score $\ge 0.85$.
+8. ✅ **Autonomous Model-Driven ReAct Specialist:** `build_autonomous_investigation_agent` using `langgraph.prebuilt.create_react_agent` with live tool execution tracking.
+9. ✅ **Interactive Counterfactual ML Simulation:** Engine A's Two-Stage Hurdle model exposed via Tool 9 to compute quantitative delay, probability, and cost deltas for alternative routes.
+10. ✅ **Episodic Incident Memory & Cognitive Precedent Reflection:** ChromaDB vector store indexing historical resolutions; `reflect_on_precedents` synthesizes analogies, similarity scores, and legal clauses.
+11. ✅ **Metacognitive Pre-Execution Guardrails:** Validates 4 corporate policies prior to ERP execution with a self-correcting feedback loop back to inter-agent negotiation.
+12. ✅ **Bidirectional Conversational Human-in-the-Loop:** FastAPI endpoint `POST /api/v1/orders/{order_id}/collaborate` allowing operations directors to inject natural language directives and trigger re-planning.
+13. ✅ **Local GPU Concurrency Guard:** `asyncio.Semaphore(2)` maintaining peak VRAM $<7.2$ GB on local AMD Radeon RX 6600 hardware.
+14. ✅ **Pluggable Enterprise ERP Abstraction:** Decoupled `ERPActionInterface` supporting local `SQLiteSAPMockAdapter` simulation and production `SAPODataAdapter` for live SAP S/4HANA OData / BAPI write-backs.
+15. ✅ **100% Zero-Error Test Verification:** 31/31 automated test suites passed across all 5 verification harnesses (`validate_modules.py`, `verify_phase1_phase2.py`, `verify_agent_first_pipeline.py`, `verify_phase6_agent_first.py`, `verify_true_autonomy.py`).

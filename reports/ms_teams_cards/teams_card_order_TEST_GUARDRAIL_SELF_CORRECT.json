@@ -1,0 +1,79 @@
+{
+  "type": "AdaptiveCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.4",
+  "body": [
+    {
+      "type": "Container",
+      "style": "attention",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "\ud83d\udea8 O2C AI COPILOT: EXPEDITED FREIGHT APPROVAL REQUIRED",
+          "weight": "Bolder",
+          "size": "Medium",
+          "color": "Attention"
+        },
+        {
+          "type": "TextBlock",
+          "text": "Regional Logistics Director Review Required \u2022 Response SLA: 2 Hours",
+          "isSubtle": true,
+          "spacing": "None"
+        }
+      ]
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        {
+          "title": "SAP Sales Order:",
+          "value": "TEST_GUARDRAIL_SELF_CORRECT"
+        },
+        {
+          "title": "Destination Clinic:",
+          "value": "Canine Care Clinic"
+        },
+        {
+          "title": "Assigned Carrier:",
+          "value": "SafeLogistics Express"
+        },
+        {
+          "title": "Mitigation Cost:",
+          "value": "$0.00 USD"
+        },
+        {
+          "title": "Urgency Level:",
+          "value": "CRITICAL"
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "**Recommended Action:** Historical Precedent (PREC_2025_002): Order: PREC_2025_002 | Destination: Delhi | Carrier: SafeLogistics Express | Root Causes: Telematics",
+      "wrap": true
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Submit",
+      "title": "\u2705 Approve Expense ($0)",
+      "style": "positive",
+      "data": {
+        "action": "APPROVE_MITIGATION",
+        "order_id": "TEST_GUARDRAIL_SELF_CORRECT",
+        "approved_amount": 0.0,
+        "timestamp": "2026-09-08T16:48:55.601194"
+      }
+    },
+    {
+      "type": "Action.Submit",
+      "title": "\u274c Reject & Hold at Terminal",
+      "style": "destructive",
+      "data": {
+        "action": "REJECT_MITIGATION",
+        "order_id": "TEST_GUARDRAIL_SELF_CORRECT",
+        "timestamp": "2026-09-08T16:48:55.601194"
+      }
+    }
+  ]
+}
