@@ -42,6 +42,7 @@ from modules.agent_tools import (
     query_historical_incident_memory,
     simulate_alternative_route_risk
 )
+from modules.llm_provider import LLMProvider, LLMProviderConfig, LLMResponse
 
 logger = logging.getLogger("AgentSpecialists")
 
@@ -896,10 +897,11 @@ class LLMReasoningEngine:
     Supports local Ollama (qwen2.5:7b / qwen2.5:3b), Databricks LLM, or deterministic expert fallback.
     """
 
-    def __init__(self):
-        self.provider = "local_ollama"
+    def __init__(self, llm_provider: Optional[LLMProvider] = None):
+        self.provider = "multi_tier_fallback"
         self.model_name = "qwen2.5:7b"
         self.endpoint_name = os.getenv("DATABRICKS_LLM_ENDPOINT", "databricks-meta-llama-3-70b-instruct")
+        self.llm_provider = llm_provider or LLMProvider()
 
     def build_synthesis_prompt(
         self,
@@ -944,6 +946,69 @@ Analyze the following Order-to-Cash disruption package and formulate a legally g
 
 Provide a concise, authoritative executive synthesis brief summarizing the root cause, financial liability passthrough, and action authorization."""
 
+    def synthesize_executive_decision_with_trace(
+        self,
+        order_id: str,
+        customer_name: str,
+        customer_tier: str,
+        carrier_name: str,
+        shipping_type: str,
+        delay_prob: float,
+        will_delay: bool,
+        delay_hours: float,
+        predicted_eta: str,
+        route_analysis: Dict[str, Any],
+        contract_analysis: Dict[str, Any],
+        quality_analysis: Dict[str, Any],
+        rag_citations: List[str]
+    ) -> LLMResponse:
+        """Synthesizes executive decision returning full fallback trace and metadata"""
+        def deterministic_fn() -> str:
+            hazards = [h for h in route_analysis.get("route_hazards", []) if "counterfactual" not in h.lower()]
+            hazard_str = f"; Hazards: {', '.join(hazards)}" if hazards else ""
+            hazard_str = hazard_str.rstrip(".")
+            
+            sla_penalty = contract_analysis.get("sla_delay_penalty_usd", 0.0)
+            carrier_cb = contract_analysis.get("total_carrier_chargeback_usd", 0.0)
+            fm_status = contract_analysis.get("force_majeure_status", "NOT_APPLICABLE")
+            
+            qa_holds = quality_analysis.get("qa_hold_reasons", [])
+            qa_str = f"\nQA Quarantine: {'; '.join(qa_holds)}" if qa_holds else ""
+
+            if quality_analysis.get("qa_hold_required"):
+                action_str = "INTERCEPT & DIVERT: Immediately halt transit for bio-secure quarantine/reverse logistics; cancel forward delivery"
+            else:
+                actions = quality_analysis.get("mitigation_actions", [])
+                action_str = actions[0] if actions else "Standard active telematics monitoring"
+            
+            app_status = quality_analysis.get("approval_status", "AUTONOMOUSLY_APPROVED")
+            app_gate = quality_analysis.get("approval_gate", "AI Copilot Auto-Approval")
+            citations_str = ", ".join(rag_citations[:3]) if rag_citations else "Standard MVA Framework"
+            status_str = f"DELAYED by {delay_hours:.1f} hours (ETA: {predicted_eta})" if will_delay else "ON SCHEDULE"
+
+            return f"""Order {order_id} destined for {customer_name} ({customer_tier} Tier) via {carrier_name} ({shipping_type}) is predicted to be {status_str} (Delay Probability: {delay_prob:.1%}){hazard_str}.
+Contractual SLA Exposure: ${sla_penalty:.2f}. Total Carrier Chargeback: ${carrier_cb:.2f}.
+Force Majeure Status: {fm_status}.
+Recommended Action: {action_str}.{qa_str}
+Governance Status: {app_status} ({app_gate}).
+Referenced Policy Citations: {citations_str}."""
+
+        prompt = self.build_synthesis_prompt(
+            order_id, customer_name, customer_tier, carrier_name, shipping_type,
+            delay_prob, will_delay, delay_hours, predicted_eta,
+            route_analysis, contract_analysis, quality_analysis, rag_citations
+        )
+        system_prompt = (
+            "You are an enterprise Order-to-Cash (O2C) logistics executive legal synthesizer. "
+            "Formulate concise, legally grounded, and actionable decision briefs."
+        )
+
+        return self.llm_provider.invoke_with_fallback(
+            prompt=prompt,
+            system_prompt=system_prompt,
+            deterministic_fallback_fn=deterministic_fn
+        )
+
     def synthesize_executive_decision(
         self,
         order_id: str,
@@ -960,54 +1025,13 @@ Provide a concise, authoritative executive synthesis brief summarizing the root 
         quality_analysis: Dict[str, Any],
         rag_citations: List[str]
     ) -> str:
-        # 1. Try local Ollama LLM first (only if Ollama daemon is actively running)
-        if is_ollama_available(base_url="http://127.0.0.1:11434"):
-            try:
-                from langchain_ollama import ChatOllama
-                prompt = self.build_synthesis_prompt(
-                    order_id, customer_name, customer_tier, carrier_name, shipping_type,
-                    delay_prob, will_delay, delay_hours, predicted_eta,
-                    route_analysis, contract_analysis, quality_analysis, rag_citations
-                )
-                llm = ChatOllama(model=self.model_name, temperature=0.2, base_url="http://127.0.0.1:11434", timeout=5.0)
-                resp = llm.invoke(prompt)
-                if resp and resp.content and len(resp.content.strip()) > 30:
-                    return resp.content.strip()
-            except Exception:
-                pass
-
-        # 2. Default high-fidelity Deterministic Legal Reasoning Engine (Zero latency fallback)
-        # Filter out any counterfactual text from physical route hazards and clean punctuation
-        hazards = [h for h in route_analysis.get("route_hazards", []) if "counterfactual" not in h.lower()]
-        hazard_str = f"; Hazards: {', '.join(hazards)}" if hazards else ""
-        hazard_str = hazard_str.rstrip(".")
-        
-        sla_penalty = contract_analysis.get("sla_delay_penalty_usd", 0.0)
-        carrier_cb = contract_analysis.get("total_carrier_chargeback_usd", 0.0)
-        fm_status = contract_analysis.get("force_majeure_status", "NOT_APPLICABLE")
-        
-        qa_holds = quality_analysis.get("qa_hold_reasons", [])
-        qa_str = f"\nQA Quarantine: {'; '.join(qa_holds)}" if qa_holds else ""
-
-        if quality_analysis.get("qa_hold_required"):
-            action_str = "INTERCEPT & DIVERT: Immediately halt transit for bio-secure quarantine/reverse logistics; cancel forward delivery"
-        else:
-            actions = quality_analysis.get("mitigation_actions", [])
-            action_str = actions[0] if actions else "Standard active telematics monitoring"
-        
-        app_status = quality_analysis.get("approval_status", "AUTONOMOUSLY_APPROVED")
-        app_gate = quality_analysis.get("approval_gate", "AI Copilot Auto-Approval")
-        citations_str = ", ".join(rag_citations[:3]) if rag_citations else "Standard MVA Framework"
-        status_str = f"DELAYED by {delay_hours:.1f} hours (ETA: {predicted_eta})" if will_delay else "ON SCHEDULE"
-
-        brief = f"""Order {order_id} destined for {customer_name} ({customer_tier} Tier) via {carrier_name} ({shipping_type}) is predicted to be {status_str} (Delay Probability: {delay_prob:.1%}){hazard_str}.
-Contractual SLA Exposure: ${sla_penalty:.2f}. Total Carrier Chargeback: ${carrier_cb:.2f}.
-Force Majeure Status: {fm_status}.
-Recommended Action: {action_str}.{qa_str}
-Governance Status: {app_status} ({app_gate}).
-Referenced Policy Citations: {citations_str}."""
-
-        return brief
+        """Main synthesis interface returning string content"""
+        resp = self.synthesize_executive_decision_with_trace(
+            order_id, customer_name, customer_tier, carrier_name, shipping_type,
+            delay_prob, will_delay, delay_hours, predicted_eta,
+            route_analysis, contract_analysis, quality_analysis, rag_citations
+        )
+        return resp.content
 
 
 # ============================================================================
@@ -1134,7 +1158,8 @@ def negotiate_inter_agent_consensus(
     route_analysis: Dict[str, Any],
     notice_given_12h: bool = True,
     correction_guidance: Optional[str] = None,
-    manager_feedback: Optional[str] = None
+    manager_feedback: Optional[str] = None,
+    llm_provider: Optional[LLMProvider] = None
 ) -> Dict[str, Any]:
     """
     Protocol for dynamic multi-turn adversarial negotiation between Contract and Quality specialists.
@@ -1353,12 +1378,33 @@ def negotiate_inter_agent_consensus(
     if not agreed_actions:
         agreed_actions.append("Active telematics and transit milestone tracking")
 
-    compromise_summary = (
+    deterministic_compromise = (
         f"Inter-Agent Consensus Achieved across {len(turns)} turns: "
         f"ContractAdjudicator ratified ${mitigation_cost:,.2f} mitigation allocation under "
         f"{gate_desc}, while QualityMitigation confirmed ${carrier_cb:.2f} carrier chargeback "
         f"and ${sla_penalty:.2f} SLA penalty alignment (Force Majeure waived: {fm_waived}, QA Hold: {qa_hold})."
     )
+
+    compromise_summary = deterministic_compromise
+    if llm_provider and (llm_provider.config.use_cloud_api or ollama_success):
+        try:
+            turns_text = "\n".join([f"Turn {t.turn_index} ({t.speaker}): {t.proposal}" for t in turns])
+            prompt = (
+                f"As an enterprise dispute arbiter, summarize this inter-agent negotiation consensus in 2 sentences:\n"
+                f"Order: {order_id}\n"
+                f"{turns_text}\n"
+                f"Financials: Mitigation=${mitigation_cost:.2f}, Chargeback=${carrier_cb:.2f}, Penalty=${sla_penalty:.2f}, QA Hold={qa_hold}"
+            )
+            resp = llm_provider.invoke_with_fallback(
+                prompt=prompt,
+                system_prompt="You are an enterprise logistics dispute arbiter.",
+                deterministic_fallback_fn=lambda: deterministic_compromise
+            )
+            if resp and resp.content:
+                compromise_summary = resp.content.strip()
+        except Exception as e:
+            logger.debug(f"LLM compromise summary fallback: {e}")
+            compromise_summary = deterministic_compromise
 
     # Arbiter Evaluation Node (TODO 7.1)
     arbiter_eval = ArbiterEvaluation(
