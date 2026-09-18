@@ -7,6 +7,7 @@ dispute precedents, and carrier performance history using ChromaDB and dense emb
 import os
 import sys
 import logging
+import threading
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional
@@ -20,31 +21,59 @@ logger = logging.getLogger("IncidentMemory")
 
 INCIDENT_MEMORY_DIR = BASE_DIR / "rag" / "incident_memory"
 
+_STORE_INSTANCES = {}
+_STORE_LOCK = threading.Lock()
+
 
 class EpisodicMemoryStore:
     """
     ChromaDB-backed Episodic Memory Store for Supply Chain Risk Resolutions.
     Persists historical incidents, root causes, approved mitigations,
     and carrier arbitration precedents for multi-agent retrieval.
+    Thread-safe singleton per persist_dir to prevent concurrent SQLite lock thrashing.
     """
 
+    def __new__(cls, persist_dir: Optional[Path] = None):
+        target_dir = Path(persist_dir) if persist_dir else INCIDENT_MEMORY_DIR
+        norm_key = str(target_dir.resolve())
+        with _STORE_LOCK:
+            if norm_key not in _STORE_INSTANCES:
+                instance = super().__new__(cls)
+                instance._initialized = False
+                _STORE_INSTANCES[norm_key] = instance
+            return _STORE_INSTANCES[norm_key]
+
     def __init__(self, persist_dir: Optional[Path] = None):
-        self.persist_dir = Path(persist_dir) if persist_dir else INCIDENT_MEMORY_DIR
-        self.persist_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Initialize persistent ChromaDB client
-        self.client = chromadb.PersistentClient(
-            path=str(self.persist_dir),
-            settings=Settings(anonymized_telemetry=False, is_persistent=True)
-        )
-        self.collection = self.client.get_or_create_collection(
-            name="o2c_incident_precedents",
-            metadata={"description": "Historical order dispute and mitigation precedents"}
-        )
-        
-        # Auto-seed initial precedents if collection is empty
-        if self.collection.count() == 0:
-            self.seed_default_precedents()
+        if getattr(self, "_initialized", False):
+            return
+        with _STORE_LOCK:
+            if getattr(self, "_initialized", False):
+                return
+            self.persist_dir = Path(persist_dir) if persist_dir else INCIDENT_MEMORY_DIR
+            self.persist_dir.mkdir(parents=True, exist_ok=True)
+            self._lock = threading.Lock()
+            
+            # Initialize persistent ChromaDB client
+            self.client = chromadb.PersistentClient(
+                path=str(self.persist_dir),
+                settings=Settings(anonymized_telemetry=False, is_persistent=True)
+            )
+            self.collection = self.client.get_or_create_collection(
+                name="o2c_incident_precedents",
+                metadata={"description": "Historical order dispute and mitigation precedents"}
+            )
+            
+            # Auto-seed initial precedents if collection is empty
+            if self.collection.count() == 0:
+                self.seed_default_precedents()
+            self._query_cache = {}
+            self._initialized = True
+
+    @classmethod
+    def reset_instances(cls):
+        """Reset singleton cache (useful for isolated testing)."""
+        with _STORE_LOCK:
+            _STORE_INSTANCES.clear()
 
     def store_incident_resolution(
         self,
@@ -82,11 +111,14 @@ class EpisodicMemoryStore:
                 if isinstance(v, (str, int, float, bool)):
                     metadata[k] = v
 
-        self.collection.upsert(
-            ids=[doc_id],
-            documents=[document_text],
-            metadatas=[metadata]
-        )
+        with self._lock:
+            self.collection.upsert(
+                ids=[doc_id],
+                documents=[document_text],
+                metadatas=[metadata]
+            )
+            if hasattr(self, "_query_cache"):
+                self._query_cache.clear()
         logger.info(f"Stored incident precedent for Order {order_id} in ChromaDB (ID: {doc_id})")
         return doc_id
 
@@ -101,6 +133,11 @@ class EpisodicMemoryStore:
         Retrieve relevant historical incident precedents using semantic vector search.
         Filters by carrier or destination city if specified.
         """
+        cache_key = (query_text.strip(), carrier_name, dest_city, top_k)
+        with self._lock:
+            if hasattr(self, "_query_cache") and cache_key in self._query_cache:
+                return [dict(p) for p in self._query_cache[cache_key]]
+
         where_filter = None
         if carrier_name and dest_city:
             where_filter = {"$and": [{"carrier_name": carrier_name}, {"dest_city": dest_city}]}
@@ -109,18 +146,19 @@ class EpisodicMemoryStore:
         elif dest_city:
             where_filter = {"dest_city": dest_city}
 
-        try:
-            results = self.collection.query(
-                query_texts=[query_text],
-                n_results=min(top_k, max(1, self.collection.count())),
-                where=where_filter
-            )
-        except Exception as e:
-            logger.warning(f"Filtered query failed ({e}), retrying without metadata filter...")
-            results = self.collection.query(
-                query_texts=[query_text],
-                n_results=min(top_k, max(1, self.collection.count()))
-            )
+        with self._lock:
+            try:
+                results = self.collection.query(
+                    query_texts=[query_text],
+                    n_results=min(top_k, max(1, self.collection.count())),
+                    where=where_filter
+                )
+            except Exception as e:
+                logger.warning(f"Filtered query failed ({e}), retrying without metadata filter...")
+                results = self.collection.query(
+                    query_texts=[query_text],
+                    n_results=min(top_k, max(1, self.collection.count()))
+                )
 
         precedents = []
         if results and "documents" in results and results["documents"]:
@@ -141,6 +179,12 @@ class EpisodicMemoryStore:
                     "relevance_distance": round(float(dist), 4),
                     "mitigation_action": meta.get("resolution_summary", doc[:100])
                 })
+
+        with self._lock:
+            if not hasattr(self, "_query_cache"):
+                self._query_cache = {}
+            self._query_cache[cache_key] = [dict(p) for p in precedents]
+
         return precedents
 
     def query_similar_incidents(
@@ -285,13 +329,7 @@ class EpisodicMemoryStore:
         logger.info(f"Seeded {len(initial_precedents)} default incident precedents into ChromaDB")
 
 
-_episodic_store_instance: Optional[EpisodicMemoryStore] = None
-
-
-def get_incident_memory_store() -> EpisodicMemoryStore:
-    """Returns the singleton instance of EpisodicMemoryStore"""
-    global _episodic_store_instance
-    if _episodic_store_instance is None:
-        _episodic_store_instance = EpisodicMemoryStore()
-    return _episodic_store_instance
+def get_incident_memory_store(persist_dir: Optional[Path] = None) -> EpisodicMemoryStore:
+    """Returns the thread-safe singleton instance of EpisodicMemoryStore"""
+    return EpisodicMemoryStore(persist_dir=persist_dir)
 

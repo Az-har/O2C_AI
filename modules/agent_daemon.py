@@ -457,6 +457,114 @@ def get_order_audit_trail(order_id: str):
 
 
 # ============================================================================
+# Reactive Event-Driven Streaming Backbone (Improvement 5.7)
+# ============================================================================
+
+class TelematicsStreamEvent(BaseModel):
+    order_id: str
+    latitude: float
+    longitude: float
+    speed_kmh: float = 30.0
+    status: str = "IN_TRANSIT"
+    corridor: Optional[str] = None
+    timestamp: Optional[str] = None
+
+
+class DisruptionStreamEvent(BaseModel):
+    corridor_or_city: str
+    transport_mode: str = "Road (FTL)"
+    hazard_title: str
+    severity: str = "HIGH"
+    impact_summary: str = ""
+
+
+@app.post("/api/v1/events/telematics", tags=["Streaming Events"])
+async def ingest_telematics_event(event: TelematicsStreamEvent, background_tasks: BackgroundTasks):
+    """
+    Ingest real-time IoT vehicle telematics GPS/speed pings (Improvement 5.7).
+    If vehicle is stalled or speed < 5 km/h, triggers background LangGraph evaluation.
+    """
+    from modules.blackboard_memory import get_blackboard_memory
+    bb = get_blackboard_memory()
+
+    is_stalled = (event.speed_kmh < 5.0) or (event.status.upper() in ["STALLED", "BREAKDOWN", "CONGESTED"])
+    corridor_name = event.corridor or f"GPS_{event.latitude:.2f}_{event.longitude:.2f}"
+
+    if is_stalled:
+        bb.publish_corridor_hazard(corridor_name, {
+            "hazard_type": "TELEMATICS_STALL",
+            "order_id": event.order_id,
+            "speed_kmh": event.speed_kmh,
+            "summary": f"Vehicle stalled on corridor {corridor_name} at speed {event.speed_kmh} km/h"
+        })
+        # Dispatch evaluation to LangGraph without blocking incoming HTTP stream
+        def _evaluate():
+            pred = {
+                "order_id": event.order_id,
+                "delay_probability": 0.85,
+                "will_be_delayed": True,
+                "delay_hours": 24.0,
+                "predicted_eta": (datetime.now() + timedelta(hours=24)).strftime("%Y-%m-%d %H:%M"),
+                "root_causes": [f"Telematics stall on {corridor_name}"]
+            }
+            order_data = {"dest_city": corridor_name, "shipping_type": "Road (FTL)"}
+            run_order_graph(event.order_id, pred, order_data)
+
+        background_tasks.add_task(_evaluate)
+        return {
+            "status": "TELEMATICS_STALL_DETECTED",
+            "order_id": event.order_id,
+            "action": "LANGGRAPH_EVALUATION_DISPATCHED",
+            "corridor": corridor_name
+        }
+
+    return {"status": "TELEMATICS_NOMINAL", "order_id": event.order_id, "speed_kmh": event.speed_kmh}
+
+
+@app.post("/api/v1/events/disruption", tags=["Streaming Events"])
+async def ingest_disruption_event(event: DisruptionStreamEvent):
+    """Ingest real-time transit disruption alert and publish directly to Blackboard Working Memory"""
+    from modules.blackboard_memory import get_blackboard_memory
+    bb = get_blackboard_memory()
+    bb.publish_corridor_hazard(event.corridor_or_city, {
+        "title": event.hazard_title,
+        "mode": event.transport_mode,
+        "severity": event.severity,
+        "summary": event.impact_summary
+    })
+    return {
+        "status": "DISRUPTION_PUBLISHED_TO_BLACKBOARD",
+        "target": event.corridor_or_city,
+        "severity": event.severity
+    }
+
+
+@app.get("/api/v1/blackboard", tags=["Streaming Events"])
+def get_blackboard_state():
+    """Retrieve current state of shared inter-agent working memory (Blackboard)"""
+    from modules.blackboard_memory import get_blackboard_memory
+    return get_blackboard_memory().get_all_state()
+
+
+@app.get("/api/v1/outbox", tags=["Transactional Outbox"])
+def get_outbox_status(limit: int = 50):
+    """Retrieve pending transactional outbox ERP actions (Improvement 5.6)"""
+    from modules.action_execution_engine import TransactionalOutboxManager
+    mgr = TransactionalOutboxManager()
+    pending = mgr.get_pending_actions(limit=limit)
+    return {"pending_count": len(pending), "pending_actions": pending}
+
+
+@app.post("/api/v1/outbox/dispatch", tags=["Transactional Outbox"])
+def dispatch_outbox_queue():
+    """Manually or worker-triggered dispatch of all pending ERP outbox actions"""
+    from modules.action_execution_engine import TransactionalOutboxManager, SQLiteSAPMockAdapter
+    mgr = TransactionalOutboxManager()
+    adapter = SQLiteSAPMockAdapter()
+    return mgr.dispatch_pending_actions(adapter)
+
+
+# ============================================================================
 # Daemon Standalone Entrypoint
 # ============================================================================
 

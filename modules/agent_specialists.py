@@ -12,6 +12,9 @@ Specialists:
 
 import os
 import sys
+import re
+import time
+import threading
 import json
 import logging
 from datetime import datetime, timedelta
@@ -41,6 +44,32 @@ from modules.agent_tools import (
 )
 
 logger = logging.getLogger("AgentSpecialists")
+
+_OLLAMA_PROBE_TIME = 0.0
+_OLLAMA_AVAILABLE = False
+_OLLAMA_LOCK = threading.Lock()
+
+_PRECEDENT_CACHE = {}
+_COUNTERFACTUAL_CACHE = {}
+_AGENT_CACHE_LOCK = threading.Lock()
+
+
+def is_ollama_available(base_url: str = "http://127.0.0.1:11434", cache_ttl: float = 60.0) -> bool:
+    """Fast non-blocking probe to verify if local Ollama daemon is running"""
+    global _OLLAMA_PROBE_TIME, _OLLAMA_AVAILABLE
+    now = time.time()
+    with _OLLAMA_LOCK:
+        if now - _OLLAMA_PROBE_TIME < cache_ttl:
+            return _OLLAMA_AVAILABLE
+        _OLLAMA_PROBE_TIME = now
+        try:
+            import urllib.request
+            req = urllib.request.Request(f"{base_url}/api/tags")
+            with urllib.request.urlopen(req, timeout=0.15) as resp:
+                _OLLAMA_AVAILABLE = (resp.status == 200)
+        except Exception:
+            _OLLAMA_AVAILABLE = False
+        return _OLLAMA_AVAILABLE
 
 
 # ============================================================================
@@ -100,6 +129,7 @@ class RouteAnalysisOutput(BaseModel):
     telematics_penalty_usd: float = Field(default=0.0, description="Penalty for telematics disconnection breach")
     telematics_notes: List[str] = Field(default_factory=list, description="Audit notes on telematics tracking")
     route_hazards: List[str] = Field(default_factory=list, description="Detected corridor hazards (storms, strikes, velocity)")
+    recommended_detour: str = Field(default="Maintain designated route", description="Recommended corridor detour or transit halt instruction")
     corridor_distance_km: float = Field(default=500.0, description="Transit corridor distance in km")
     transit_speed_kmh: float = Field(default=25.0, description="Required transit velocity in km/h")
     destination_city: str = Field(default="Unknown", description="Shipment destination city")
@@ -158,6 +188,9 @@ class NegotiationTurn(BaseModel):
     rationale: str = Field(description="Operational or legal justification")
     demands: List[str] = Field(default_factory=list, description="Non-negotiable constraints")
     concessions: List[str] = Field(default_factory=list, description="Concessions offered to counterpart")
+    proposed_cost_usd: float = Field(default=0.0, description="Proposed mitigation expense")
+    proposed_penalty_usd: float = Field(default=0.0, description="Proposed customer SLA late penalty")
+    message: Optional[str] = Field(default=None, description="Full conversational debate utterance")
 
 
 class NegotiationOutcome(BaseModel):
@@ -329,68 +362,106 @@ class RouteSupervisorAgent:
         except Exception as e:
             logger.warning(f"Live strike check skipped for {dest_city}: {e}")
 
-        # 3. Tool-assisted episodic incident memory query: query_historical_incident_memory
+        # 3. Tool-assisted episodic incident memory query with LRU caching
         precedents = []
         precedent_reflections: List[CognitivePrecedentReflection] = []
-        try:
-            tools_invoked.append("query_historical_incident_memory")
-            m_res = query_historical_incident_memory.invoke({
-                "query_text": f"Corridor delay telematics tracking hazard for {dest_city} via {carrier_name}",
-                "carrier_name": carrier_name,
-                "dest_city": dest_city,
-                "top_k": 2
-            })
-            if m_res.get("status") == "SUCCESS":
-                precedents = m_res.get("precedents", [])
-                for p in precedents:
-                    p_id = str(p.get("order_id", "PRECEDENT_HISTORICAL"))
-                    route_hazards.append(f"Precedent ({p_id}): {p.get('precedent_text', '')[:100]}...")
-                    sim_score = max(0.65, min(0.98, 1.0 - float(p.get("relevance_distance", 0.18))))
-                    analogy = (
-                        f"Order shares corridor destination {dest_city} with carrier {carrier_name}, "
-                        f"experiencing similar transit hazard: {p.get('disruption_type', 'Corridor bottleneck')}."
-                    )
-                    justification = (
-                        f"Precedent resolution '{p.get('resolution', 'Standard action')}' informs current stance: "
-                        f"{'Telematics disconnection validates $200 penalty and waiver forfeiture' if not telematics_active else 'Telematics active, supporting normal SLA adjudication'}."
-                    )
-                    precedent_reflections.append(CognitivePrecedentReflection(
-                        precedent_id=p_id,
-                        similarity_score=round(sim_score, 2),
-                        factual_analogy=analogy,
-                        variance_justification=justification,
-                        legal_operational_clause="Carrier Logistics Master Agreement Section 7.4 (Telematics Compliance)"
-                    ))
-        except Exception as e:
-            logger.warning(f"Episodic memory check skipped for {dest_city}: {e}")
+        prec_key = (dest_city, carrier_name)
+        cached_prec = None
+        with _AGENT_CACHE_LOCK:
+            cached_prec = _PRECEDENT_CACHE.get(prec_key)
+
+        if cached_prec is not None:
+            precedents, precedent_reflections, p_hazards = cached_prec
+            route_hazards.extend(p_hazards)
+            tools_invoked.append("query_historical_incident_memory (cached)")
+        else:
+            try:
+                tools_invoked.append("query_historical_incident_memory")
+                m_res = query_historical_incident_memory.invoke({
+                    "query_text": f"Corridor delay telematics tracking hazard for {dest_city} via {carrier_name}",
+                    "carrier_name": carrier_name,
+                    "dest_city": dest_city,
+                    "top_k": 2
+                })
+                if m_res.get("status") == "SUCCESS":
+                    precedents = m_res.get("precedents", [])
+                    p_hazards = []
+                    for p in precedents:
+                        p_id = str(p.get("order_id", "PRECEDENT_HISTORICAL"))
+                        hazard_entry = f"Precedent ({p_id}): {p.get('precedent_text', '')[:100]}..."
+                        p_hazards.append(hazard_entry)
+                        route_hazards.append(hazard_entry)
+                        sim_score = max(0.65, min(0.98, 1.0 - float(p.get("relevance_distance", 0.18))))
+                        analogy = (
+                            f"Order shares corridor destination {dest_city} with carrier {carrier_name}, "
+                            f"experiencing similar transit hazard: {p.get('disruption_type', 'Corridor bottleneck')}."
+                        )
+                        justification = (
+                            f"Precedent resolution '{p.get('resolution', 'Standard action')}' informs current stance: "
+                            f"{'Telematics disconnection validates $200 penalty and waiver forfeiture' if not telematics_active else 'Telematics active, supporting normal SLA adjudication'}."
+                        )
+                        precedent_reflections.append(CognitivePrecedentReflection(
+                            precedent_id=p_id,
+                            similarity_score=round(sim_score, 2),
+                            factual_analogy=analogy,
+                            variance_justification=justification,
+                            legal_operational_clause="Carrier Logistics Master Agreement Section 7.4 (Telematics Compliance)"
+                        ))
+                    with _AGENT_CACHE_LOCK:
+                        if len(_PRECEDENT_CACHE) < 500:
+                            _PRECEDENT_CACHE[prec_key] = (precedents, precedent_reflections, p_hazards)
+            except Exception as e:
+                logger.warning(f"Episodic memory check skipped for {dest_city}: {e}")
 
         # 4. Tool-assisted counterfactual route simulation: simulate_alternative_route_risk (TODO 7.3)
         counterfactual_res = None
         has_delay_risk = weather_hazard or strike_hazard or (speed_kmh > 55.0) or prediction_payload.get("will_be_delayed", False)
+        hrs_saved = 0.0
         if has_delay_risk or self.autonomous_mode:
-            try:
-                tools_invoked.append("simulate_alternative_route_risk")
-                counterfactual_res = simulate_alternative_route_risk.invoke({
-                    "order_id": order_id,
-                    "carrier_name": "Bluedart Air Expedited",
-                    "shipping_type": "Air Freight",
-                    "departure_offset_hours": -4.0
-                })
-                if counterfactual_res and counterfactual_res.get("status") == "SUCCESS":
-                    delta = counterfactual_res.get("delta", {})
-                    hrs_saved = delta.get("delay_hours_saved", 0.0)
-                    prob_red = delta.get("delay_probability_reduction", 0.0)
-                    route_hazards.append(
-                        f"Counterfactual Simulation: Air Freight saves {hrs_saved:.1f}h delay "
-                        f"(Probability reduced by {prob_red:.1%}). Verdict: {counterfactual_res.get('recommendation')}."
-                    )
-            except Exception as e:
-                logger.warning(f"Counterfactual route simulation skipped: {e}")
+            cf_key = (dest_city, carrier_name, shipping_type)
+            cached_cf = None
+            with _AGENT_CACHE_LOCK:
+                cached_cf = _COUNTERFACTUAL_CACHE.get(cf_key)
+
+            if cached_cf is not None:
+                counterfactual_res, _, hrs_saved = cached_cf
+                tools_invoked.append("simulate_alternative_route_risk (cached)")
+            else:
+                try:
+                    tools_invoked.append("simulate_alternative_route_risk")
+                    counterfactual_res = simulate_alternative_route_risk.invoke({
+                        "order_id": order_id,
+                        "carrier_name": "Bluedart Air Expedited",
+                        "shipping_type": "Air Freight",
+                        "departure_offset_hours": -4.0,
+                        "order_data": order_data
+                    })
+                    if counterfactual_res and counterfactual_res.get("status") == "SUCCESS":
+                        delta = counterfactual_res.get("delta", {})
+                        hrs_saved = delta.get("delay_hours_saved", counterfactual_res.get("delay_hours_delta", 0.0))
+                        # Do NOT pollute physical environmental route_hazards with counterfactual proposals
+                        with _AGENT_CACHE_LOCK:
+                            if len(_COUNTERFACTUAL_CACHE) < 500:
+                                _COUNTERFACTUAL_CACHE[cf_key] = (counterfactual_res, [], hrs_saved)
+                except Exception as e:
+                    logger.warning(f"Counterfactual route simulation skipped: {e}")
+
+        is_qa_hold = bool(
+            float(order_data.get("min_shelf_life", order_data.get("min_shelf_life_months", 12))) < 6 or
+            prediction_payload.get("qa_hold_required", False)
+        )
+        if is_qa_hold:
+            recommended_detour = "INTERCEPT & DIVERT: Quarantine order for bio-secure inspection/destruction; halt forward transit"
+        elif weather_hazard or strike_hazard:
+            recommended_detour = f"Reroute around {dest_city} corridor via secondary arterial bypass"
+        else:
+            recommended_detour = "Maintain designated route"
 
         reasoning = (
             f"Autonomous ReAct route analysis for corridor to {dest_city} ({distance_km:.0f} km). "
             f"Telematics: {'ACTIVE' if telematics_active else 'DISCONNECTED ($200 penalty)'}. "
             f"Weather hazard: {weather_hazard}. Disruption hazard: {strike_hazard}. "
+            f"Detour recommendation: {recommended_detour}. "
             f"Tools executed: {', '.join(tools_invoked)}. "
             f"Historical precedents consulted: {len(precedents)} (Reflections: {len(precedent_reflections)}). "
             + (f"Counterfactual simulation tested alternative air freight: {hrs_saved:.1f}h saved." if counterfactual_res else "")
@@ -402,6 +473,7 @@ class RouteSupervisorAgent:
             telematics_penalty_usd=telematics_penalty,
             telematics_notes=telematics_notes,
             route_hazards=route_hazards,
+            recommended_detour=recommended_detour,
             corridor_distance_km=distance_km,
             transit_speed_kmh=speed_kmh,
             destination_city=dest_city,
@@ -415,6 +487,104 @@ class RouteSupervisorAgent:
             agent_reasoning=reasoning
         )
         return output.model_dump()
+
+    def analyze_route_rewoo(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Token-Efficient Plan-and-Execute (ReWOO) Specialist Execution Topology (Improvement 5.8).
+        Decouples reasoning from tool observation:
+        1. Planner: Formulates parallel tool requirement specs.
+        2. Workers: Executes tool queries concurrently via ThreadPoolExecutor.
+        3. Solver: Synthesizes all observations in a single pass, eliminating sequential round-trips.
+        """
+        from concurrent.futures import ThreadPoolExecutor
+        from modules.telemetry import trace_agent_action
+        from modules.blackboard_memory import get_blackboard_memory
+
+        dest_city = str(prediction_payload.get("dest_city", order_data.get("dest_city", "Unknown")))
+        shipping_type = str(prediction_payload.get("shipping_type", order_data.get("shipping_type", "Road (FTL)")))
+        carrier_name = str(prediction_payload.get("carrier_name", order_data.get("carrier_name", "Unknown Carrier")))
+        order_id = str(prediction_payload.get("order_id", order_data.get("order_id", "1")))
+        distance_km = float(prediction_payload.get("haversine_distance_km", order_data.get("haversine_distance_km", 500.0)))
+        speed_kmh = float(prediction_payload.get("required_transit_speed_kmh", order_data.get("required_transit_speed_kmh", 25.0)))
+
+        with trace_agent_action("RouteSupervisorAgent", order_id, action_type="rewoo_execution"):
+            bb = get_blackboard_memory()
+            bb_hazard = bb.get_corridor_hazard(dest_city)
+            tools_invoked = []
+
+            # Phase 1 & 2: Plan and execute tools concurrently
+            with ThreadPoolExecutor(max_workers=3) as executor:
+                f_weather = executor.submit(fetch_corridor_weather.invoke, {"city": dest_city})
+                f_strike = executor.submit(fetch_strike_alerts.invoke, {"city_or_corridor": dest_city})
+                f_memory = executor.submit(query_historical_incident_memory.invoke, {
+                    "query_text": f"Corridor delay hazard for {dest_city} via {carrier_name}",
+                    "carrier_name": carrier_name,
+                    "dest_city": dest_city,
+                    "top_k": 2
+                })
+
+                w_res = f_weather.result()
+                s_res = f_strike.result()
+                m_res = f_memory.result()
+                tools_invoked.extend(["fetch_corridor_weather", "fetch_strike_alerts", "query_historical_incident_memory"])
+
+            # Phase 3: Solver synthesis
+            route_hazards = []
+            if bb_hazard:
+                route_hazards.append(f"Blackboard Active Hazard: {bb_hazard.get('hazard_details', {}).get('summary', 'Active transit bottleneck')}")
+
+            if speed_kmh > 55.0:
+                route_hazards.append(f"Unrealistic Transit Velocity ({speed_kmh:.1f} km/h required over {distance_km:.0f} km corridor)")
+            if "LTL" in shipping_type.upper():
+                route_hazards.append("LTL Multi-Stop Terminal Consolidation Dwell")
+
+            if w_res.get("hazard_detected"):
+                route_hazards.extend(w_res.get("hazard_reasons", []))
+                bb.publish_corridor_hazard(dest_city, {"source": "ReWOO_Weather", "summary": "; ".join(w_res.get("hazard_reasons", []))})
+
+            if s_res.get("hazard_detected"):
+                route_hazards.append(f"Active Disruption: {s_res.get('active_disruptions_count')} events near {dest_city}")
+                bb.publish_corridor_hazard(dest_city, {"source": "ReWOO_Strike", "summary": f"Disruption in {dest_city}"})
+
+            precedents = m_res.get("precedents", []) if m_res.get("status") == "SUCCESS" else []
+            precedent_reflections = []
+            for p in precedents:
+                p_id = str(p.get("order_id", "PRECEDENT_HISTORICAL"))
+                hazard_entry = f"Precedent ({p_id}): {p.get('precedent_text', '')[:100]}..."
+                route_hazards.append(hazard_entry)
+                precedent_reflections.append(CognitivePrecedentReflection(
+                    precedent_id=p_id,
+                    similarity_score=0.85,
+                    applicable_clause="SOP-CORRIDOR-REWOO",
+                    analogous_facts=f"Corridor {dest_city} matched historical precedent",
+                    distinguishing_features="None",
+                    action_justification="Informs routing buffer and risk score"
+                ))
+
+            telematics_active = not ("blind" in carrier_name.lower() or order_data.get("telematics_status") == "DISCONNECTED")
+            telematics_penalty = 200.0 if not telematics_active else 0.0
+            telematics_notes = ["Telematics Disconnect: $200 penalty assessed."] if not telematics_active else []
+
+            output = RouteAnalysisOutput(
+                agent_name="RouteSupervisorAgent (ReWOO)",
+                telematics_active=telematics_active,
+                telematics_penalty_usd=telematics_penalty,
+                telematics_notes=telematics_notes,
+                route_hazards=route_hazards,
+                corridor_distance_km=distance_km,
+                transit_speed_kmh=speed_kmh,
+                destination_city=dest_city,
+                shipping_mode=shipping_type,
+                weather_hazard_detected=bool(w_res.get("hazard_detected")),
+                strike_disruptions_detected=bool(s_res.get("hazard_detected")),
+                autonomous_reasoning=f"ReWOO topology completed parallel sensory tool resolution for {dest_city}.",
+                tools_invoked=tools_invoked,
+                counterfactual_simulation=None,
+                precedents_consulted=precedents,
+                precedent_reflections=precedent_reflections,
+                agent_reasoning=f"ReWOO synthesis completed in single solver pass for Order {order_id}."
+            )
+            return output.model_dump()
 
 
 # ============================================================================
@@ -450,8 +620,10 @@ class ContractAdjudicatorAgent:
             root_causes = [r.strip() for r in root_causes.split(";")]
 
         tools_invoked = []
-        weather_alert = route_analysis.get("weather_hazard_detected", False) or any(
-            "thermal" in r.lower() or "rain" in r.lower() or "wind" in r.lower() or "heatwave" in r.lower() or "act of god" in r.lower()
+        weather_alert = bool(route_analysis.get("weather_hazard_detected", False)) or any(
+            bool(re.search(r"\b(thermal|heatwave|monsoon|flood|storm|cyclone|gale|tornado|hurricane|landslide|blizzard|heavy rain|act of god)\b", r, re.I)) or
+            bool(re.search(r"\bwind\b", r, re.I)) or
+            bool(re.search(r"\brain\b", r, re.I))
             for r in root_causes
         )
         telematics_active = route_analysis.get("telematics_active", True)
@@ -651,7 +823,18 @@ class QualityMitigationAgent:
         requires_director = mitigation_cost > 500.0 or contract_analysis.get("sla_delay_penalty_usd", 0) > 1000.0 or qa_hold_required
         if requires_director:
             approval_status = "DIRECTOR_APPROVAL_REQUIRED"
-            approval_gate = "Actionable Card Routed to Regional Logistics Director via MS Teams (Expense > $500, 2-Hour SLA)"
+            if qa_hold_required:
+                approval_gate = "Actionable Card Routed to Regional Logistics Director via MS Teams (Clinical QA Quarantine Hold, 2-Hour SLA)"
+                rec_action = "INTERCEPT & DIVERT: Quarantine order for bio-secure inspection/destruction; halt forward transit"
+                mitigation_actions = [rec_action]
+                mitigation_cost = 0.0
+            elif mitigation_cost > 500.0:
+                approval_gate = "Actionable Card Routed to Regional Logistics Director via MS Teams (Expense > $500, 2-Hour SLA)"
+                rec_action = mitigation_actions[0] if mitigation_actions else "Authorize expedited freight re-routing"
+            else:
+                approval_gate = "Actionable Card Routed to Regional Logistics Director via MS Teams (Contract SLA Liability > $1,000, 2-Hour SLA)"
+                rec_action = "Authorize contract SLA mitigation and carrier indemnity assignment"
+
             ms_teams_escalation = {
                 "recipient": "Regional Logistics Director",
                 "channel": "MS Teams / Logistics Desk",
@@ -659,9 +842,15 @@ class QualityMitigationAgent:
                 "customer": str(prediction_payload.get("customer_name")),
                 "carrier": str(prediction_payload.get("carrier_name")),
                 "mitigation_expense_usd": mitigation_cost,
-                "recommended_action": mitigation_actions[0] if mitigation_actions else "Authorize expedited re-routing",
+                "recommended_action": rec_action,
                 "sla_response_hours": 2.0,
-                "urgency": "CRITICAL" if has_specialty else "HIGH"
+                "urgency": "CRITICAL" if (has_specialty or qa_hold_required) else "HIGH",
+                "qa_hold_required": qa_hold_required,
+                "escalation_reason": (
+                    f"Clinical QA Quarantine Hold: {'; '.join(qa_hold_reasons)}" if qa_hold_required
+                    else (f"Mitigation expense (${mitigation_cost:,.2f}) exceeds $500 threshold" if mitigation_cost > 500.0
+                          else "Contract SLA liability exceeds $1,000 threshold")
+                )
             }
         else:
             approval_status = "AUTONOMOUSLY_APPROVED"
@@ -771,38 +960,45 @@ Provide a concise, authoritative executive synthesis brief summarizing the root 
         quality_analysis: Dict[str, Any],
         rag_citations: List[str]
     ) -> str:
-        # 1. Try local Ollama LLM first (fast, local on RX 6600)
-        try:
-            from langchain_ollama import ChatOllama
-            prompt = self.build_synthesis_prompt(
-                order_id, customer_name, customer_tier, carrier_name, shipping_type,
-                delay_prob, will_delay, delay_hours, predicted_eta,
-                route_analysis, contract_analysis, quality_analysis, rag_citations
-            )
-            llm = ChatOllama(model=self.model_name, temperature=0.2, base_url="http://127.0.0.1:11434")
-            resp = llm.invoke(prompt)
-            if resp and resp.content and len(resp.content.strip()) > 30:
-                return resp.content.strip()
-        except Exception:
-            pass
+        # 1. Try local Ollama LLM first (only if Ollama daemon is actively running)
+        if is_ollama_available(base_url="http://127.0.0.1:11434"):
+            try:
+                from langchain_ollama import ChatOllama
+                prompt = self.build_synthesis_prompt(
+                    order_id, customer_name, customer_tier, carrier_name, shipping_type,
+                    delay_prob, will_delay, delay_hours, predicted_eta,
+                    route_analysis, contract_analysis, quality_analysis, rag_citations
+                )
+                llm = ChatOllama(model=self.model_name, temperature=0.2, base_url="http://127.0.0.1:11434", timeout=5.0)
+                resp = llm.invoke(prompt)
+                if resp and resp.content and len(resp.content.strip()) > 30:
+                    return resp.content.strip()
+            except Exception:
+                pass
 
         # 2. Default high-fidelity Deterministic Legal Reasoning Engine (Zero latency fallback)
-        status_str = f"DELAYED by {delay_hours:.1f} hrs (ETA: {predicted_eta})" if will_delay else "ON SCHEDULE"
-        hazards = route_analysis.get("route_hazards", [])
+        # Filter out any counterfactual text from physical route hazards and clean punctuation
+        hazards = [h for h in route_analysis.get("route_hazards", []) if "counterfactual" not in h.lower()]
         hazard_str = f"; Hazards: {', '.join(hazards)}" if hazards else ""
+        hazard_str = hazard_str.rstrip(".")
         
         sla_penalty = contract_analysis.get("sla_delay_penalty_usd", 0.0)
         carrier_cb = contract_analysis.get("total_carrier_chargeback_usd", 0.0)
         fm_status = contract_analysis.get("force_majeure_status", "NOT_APPLICABLE")
         
-        actions = quality_analysis.get("mitigation_actions", [])
-        action_str = actions[0] if actions else "Standard active telematics monitoring"
         qa_holds = quality_analysis.get("qa_hold_reasons", [])
         qa_str = f"\nQA Quarantine: {'; '.join(qa_holds)}" if qa_holds else ""
+
+        if quality_analysis.get("qa_hold_required"):
+            action_str = "INTERCEPT & DIVERT: Immediately halt transit for bio-secure quarantine/reverse logistics; cancel forward delivery"
+        else:
+            actions = quality_analysis.get("mitigation_actions", [])
+            action_str = actions[0] if actions else "Standard active telematics monitoring"
         
         app_status = quality_analysis.get("approval_status", "AUTONOMOUSLY_APPROVED")
         app_gate = quality_analysis.get("approval_gate", "AI Copilot Auto-Approval")
         citations_str = ", ".join(rag_citations[:3]) if rag_citations else "Standard MVA Framework"
+        status_str = f"DELAYED by {delay_hours:.1f} hours (ETA: {predicted_eta})" if will_delay else "ON SCHEDULE"
 
         brief = f"""Order {order_id} destined for {customer_name} ({customer_tier} Tier) via {carrier_name} ({shipping_type}) is predicted to be {status_str} (Delay Probability: {delay_prob:.1%}){hazard_str}.
 Contractual SLA Exposure: ${sla_penalty:.2f}. Total Carrier Chargeback: ${carrier_cb:.2f}.
@@ -930,10 +1126,6 @@ def create_inter_agent_debate_subgraph() -> Any:
     return workflow.compile()
 
 
-# ============================================================================
-# Inter-Agent Conversational Negotiation Protocol (Phase 7 / Level 4 Autonomy)
-# ============================================================================
-
 def negotiate_inter_agent_consensus(
     contract_agent: ContractAdjudicatorAgent,
     quality_agent: QualityMitigationAgent,
@@ -945,26 +1137,29 @@ def negotiate_inter_agent_consensus(
     manager_feedback: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Executes a multi-turn conversational negotiation protocol between ContractAdjudicator
-    (focused on minimizing contract breach liability & enforcing SLA schedules)
-    and QualityMitigation (focused on patient product integrity & emergency mitigation budgets).
-    
-    Includes autonomous Arbiter evaluation with semantic convergence scoring (TODO 7.1).
-    Supports guardrail reflection guidance and conversational HITL feedback.
+    Protocol for dynamic multi-turn adversarial negotiation between Contract and Quality specialists.
+    Reconciles customer SLA penalties with emergency freight costs and clinical shelf-life holds.
     """
-    contract_res = contract_agent.adjudicate_contract(
-        prediction_payload, order_data, route_analysis, notice_given_12h
-    )
-    quality_res = quality_agent.plan_mitigation(
-        prediction_payload, order_data, contract_res
+    legal_res = contract_agent.adjudicate_contract(
+        prediction_payload=prediction_payload,
+        order_data=order_data,
+        route_analysis=route_analysis,
+        notice_given_12h=notice_given_12h
     )
 
-    customer_tier = contract_res.get("customer_tier", "Independent")
-    sla_penalty = float(contract_res.get("sla_delay_penalty_usd", 0.0))
-    carrier_cb = float(contract_res.get("total_carrier_chargeback_usd", 0.0))
-    fm_waived = bool(contract_res.get("force_majeure_waived", False))
-    mitigation_cost = float(quality_res.get("total_mitigation_cost_usd", 0.0))
+    quality_res = quality_agent.plan_mitigation(
+        prediction_payload=prediction_payload,
+        order_data=order_data,
+        contract_analysis=legal_res
+    )
+
+    customer_tier = legal_res.get("customer_tier", "Independent")
+    sla_penalty = float(legal_res.get("sla_delay_penalty_usd", 0.0))
+    carrier_cb = float(legal_res.get("total_carrier_chargeback_usd", 0.0))
+    fm_waived = bool(legal_res.get("force_majeure_waived", False))
+
     has_specialty = bool(quality_res.get("has_specialty_diet", False))
+    mitigation_cost = float(quality_res.get("total_mitigation_cost_usd", 0.0))
     qa_hold = bool(quality_res.get("qa_hold_required", False))
     order_id = str(prediction_payload.get("order_id", order_data.get("order_id", "UNKNOWN")))
     material_desc = str(quality_res.get("material_description", "Veterinary Clinical Cargo"))
@@ -977,7 +1172,6 @@ def negotiate_inter_agent_consensus(
             if "Quarantine hold mandated per guardrail policy" not in quality_res.get("qa_hold_reasons", []):
                 quality_res.setdefault("qa_hold_reasons", []).append("Quarantine hold mandated per Pre-Execution Guardrail Audit")
         if "exceeds" in correction_guidance.lower() and "500" in correction_guidance:
-            # Scaled or capped to policy limit
             mitigation_cost = min(500.0, mitigation_cost)
             quality_res["total_mitigation_cost_usd"] = mitigation_cost
 
@@ -985,9 +1179,19 @@ def negotiate_inter_agent_consensus(
         if "keep qa hold" in manager_feedback.lower() or "quarantine" in manager_feedback.lower():
             qa_hold = True
             quality_res["qa_hold_required"] = True
-        if "disallow expensive air freight" in manager_feedback.lower() or "disallow air" in manager_feedback.lower():
-            mitigation_cost = min(400.0, mitigation_cost)
-            quality_res["total_mitigation_cost_usd"] = mitigation_cost
+        if not qa_hold:
+            if "authorize $400" in manager_feedback.lower() or "authorize 400" in manager_feedback.lower():
+                mitigation_cost = 400.0
+                quality_res["total_mitigation_cost_usd"] = 400.0
+                if "Authorized $400 local express courier per Regional Director directive" not in quality_res.get("mitigation_actions", []):
+                    quality_res.setdefault("mitigation_actions", []).insert(0, "Authorized $400 local express courier per Regional Director directive")
+            elif "disallow expensive air freight" in manager_feedback.lower() or "disallow air" in manager_feedback.lower():
+                mitigation_cost = min(400.0, mitigation_cost)
+                quality_res["total_mitigation_cost_usd"] = mitigation_cost
+        else:
+            # If QA quarantine is in effect, forward express freight is zeroed out to prevent clinical hazard
+            mitigation_cost = 0.0
+            quality_res["total_mitigation_cost_usd"] = 0.0
 
     turns: List[NegotiationTurn] = []
 
@@ -1000,40 +1204,43 @@ def negotiate_inter_agent_consensus(
         debate_subgraph = create_inter_agent_debate_subgraph()
         initial_debate_state: DebateState = {
             "order_id": order_id,
-            "disruption_context": {
-                "order_id": order_id,
-                "customer_tier": customer_tier,
-                "carrier_chargeback_usd": carrier_cb,
-                "sla_delay_penalty_usd": sla_penalty,
-                "force_majeure_waived": fm_waived,
-                "mitigation_cost_usd": mitigation_cost,
-                "qa_hold_required": qa_hold,
-                "material_description": material_desc,
-                "correction_guidance": correction_guidance,
-                "manager_feedback": manager_feedback
-            },
+            "disruption_context": {},
             "messages": [],
             "turn_count": 0,
             "consensus_reached": False,
-            "final_compromise": None
+            "final_compromise": None,
+            "customer_tier": customer_tier,
+            "material_desc": material_desc,
+            "sla_penalty": sla_penalty,
+            "carrier_cb": carrier_cb,
+            "mitigation_cost": mitigation_cost,
+            "fm_waived": fm_waived,
+            "qa_hold": qa_hold,
+            "turns": [],
+            "current_turn": 0,
+            "max_turns": 4,
+            "converged": False,
+            "manager_feedback": manager_feedback
         }
-        res_sub = debate_subgraph.invoke(initial_debate_state)
-        sub_messages = res_sub.get("messages", [])
-        if len(sub_messages) >= 2:
-            turns = []
-            for idx, msg in enumerate(sub_messages):
-                txt = msg.content if hasattr(msg, "content") else str(msg)
-                speaker = "ContractAdjudicator" if "[ContractAdjudicator]" in txt or idx % 2 == 0 else "QualityMitigation"
-                clean_txt = txt.replace("[ContractAdjudicator]:", "").replace("[QualityMitigation]:", "").strip()
+        res = debate_subgraph.invoke(initial_debate_state)
+        raw_turns = res.get("turns", [])
+        if len(raw_turns) >= 4:
+            for t in raw_turns:
+                clean_txt = clean_markdown_bold(t.get("statement", ""))
+                cost_prop = float(t.get("proposed_cost", mitigation_cost if t.get("speaker") == "QualityMitigation" else 0.0))
+                pen_prop = float(t.get("proposed_penalty", sla_penalty if t.get("speaker") == "ContractAdjudicator" else 0.0))
                 turns.append(NegotiationTurn(
-                    turn_index=idx + 1,
-                    speaker=speaker,
-                    proposal=clean_txt[:200],
-                    rationale="Dynamic LLM persona synthesis grounded in case constraints.",
-                    demands=[f"Bill carrier ${carrier_cb:.2f}"] if speaker == "ContractAdjudicator" else ["Prescription diet availability"],
-                    concessions=["Grant 72h waiver if Act of God substantiated"] if fm_waived else []
+                    turn_index=t.get("turn_index", len(turns) + 1),
+                    speaker=t.get("speaker", "Agent"),
+                    proposal=clean_txt,
+                    rationale=f"Stance evaluated for {customer_tier} tier cargo {material_desc}",
+                    demands=[],
+                    concessions=[],
+                    proposed_cost_usd=cost_prop,
+                    proposed_penalty_usd=pen_prop,
+                    message=clean_txt
                 ))
-            ollama_success = True
+        ollama_success = True
     except Exception as e:
         logger.debug(f"LangGraph debate sub-graph invoke fell back to contextual generator: {e}")
         ollama_success = False
@@ -1047,64 +1254,86 @@ def negotiate_inter_agent_consensus(
             f"unless backed by contractual reimbursement or Director approval."
         )
         t1_rationale = (
-            f"Adherence to Master Vendor Agreement and preservation of operating margin on order {order_id} (${prediction_payload.get('net_value_usd', 2500):,.2f})."
+            f"Adherence to Master Vendor Agreement and preservation of operating margin on order {order_id}."
         )
-        t1_demands = [f"Limit company absorption; bill carrier ${carrier_cb:.2f}"]
-        t1_concessions = ["Grant 72h SLA waiver under Act of God Force Majeure clause"] if fm_waived else []
         turns.append(NegotiationTurn(
             turn_index=1,
             speaker="ContractAdjudicator",
             proposal=t1_proposal,
             rationale=t1_rationale,
-            demands=t1_demands,
-            concessions=t1_concessions
+            demands=[f"Limit company absorption; bill carrier ${carrier_cb:.2f}"],
+            concessions=["Grant 72h SLA waiver under Act of God Force Majeure clause"] if fm_waived else [],
+            proposed_cost_usd=0.0,
+            proposed_penalty_usd=sla_penalty,
+            message=f"{t1_proposal} Rationale: {t1_rationale}"
         ))
 
         # Dynamic Contextual Turn 2: QualityMitigation
+        if manager_feedback:
+            if qa_hold and ("authorize" in manager_feedback.lower() or "$400" in manager_feedback or "express" in manager_feedback.lower()):
+                hitl_note = (
+                    f" [HITL Feedback Noted: '{manager_feedback}'. However, mandatory QA Quarantine Hold "
+                    f"for bio-secure return/destruction takes legal precedence; forward delivery is canceled "
+                    f"to prevent patient harm, resetting forward mitigation cost to $0.00.]"
+                )
+            else:
+                hitl_note = f" [HITL Feedback: {manager_feedback}]"
+        else:
+            hitl_note = ""
+
         t2_proposal = (
             f"Prioritize clinical product integrity for {material_desc}. "
             + (f"Demand emergency air freight (${mitigation_cost:,.2f}) to prevent veterinary stock-out. " if mitigation_cost > 0 else "Maintain active monitoring. ")
             + (f"Mandate QA Quarantine Hold on order {order_id}." if qa_hold else "No quarantine needed.")
-            + (f" [HITL Feedback: {manager_feedback}]" if manager_feedback else "")
+            + hitl_note
         )
         t2_rationale = (
             f"Prescription clinical diet stock-outs and thermal degradation inflict irreversible patient harm. "
             f"Customer retention and animal welfare override standard road freight transit limits."
         )
-        t2_demands = ["Specialty clinical diet delivery within 48h"] if has_specialty else []
-        if qa_hold:
-            t2_demands.append("Bio-secure QA potency testing prior to patient dispensing")
-        t2_concessions = ["Route freight expense > $500 through Regional Logistics Director governance gate via MS Teams card"]
         turns.append(NegotiationTurn(
             turn_index=2,
             speaker="QualityMitigation",
             proposal=t2_proposal,
             rationale=t2_rationale,
-            demands=t2_demands,
-            concessions=t2_concessions
+            demands=["Specialty clinical diet delivery within 48h"] if has_specialty else [],
+            concessions=["Route freight expense > $500 through Regional Logistics Director governance gate via MS Teams card"],
+            proposed_cost_usd=mitigation_cost,
+            proposed_penalty_usd=0.0,
+            message=f"{t2_proposal} Rationale: {t2_rationale}"
         ))
 
     # Turn 3: ContractAdjudicator compromise position
+    gate_desc = quality_res.get('approval_gate') or ("Clinical QA Quarantine Hold" if qa_hold else "Governance Gate")
+    if "actionable card routed to" in gate_desc.lower():
+        gate_summary = "Clinical QA Quarantine Hold routing to Regional Logistics Director via MS Teams (2-Hour SLA)" if qa_hold else "Governance Escalation routing to Regional Logistics Director via MS Teams (2-Hour SLA)"
+    else:
+        gate_summary = gate_desc
     t3_proposal = (
-        f"Conditionally authorize {quality_res.get('approval_gate')} for ${mitigation_cost:,.2f} mitigation "
+        f"Conditionally authorize {gate_summary} for ${mitigation_cost:,.2f} mitigation "
         f"with strict condition: Carrier receives zero indemnity and absorbs ${carrier_cb:.2f} chargeback."
         + (f" Enforcing guardrail guidance: {correction_guidance}." if correction_guidance else "")
     )
     t3_rationale = "Aligns emergency customer retention with legal liability passthrough to responsible carrier."
-    t3_demands = ["2-Hour SLA turnaround on Director approval card", "Detailed audit logging in SAP BKPF/VBAK"]
-    t3_concessions = [f"Accept temporary mitigation expense of ${mitigation_cost:,.2f} pending director confirmation"]
     turns.append(NegotiationTurn(
         turn_index=3,
         speaker="ContractAdjudicator",
         proposal=t3_proposal,
         rationale=t3_rationale,
-        demands=t3_demands,
-        concessions=t3_concessions
+        demands=["2-Hour SLA turnaround on Director approval card", "Detailed audit logging in SAP BKPF/VBAK"],
+        concessions=[f"Accept temporary mitigation expense of ${mitigation_cost:,.2f} pending director confirmation"],
+        proposed_cost_usd=mitigation_cost,
+        proposed_penalty_usd=sla_penalty,
+        message=f"{t3_proposal} Rationale: {t3_rationale}"
     ))
 
     # Turn 4: QualityMitigation consensus confirmation
+    t4_actions = quality_res.get('mitigation_actions', [])
+    if qa_hold and not t4_actions:
+        t4_actions = ["INTERCEPT & DIVERT: Quarantine order for bio-secure inspection/destruction; halt forward transit"]
+    t4_actions_str = ", ".join(t4_actions) if t4_actions else "Active telematics and transit milestone tracking"
     t4_proposal = (
-        f"Consensus agreed. Mitigation package ratified: Actions={[a[:60] for a in quality_res.get('mitigation_actions', [])]}, "
+        f"Consensus agreed. Mitigation package ratified: Actions=[{t4_actions_str}], "
         f"QA Hold={qa_hold}, Net SLA Penalty=${sla_penalty:.2f}, Authorized Mitigation Cost=${mitigation_cost:.2f}."
     )
     t4_rationale = "Mutual consensus achieved: patient welfare secured while contractual liability is strictly partitioned."
@@ -1114,7 +1343,10 @@ def negotiate_inter_agent_consensus(
         proposal=t4_proposal,
         rationale=t4_rationale,
         demands=[],
-        concessions=["Adopt ContractAdjudicator chargeback schedule in final dispatch"]
+        concessions=["Adopt ContractAdjudicator chargeback schedule in final dispatch"],
+        proposed_cost_usd=mitigation_cost,
+        proposed_penalty_usd=sla_penalty,
+        message=f"{t4_proposal} Rationale: {t4_rationale}"
     ))
 
     agreed_actions = list(quality_res.get("mitigation_actions", []))
@@ -1124,7 +1356,7 @@ def negotiate_inter_agent_consensus(
     compromise_summary = (
         f"Inter-Agent Consensus Achieved across {len(turns)} turns: "
         f"ContractAdjudicator ratified ${mitigation_cost:,.2f} mitigation allocation under "
-        f"{quality_res.get('approval_gate')}, while QualityMitigation confirmed ${carrier_cb:.2f} carrier chargeback "
+        f"{gate_desc}, while QualityMitigation confirmed ${carrier_cb:.2f} carrier chargeback "
         f"and ${sla_penalty:.2f} SLA penalty alignment (Force Majeure waived: {fm_waived}, QA Hold: {qa_hold})."
     )
 
@@ -1149,7 +1381,7 @@ def negotiate_inter_agent_consensus(
 
     return {
         "negotiation_outcome": outcome.model_dump(),
-        "contract_analysis": contract_res,
+        "contract_analysis": legal_res,
         "quality_analysis": quality_res
     }
 

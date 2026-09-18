@@ -1,11 +1,12 @@
 MATNR,MAKTX,MATKL,MEINS,SPECIALTY_DIET_FLAG,SHELF_LIFE_MOS
-M-501,Puppy Formula,VET_DIET,BAG,TRUE,12
-M-502,Feline Urinary SO,STD_PET,CS,FALSE,18
-M-507,Puppy Formula,STD_PET,PAL,TRUE,12
-M-501,Weight Management Kibble,STD_PET,BAG,FALSE,5
-M-508,Senior Dog Joint Care,STD_PET,BAG,TRUE,6
-M-505,Adult Dog Dry Kibble,VET_DIET,CS,TRUE,24
-M-505,Large Breed Puppy Kibble,STD_PET,CS,FALSE,5
-M-507,Feline Urinary SO,VET_DIET,BAG,TRUE,12
-M-503,Adult Dog Dry Kibble,STD_PET,CS,TRUE,18
-M-503,Hypoallergenic Dog Food,STD_PET,CS,TRUE,18
+M-500,Basic Maintenance Kibble 10kg,STD_PET,BAG,FALSE,12
+M-501,Puppy Development Formula 15kg,VET_DIET,BAG,TRUE,12
+M-502,Feline Urinary Health Diet 3kg,VET_DIET,CS,TRUE,18
+M-503,Hypoallergenic Hydrolyzed Protein 12kg,VET_DIET,BAG,TRUE,18
+M-504,Adult Dog Active Vitality Kibble 15kg,STD_PET,BAG,FALSE,18
+M-505,Adult Dog Dry Gastrointestinal Diet 12kg,VET_DIET,CS,TRUE,24
+M-506,Canine Dental Care Chews Carton,STD_PET,CS,FALSE,18
+M-507,Feline Renal Support Formulation,VET_DIET,BAG,TRUE,18
+M-508,Senior Dog Joint Care Supplement 500g,VET_DIET,BAG,TRUE,18
+M-509,Electrolyte & Critical Recovery Solution,VET_MED,CS,TRUE,18
+M-599,Near-Expiry Prescription Clinical Diet (Short Shelf-Life Lot),VET_DIET,BAG,TRUE,4

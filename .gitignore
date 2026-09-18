@@ -32,49 +32,53 @@ venv/
 ENV/
 env/
 
-# SQLite Database & temporary files
+# SQLite Database & temporary database files
 *.db
 *.db-wal
 *.db-shm
 *.db-journal
 india_monitor_data/database/*.db*
 
-# Binary vector store & models (auto-generated at runtime)
+# Binary vector store, embeddings, chunks & models (auto-generated at runtime)
 *.faiss
 *.pkl
 *.pickle
-india_monitor_data/rag/vector_store/*
-india_monitor_data/rag/incident_memory/*
-india_monitor_data/models/*.pkl
+india_monitor_data/rag/vector_store/
+india_monitor_data/rag/incident_memory/
+india_monitor_data/rag/chunks/
+india_monitor_data/rag/processed/
+india_monitor_data/rag/eval_reports/
+india_monitor_data/models/
 
-# Logs and temporary files
-*.log
-india_monitor_data/logs/*
-scratch/
-check_ml_evaluation.py
+# Runtime data exports & audit reports
+india_monitor_data/csv_exports/
+india_monitor_data/json_exports/
+india_monitor_data/reports/
+reports/
+*PREDICTIONS*.md
 evaluation/test_results_*.json
-# Environment variables
-.env
-.env.*
 
-# OS generated files
+# Runtime generated dynamic RAG documents & intelligence briefs (processing byproducts)
+india_monitor_data/rag/documents/Strike_Intelligence/
+india_monitor_data/rag/documents/Weather_Policies/
+
+# Runtime logs & temporary files
+*.log
+india_monitor_data/logs/
+check_ml_evaluation.py
+
+# OS generated files & Office temporary locks
 .DS_Store
 Thumbs.db
 .~lock.*
 *.docx#
-
-# Runtime logs & reports
-*.log
-india_monitor_data/logs/
-india_monitor_data/csv_exports/*.csv
-india_monitor_data/reports/
-*PREDICTIONS*.md
-
-# Obsolete / scratch
-archive/
-*.tmpk*
 ~$*
+*.tmpk*
 
-# Runtime data & reports
-india_monitor_data/csv_exports/*.csv
-india_monitor_data/reports/daily_agent_report_*.json
+# Environment variables
+.env
+.env.*
+
+# Scratch & archive directories
+archive/
+scratch/

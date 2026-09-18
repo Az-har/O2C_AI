@@ -71,6 +71,10 @@ class O2CAgentState(TypedDict):
     correction_guidance: Optional[str]
     reflection_count: int
     manager_feedback: Optional[str]
+    arbiter_convergence_score: Optional[float]
+    arbiter_evaluation: Optional[Dict[str, Any]]
+    compromise_summary: Optional[str]
+    corridor_sensory: Optional[Dict[str, Any]]
 
 
 # ============================================================================
@@ -212,18 +216,24 @@ def inter_agent_negotiation_node(state: O2CAgentState) -> Dict[str, Any]:
     all_precedents.extend(state.get("quality_findings", {}).get("precedents_consulted", []))
 
     cost = float(outcome.get("final_mitigation_cost_usd", state.get("total_mitigation_cost", 0.0)))
+    arbiter_eval = outcome.get("arbiter_evaluation") or {}
+    convergence_score = arbiter_eval.get("compromise_score", 0.92) if isinstance(arbiter_eval, dict) else getattr(arbiter_eval, "compromise_score", 0.92)
+    compromise_summary = outcome.get("compromise_summary", "")
 
     log_entry = (
         f"[{datetime.now().strftime('%H:%M:%S')}] InterAgentNegotiation: Concluded {len(turns)} dialogue turns. "
         f"Consensus: Mitigation=${cost:.2f}, "
         f"Net SLA Penalty=${outcome.get('final_sla_penalty_usd', 0.0):.2f}. "
-        f"Summary: {outcome.get('compromise_summary', '')[:90]}..."
+        f"Summary: {compromise_summary}"
     )
 
     return {
         "negotiation_history": turns,
         "precedents_consulted": all_precedents,
         "total_mitigation_cost": cost,
+        "arbiter_convergence_score": float(convergence_score),
+        "arbiter_evaluation": arbiter_eval if isinstance(arbiter_eval, dict) else (arbiter_eval.model_dump() if hasattr(arbiter_eval, "model_dump") else {}),
+        "compromise_summary": compromise_summary,
         "audit_trail": [log_entry]
     }
 
@@ -407,11 +417,16 @@ def action_execution_node(state: O2CAgentState) -> Dict[str, Any]:
 
 
 def human_approval_checkpoint(state: O2CAgentState) -> Dict[str, Any]:
-    """Node 6B: Human-in-the-Loop Checkpoint - Formats MS Teams Adaptive Card (Expense > $500)"""
+    """Node 6B: Human-in-the-Loop Checkpoint - Formats MS Teams Adaptive Card (Expense > $500 or QA Quarantine)"""
     order_id = state["order_id"]
     cost = state["total_mitigation_cost"]
     reason = state["approval_reason"]
-    actions = state["quality_findings"].get("mitigation_actions", ["Authorize expedited freight"])
+    qa_hold = state["quality_findings"].get("qa_hold_required", False)
+    actions = state["quality_findings"].get("mitigation_actions", [])
+    if qa_hold:
+        rec_action = "INTERCEPT & DIVERT: Quarantine order for bio-secure inspection/destruction; halt forward transit"
+    else:
+        rec_action = actions[0] if actions else "Review mitigation plan"
     
     dispatcher = MSTeamsDispatcher()
     card_res = dispatcher.dispatch_card({
@@ -419,14 +434,17 @@ def human_approval_checkpoint(state: O2CAgentState) -> Dict[str, Any]:
         "customer": state["prediction_payload"].get("customer_name", "Clinic"),
         "carrier": state["prediction_payload"].get("carrier_name", "Carrier"),
         "mitigation_expense_usd": cost,
-        "recommended_action": actions[0] if actions else "Review mitigation plan",
-        "urgency": "CRITICAL" if cost > 1000.0 or state["quality_findings"].get("qa_hold_required") else "HIGH",
-        "sla_response_hours": 2.0
+        "recommended_action": rec_action,
+        "urgency": "CRITICAL" if cost > 1000.0 or qa_hold else "HIGH",
+        "sla_response_hours": 2.0,
+        "qa_hold_required": qa_hold,
+        "escalation_reason": reason
     })
 
+    clean_reason = str(reason).rstrip('.')
     log_entry = (
         f"[{datetime.now().strftime('%H:%M:%S')}] HumanApprovalCheckpoint: MS Teams Adaptive Card generated "
-        f"for Regional Director review. Escalation: {reason}."
+        f"for Regional Director review. Escalation: {clean_reason}."
     )
     return {
         "escalation_payload": card_res,
@@ -527,17 +545,63 @@ def run_order_graph(
     order_id: str,
     prediction_payload: Dict[str, Any],
     order_data: Optional[Dict[str, Any]] = None,
-    manager_feedback: Optional[str] = None
+    manager_feedback: Optional[str] = None,
+    export_audit_report: Optional[bool] = None
 ) -> Dict[str, Any]:
     """
     Execute the compiled LangGraph multi-agent workflow for a single sales order.
     Returns the complete terminal state including specialist findings, executive brief,
     guardrail verification results, and governance action results.
     """
+    enriched_order_data = dict(order_data) if order_data else {}
+    enriched_pred_payload = dict(prediction_payload) if prediction_payload else {}
+
+    # Auto-enrich from database feature store if crucial fields are missing
+    if not enriched_order_data or "order_value" not in enriched_order_data or "haversine_distance_km" not in enriched_order_data:
+        try:
+            from modules.ml_db_extension import MLDatabaseExtension
+            ml_db = MLDatabaseExtension()
+            db_details = ml_db.get_order_details(str(order_id))
+            if db_details:
+                for k, v in db_details.items():
+                    if k not in enriched_order_data or enriched_order_data[k] is None:
+                        enriched_order_data[k] = v
+        except Exception as e:
+            logger.debug(f"Could not auto-enrich order details from database for {order_id}: {e}")
+
+    # Synchronize financial and physical transit parameters across state payloads
+    if "order_value_usd" not in enriched_pred_payload or not enriched_pred_payload.get("order_value_usd"):
+        ord_val = enriched_order_data.get("order_value") or enriched_order_data.get("order_value_usd") or enriched_order_data.get("net_value_usd")
+        if ord_val is not None:
+            enriched_pred_payload["order_value_usd"] = float(ord_val)
+
+    if "haversine_distance_km" not in enriched_pred_payload or not enriched_pred_payload.get("haversine_distance_km"):
+        dist = enriched_order_data.get("haversine_distance_km")
+        if dist is not None:
+            enriched_pred_payload["haversine_distance_km"] = float(dist)
+
+    if "dest_city" not in enriched_pred_payload or not enriched_pred_payload.get("dest_city"):
+        city = enriched_order_data.get("dest_city")
+        if city:
+            enriched_pred_payload["dest_city"] = city
+
+    # Dynamic Sensory Intelligence Extraction (Improvement 5.10 / Deliverable 8)
+    corridor_sensory = None
+    try:
+        from modules.dynamic_sensory_service import enrich_order_with_dynamic_sensory
+        sensory_input = dict(enriched_order_data)
+        if "dest_city" not in sensory_input and "dest_city" in enriched_pred_payload:
+            sensory_input["dest_city"] = enriched_pred_payload["dest_city"]
+        if "shipping_type" not in sensory_input and "shipping_type" in enriched_pred_payload:
+            sensory_input["shipping_type"] = enriched_pred_payload["shipping_type"]
+        corridor_sensory = enrich_order_with_dynamic_sensory(sensory_input)
+    except Exception as e:
+        logger.debug(f"Dynamic sensory extraction skipped for {order_id}: {e}")
+
     initial_state: O2CAgentState = {
         "order_id": str(order_id),
-        "order_data": order_data or {},
-        "prediction_payload": prediction_payload,
+        "order_data": enriched_order_data,
+        "prediction_payload": enriched_pred_payload,
         "active_plan": [],
         "route_findings": {},
         "legal_findings": {},
@@ -556,11 +620,50 @@ def run_order_graph(
         "audit_violations": [],
         "correction_guidance": None,
         "reflection_count": 0,
-        "manager_feedback": manager_feedback
+        "manager_feedback": manager_feedback,
+        "arbiter_convergence_score": None,
+        "arbiter_evaluation": None,
+        "compromise_summary": None,
+        "corridor_sensory": corridor_sensory
     }
 
-    config = {"configurable": {"thread_id": f"order_{order_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"}}
+    thread_id = f"order_{order_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    config = {"configurable": {"thread_id": thread_id}}
     final_state = compiled_o2c_graph.invoke(initial_state, config=config)
+
+    # Memory Checkpointer Pruning Guardrail: Cap retained threads in RAM to prevent memory bloat
+    if hasattr(_memory_saver, "storage") and len(_memory_saver.storage) > 40:
+        try:
+            # Retain only the 10 most recent thread checkpoints
+            keys = list(_memory_saver.storage.keys())
+            for old_k in keys[:-10]:
+                _memory_saver.storage.pop(old_k, None)
+            if hasattr(_memory_saver, "writes"):
+                w_keys = list(_memory_saver.writes.keys())
+                for old_wk in w_keys[:-10]:
+                    _memory_saver.writes.pop(old_wk, None)
+        except Exception:
+            pass
+
+    # Compile and export comprehensive per-order cognitive audit report
+    # In batch runs, exports for all delayed, escalated, QA hold, or high-risk orders while preserving SQLite logging
+    is_critical_order = (
+        final_state.get("requires_human_approval", False)
+        or final_state.get("prediction_payload", {}).get("will_be_delayed", False)
+        or final_state.get("quality_findings", {}).get("qa_hold_required", False)
+        or final_state.get("total_mitigation_cost", 0.0) > 0
+        or not final_state.get("audit_passed", True)
+    )
+    should_export = export_audit_report if export_audit_report is not None else (is_critical_order or len(order_id) <= 20)
+
+    if should_export:
+        try:
+            from modules.order_audit_reporter import OrderAuditReporter
+            reporter = OrderAuditReporter()
+            reporter.export_report(final_state)
+        except Exception as e:
+            logger.warning(f"Failed to export cognitive audit report for Order {order_id}: {e}")
+
     return final_state
 
 

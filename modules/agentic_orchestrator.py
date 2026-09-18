@@ -43,7 +43,9 @@ except Exception:
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from modules.config import DB_PATH, DOCS_DIR, VECTOR_DIR, CSV_DIR, OPENWEATHER_API_KEY, INDIA_CITIES, STRIKE_KEYWORDS
+import time
+import logging
+from modules.config import DB_PATH, DOCS_DIR, VECTOR_DIR, CSV_DIR, LOG_DIR, OPENWEATHER_API_KEY, INDIA_CITIES, STRIKE_KEYWORDS
 from modules.database_manager import DatabaseManager
 from modules.weather_service import WeatherService
 from modules.news_service import NewsService
@@ -53,9 +55,21 @@ from modules.ml_db_extension import MLDatabaseExtension
 from modules.predictive_engine import PredictiveEngine
 from modules.rag_engine import RAGEngine
 
-
 from modules.agent_specialists import RouteSupervisorAgent, ContractAdjudicatorAgent, QualityMitigationAgent, LLMReasoningEngine
 from modules.action_execution_engine import SAPActionExecutor, MSTeamsDispatcher, ClinicNotificationDispatcher
+
+
+def _get_orchestrator_logger() -> logging.Logger:
+    orch_logger = logging.getLogger("AgenticOrchestrator")
+    orch_logger.setLevel(logging.INFO)
+    if not orch_logger.handlers:
+        log_file = LOG_DIR / f"orchestrator_{datetime.now():%Y%m%d}.log"
+        fh = logging.FileHandler(log_file, encoding="utf-8")
+        fh.setFormatter(logging.Formatter("%(asctime)s | %(levelname)s | %(message)s"))
+        orch_logger.addHandler(fh)
+    return orch_logger
+
+logger = _get_orchestrator_logger()
 
 
 class LLMSynthesizer:
@@ -86,7 +100,7 @@ class LLMSynthesizer:
         self.teams_dispatcher = teams_dispatcher or MSTeamsDispatcher()
         self.clinic_notifier = clinic_notifier or ClinicNotificationDispatcher(db_manager=self.db)
 
-    def synthesize(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any] = None) -> Dict[str, Any]:
+    def _build_consolidated_decision(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Coordinate the 4 specialist agents, execute physical ERP/Teams actions,
         and generate structured executive decision briefs.
@@ -106,6 +120,85 @@ class LLMSynthesizer:
         root_causes = prediction_payload.get("root_causes", prediction_payload.get("root_cause", []))
         if isinstance(root_causes, str):
             root_causes = [r.strip() for r in root_causes.split(";")]
+
+        # Fast-Track Triage: Low-risk, on-schedule orders bypass heavy multi-agent RAG/ChromaDB queries
+        has_specialty = bool(prediction_payload.get("has_specialty_diet", order_data.get("has_specialty_diet", False)))
+        weather_alert = bool(prediction_payload.get("weather_alert"))
+        strike_alert = bool(prediction_payload.get("strike_alert"))
+        is_fast_track = (not will_delay) and (delay_prob < 0.40) and (not has_specialty) and (not weather_alert) and (not strike_alert)
+
+        if is_fast_track:
+            dist_km = float(prediction_payload.get("haversine_distance_km", order_data.get("haversine_distance_km", 500.0)))
+            spd_kmh = float(prediction_payload.get("required_transit_speed_kmh", order_data.get("required_transit_speed_kmh", 25.0)))
+            route_analysis = {
+                "agent_name": "RouteSupervisorAgent",
+                "telematics_active": True,
+                "telematics_penalty_usd": 0.0,
+                "telematics_notes": ["Fast-Track: On schedule, telemetry nominal"],
+                "route_hazards": [],
+                "corridor_distance_km": dist_km,
+                "transit_speed_kmh": spd_kmh,
+                "destination_city": dest_city,
+                "shipping_mode": shipping_type,
+                "weather_hazard_detected": False,
+                "strike_disruptions_detected": False,
+                "autonomous_reasoning": "Fast-track approved; transit corridor nominal."
+            }
+            contract_analysis = {
+                "agent_name": "ContractAdjudicatorAgent",
+                "sla_delay_penalty_usd": 0.0,
+                "force_majeure_invoked": False,
+                "total_carrier_chargeback_usd": 0.0,
+                "applied_clauses": ["Standard Transit (On Schedule)"],
+                "notice_given_12h": True,
+                "carrier_name": carrier_name,
+                "customer_tier": customer_tier
+            }
+            quality_analysis = {
+                "agent_name": "QualityMitigationAgent",
+                "qa_hold_required": False,
+                "qa_hold_reasons": [],
+                "emergency_air_freight_recommended": False,
+                "mitigation_cost_usd": 0.0,
+                "requires_director_approval": False,
+                "approval_status": "AUTONOMOUSLY_APPROVED",
+                "ms_teams_escalation_card": None
+            }
+            sap_actions = {
+                "status": "FAST_TRACK_APPROVED",
+                "actions_taken": ["STANDARD_TRANSIT_MAINTAINED"]
+            }
+            exec_brief = (
+                f"Order {order_id} destined for {customer_name} ({customer_tier}) is ON SCHEDULE "
+                f"(Delay Probability: {delay_prob:.1%}). Fast-track autonomous execution approved; "
+                f"standard transit milestones and SAP delivery schedule maintained."
+            )
+            return {
+                "order_id": order_id,
+                "synthesis_timestamp": datetime.now().isoformat(),
+                "customer_profile": {
+                    "name": customer_name,
+                    "tier": customer_tier,
+                    "destination_city": dest_city,
+                    "order_value_usd": order_val
+                },
+                "carrier_profile": {
+                    "name": carrier_name,
+                    "shipping_mode": shipping_type
+                },
+                "engine_a_ml_prediction": {
+                    "delay_probability": delay_prob,
+                    "is_delayed": False,
+                    "predicted_delay_hours": 0.0,
+                    "predicted_eta": predicted_eta or datetime.now().strftime("%Y-%m-%d"),
+                    "root_causes": ["On schedule; normal transit leeways"]
+                },
+                "route_and_transit_supervision": route_analysis,
+                "legal_and_sla_adjudication": contract_analysis,
+                "emergency_mitigation": quality_analysis,
+                "executed_sap_actions": sap_actions,
+                "executive_decision_brief": exec_brief
+            }
 
         # ── 1. ROUTE & TELEMATICS SPECIALIST AGENT ─────────────────────────
         route_analysis = self.route_agent.analyze_route(prediction_payload, order_data)
@@ -227,24 +320,88 @@ class LLMSynthesizer:
             "executive_decision_brief": exec_brief
         }
 
-    def synthesize_with_graph(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any] = None) -> Dict[str, Any]:
-        """Execute decision synthesis through the full LangGraph state machine"""
+    def synthesize_with_graph(
+        self,
+        prediction_payload: Dict[str, Any],
+        order_data: Dict[str, Any] = None,
+        export_audit_report: Optional[bool] = None
+    ) -> Dict[str, Any]:
+        """
+        Execute decision synthesis through the full LangGraph state machine in a single pass.
+        Eliminates duplicate specialist re-execution and redundant ERP write-backs.
+        """
         from modules.agentic_graph import run_order_graph
         order_id = str(prediction_payload.get("order_id", ""))
-        graph_state = run_order_graph(order_id, prediction_payload, order_data)
+        graph_state = run_order_graph(order_id, prediction_payload, order_data, export_audit_report=export_audit_report)
         
-        # Build consolidated decision JSON artifact with graph metadata
-        base_decision = self.synthesize(prediction_payload, order_data)
-        base_decision["langgraph_state"] = {
-            "requires_human_approval": graph_state.get("requires_human_approval", False),
-            "approval_reason": graph_state.get("approval_reason", ""),
-            "total_mitigation_cost": graph_state.get("total_mitigation_cost", 0.0),
-            "audit_trail": graph_state.get("audit_trail", []),
-            "governance_checkpoint": "human_approval_checkpoint" if graph_state.get("requires_human_approval") else "action_execution_node"
+        od = order_data or {}
+        route_analysis = graph_state.get("route_findings", {})
+        contract_analysis = graph_state.get("legal_findings", {})
+        quality_analysis = graph_state.get("quality_findings", {})
+        
+        exec_brief = graph_state.get("final_decision") or "Decision synthesized via LangGraph multi-agent state machine."
+        req_approval = bool(graph_state.get("requires_human_approval", False))
+        cost = float(graph_state.get("total_mitigation_cost", quality_analysis.get("total_mitigation_cost_usd", 0.0)))
+        
+        decision = {
+            "order_id": order_id,
+            "synthesis_timestamp": datetime.now().isoformat(),
+            "customer_profile": {
+                "name": str(prediction_payload.get("customer_name") or od.get("customer_name", "Unknown Clinic")),
+                "tier": str(contract_analysis.get("customer_tier") or prediction_payload.get("customer_tier", "Independent"))
+            },
+            "carrier_profile": {
+                "name": str(prediction_payload.get("carrier_name") or od.get("carrier_name", "Unknown Carrier")),
+                "shipping_mode": str(route_analysis.get("shipping_mode") or prediction_payload.get("shipping_type", "Road (FTL)"))
+            },
+            "engine_a_ml_prediction": {
+                "delay_probability": float(prediction_payload.get("delay_probability", 0.0)),
+                "is_delayed": bool(prediction_payload.get("will_be_delayed", False)),
+                "predicted_delay_hours": float(prediction_payload.get("delay_hours", 0.0)),
+                "predicted_eta": str(prediction_payload.get("predicted_eta", ""))
+            },
+            "route_and_telematics_audit": {
+                "telematics_active": bool(route_analysis.get("telematics_active", True)),
+                "active_hazards": route_analysis.get("route_hazards", []),
+                "telematics_notes": route_analysis.get("telematics_notes", []),
+                "distance_km": float(route_analysis.get("corridor_distance_km", prediction_payload.get("haversine_distance_km", 0.0))),
+                "transit_speed_kmh": float(route_analysis.get("transit_speed_kmh", prediction_payload.get("required_transit_speed_kmh", 0.0)))
+            },
+            "legal_and_sla_adjudication": {
+                "force_majeure_status": contract_analysis.get("force_majeure_status"),
+                "sla_delay_penalty_usd": float(contract_analysis.get("sla_delay_penalty_usd", 0.0)),
+                "after_hours_redelivery_fee_usd": float(contract_analysis.get("after_hours_redelivery_fee_usd", 0.0)),
+                "total_carrier_chargeback_usd": float(contract_analysis.get("total_carrier_chargeback_usd", 0.0)),
+                "penalty_breakdown": contract_analysis.get("penalty_clauses", [])
+            },
+            "emergency_mitigation": {
+                "actions": quality_analysis.get("mitigation_actions", []),
+                "total_mitigation_cost_usd": cost,
+                "approval_status": "DIRECTOR_APPROVAL_REQUIRED" if req_approval else "AUTONOMOUSLY_APPROVED",
+                "approval_gate": "MS Teams Escalation Gate" if req_approval else "AI Copilot Auto-Approval",
+                "ms_teams_escalation_card": graph_state.get("escalation_payload")
+            },
+            "executed_enterprise_actions": {
+                "sap_writebacks": graph_state.get("executed_erp_actions", [])
+            },
+            "engine_b_rag_citations": prediction_payload.get("rag_sources", []),
+            "executive_decision_brief": exec_brief,
+            "langgraph_state": {
+                "requires_human_approval": req_approval,
+                "approval_reason": graph_state.get("approval_reason", ""),
+                "total_mitigation_cost": cost,
+                "audit_trail": graph_state.get("audit_trail", []),
+                "governance_checkpoint": "human_approval_checkpoint" if req_approval else "action_execution_node"
+            }
         }
-        if graph_state.get("final_decision"):
-            base_decision["executive_decision_brief"] = graph_state["final_decision"]
-        return base_decision
+        return decision
+
+    def synthesize(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Unified Cognitive Synthesis Entry Point.
+        Mandates 100% graph-native execution through the compiled LangGraph multi-agent state machine.
+        """
+        return self.synthesize_with_graph(prediction_payload, order_data)
 
 
 class AgenticOrchestrator:
@@ -280,6 +437,14 @@ class AgenticOrchestrator:
         self.predictive_engine = predictive_engine
         self.llm_synthesizer = llm_synthesizer or LLMSynthesizer(db_manager=self.db)
 
+    def synthesize_with_graph(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any] = None, export_audit_report: Optional[bool] = None) -> Dict[str, Any]:
+        """Execute decision synthesis through the full LangGraph state machine via LLMSynthesizer."""
+        return self.llm_synthesizer.synthesize_with_graph(prediction_payload, order_data=order_data, export_audit_report=export_audit_report)
+
+    def synthesize(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Unified Cognitive Synthesis Entry Point via LLMSynthesizer."""
+        return self.llm_synthesizer.synthesize(prediction_payload, order_data=order_data)
+
     def run_daily_agent_cycle(
         self,
         date: str = None,
@@ -289,7 +454,7 @@ class AgenticOrchestrator:
         repredict: bool = False,
         rebuild_rag: bool = False,
         enable_teams_dispatch: bool = False,
-        use_agent_graph: bool = False
+        use_agent_graph: bool = True
     ) -> Dict[str, Any]:
         """
         Execute the complete autonomous daily cycle:
@@ -358,6 +523,8 @@ class AgenticOrchestrator:
                     weather_service=self.weather
                 )
             self.predictive_engine.train_models(ml_df)
+            from modules.agent_tools import set_shared_predictive_engine
+            set_shared_predictive_engine(self.predictive_engine)
 
             # ── STEP 4 & 5: PREDICT & CONCURRENTLY SYNTHESIZE SAP ORDERS ──
             print("\n[Step 4/6] 📦 DUAL-ENGINE DELAY PREDICTION & CONTEXT RETRIEVAL")
@@ -394,8 +561,11 @@ class AgenticOrchestrator:
                         orders_to_process = [str(oid) for oid in total_dataset_orders[:order_limit]]
                     print(f"   🔄 Force Re-Predict Active: Processing {len(orders_to_process):,} order(s)...")
 
-            synthesized_decisions = []
-            predictions_to_record = []
+            total_analyzed = 0
+            total_delayed = 0
+            total_financial_risk = 0.0
+            total_carrier_chargebacks = 0.0
+            retained_decisions = []
 
             if orders_to_process:
                 print(f"   ⚡ Executing high-performance vectorized prediction across {len(orders_to_process):,} orders...")
@@ -403,39 +573,159 @@ class AgenticOrchestrator:
                 pred_results = self.predictive_engine.predict_batch(orders_to_process, orders_data=orders_data)
 
                 # Hardware-Optimized Concurrency Tuning (Ryzen 3 4-Core + Radeon RX 6600 8GB VRAM)
+                import torch
+                if hasattr(torch, "set_num_threads"):
+                    torch.set_num_threads(1)
+
                 from concurrent.futures import ThreadPoolExecutor
-                synth_workers = 2 if (use_agent_graph or target_order) else min(4, os.cpu_count() or 2)
+                # Ensure at least 2 CPU cores are left completely free for Windows OS, DWM, and input hardware interrupts
+                avail_cpus = os.cpu_count() or 2
+                synth_workers = 1 if (use_agent_graph or target_order) else min(2, max(1, avail_cpus - 2))
 
                 def _synth_task(args):
                     idx, ord_id, od, pred_res = args
-                    if use_agent_graph or target_order:
-                        decision = self.llm_synthesizer.synthesize_with_graph(pred_res, order_data=od or {})
-                    else:
-                        decision = self.llm_synthesizer.synthesize(pred_res, order_data=od or {})
+                    try:
+                        # Scoped Audit Export: Always for explicit targets, delayed, or high-risk orders; skip disk write for purely nominal batch orders
+                        is_critical_audit = (
+                            target_order is not None
+                            or bool(pred_res.get("will_be_delayed"))
+                            or float(pred_res.get("delay_probability", 0.0)) >= 0.40
+                            or bool((od or {}).get("has_specialty_diet"))
+                            or idx <= 3
+                        )
+                        if use_agent_graph:
+                            decision = self.synthesize_with_graph(pred_res, order_data=od or {}, export_audit_report=is_critical_audit)
+                        else:
+                            decision = self.llm_synthesizer._build_consolidated_decision(pred_res, order_data=od or {})
+                    except Exception as ex:
+                        logger.error(f"Error synthesizing decision for order {ord_id}: {ex}", exc_info=True)
+                        decision = {
+                            "order_id": str(ord_id),
+                            "synthesis_timestamp": datetime.now().isoformat(),
+                            "customer_profile": {"name": od.get("customer_name", "Unknown"), "tier": od.get("customer_tier", "Independent")},
+                            "carrier_profile": {"name": od.get("carrier_name", "Unknown"), "shipping_mode": od.get("shipping_type", "Road")},
+                            "engine_a_ml_prediction": {
+                                "delay_probability": float(pred_res.get("delay_probability", 0.0)),
+                                "is_delayed": bool(pred_res.get("will_be_delayed", False)),
+                                "predicted_delay_hours": float(pred_res.get("delay_hours", 0.0)),
+                                "predicted_eta": str(pred_res.get("predicted_eta", ""))
+                            },
+                            "legal_and_sla_adjudication": {"sla_delay_penalty_usd": 0.0, "total_carrier_chargeback_usd": 0.0},
+                            "emergency_mitigation": {"approval_status": "AUTONOMOUSLY_APPROVED"},
+                            "executive_decision_brief": f"Order {ord_id} processed under fallback: {ex}"
+                        }
                     pred_with_decision = dict(pred_res)
                     pred_with_decision["decision_json"] = json.dumps(decision, default=str)
+                    
+                    # Pacing Guardrail: 50ms pause per order prevents network socket exhaustion,
+                    # allows SQLite WAL checkpointing, and prevents GPU/CPU thermal saturation
+                    import time
+                    time.sleep(0.05)
                     return idx, ord_id, decision, pred_with_decision
 
-                task_args = [(i, oid, od, pr) for i, (oid, od, pr) in enumerate(zip(orders_to_process, orders_data, pred_results), 1)]
-                with ThreadPoolExecutor(max_workers=synth_workers) as executor:
-                    synth_batch = list(executor.map(_synth_task, task_args))
+                CHUNK_SIZE = 50
+                total_orders = len(orders_to_process)
+                total_analyzed = 0
+                total_delayed = 0
+                total_financial_risk = 0.0
+                total_carrier_chargebacks = 0.0
+                retained_decisions = []
+                total_saved_predictions = 0
 
-                # Maintain deterministic order
-                synth_batch.sort(key=lambda x: x[0])
-                for idx, ord_id, decision, pred_with_decision in synth_batch:
-                    synthesized_decisions.append(decision)
-                    predictions_to_record.append(pred_with_decision)
+                synth_start_time = time.time()
+                progress_file = LOG_DIR / "pipeline_progress.json"
 
-                    if idx <= 5 or idx % 100 == 0 or idx == len(orders_to_process):
-                        print(f"\n   [{idx}/{len(orders_to_process)}] Order {ord_id} -> "
-                              f"Status: {'❌ DELAYED' if decision['engine_a_ml_prediction']['is_delayed'] else '✅ ON TIME'} "
-                              f"({decision['engine_a_ml_prediction']['delay_probability']:.1%}) | "
-                              f"Penalty: ${decision['legal_and_sla_adjudication']['sla_delay_penalty_usd']:.2f} | "
-                              f"Approval: {decision['emergency_mitigation']['approval_status']}")
+                def _write_progress(status_str: str, curr_count: int):
+                    elapsed = max(0.001, time.time() - synth_start_time)
+                    speed = curr_count / elapsed
+                    remaining = max(0, total_orders - curr_count)
+                    eta_sec = remaining / speed if speed > 0 else 0
+                    eta_m, eta_s = divmod(int(eta_sec), 60)
+                    eta_h, eta_m = divmod(eta_m, 60)
+                    eta_formatted = f"{eta_h}h {eta_m}m {eta_s}s" if eta_h > 0 else f"{eta_m}m {eta_s}s"
+                    pct = (curr_count / total_orders) if total_orders > 0 else 1.0
 
-                # Commit all predictions in a single SQLite transaction
-                saved_count = self.ml_db.record_predictions_batch(predictions_to_record)
-                print(f"\n   💾 Committed {saved_count:,} prediction records to SQLite in a single transaction.")
+                    payload = {
+                        "status": status_str,
+                        "date": today_str,
+                        "started_at": datetime.fromtimestamp(synth_start_time).isoformat(),
+                        "last_updated": datetime.now().isoformat(),
+                        "processed_orders": curr_count,
+                        "total_orders": total_orders,
+                        "progress_percent": round(pct * 100, 1),
+                        "orders_per_second": round(speed, 1),
+                        "elapsed_seconds": round(elapsed, 1),
+                        "estimated_seconds_remaining": round(eta_sec, 1),
+                        "eta_formatted": eta_formatted,
+                        "delayed_orders_count": total_delayed,
+                        "on_time_orders_count": curr_count - total_delayed,
+                        "total_financial_risk_usd": round(total_financial_risk, 2),
+                        "total_carrier_chargebacks_usd": round(total_carrier_chargebacks, 2),
+                        "active_workers": synth_workers
+                    }
+                    try:
+                        with open(progress_file, "w", encoding="utf-8") as pf:
+                            json.dump(payload, pf, indent=2)
+                    except Exception:
+                        pass
+                    return pct, speed, eta_formatted
+
+                logger.info(f"Starting batch decision synthesis for {total_orders:,} orders with {synth_workers} workers (Chunk: {CHUNK_SIZE}, Pacing: 50ms).")
+
+                for chunk_start in range(0, total_orders, CHUNK_SIZE):
+                    chunk_end = min(chunk_start + CHUNK_SIZE, total_orders)
+                    chunk_orders = orders_to_process[chunk_start:chunk_end]
+                    chunk_data = orders_data[chunk_start:chunk_end]
+                    chunk_preds = pred_results[chunk_start:chunk_end]
+
+                    task_args = [
+                        (chunk_start + i, oid, od, pr)
+                        for i, (oid, od, pr) in enumerate(zip(chunk_orders, chunk_data, chunk_preds), 1)
+                    ]
+
+                    chunk_preds_to_record = []
+                    with ThreadPoolExecutor(max_workers=synth_workers) as executor:
+                        chunk_results = list(executor.map(_synth_task, task_args))
+
+                    for idx, ord_id, decision, pred_with_decision in chunk_results:
+                        is_del = decision['engine_a_ml_prediction']['is_delayed']
+                        risk = decision['legal_and_sla_adjudication']['sla_delay_penalty_usd']
+                        cb = decision['legal_and_sla_adjudication']['total_carrier_chargeback_usd']
+
+                        total_analyzed += 1
+                        if is_del:
+                            total_delayed += 1
+                            logger.info(
+                                f"Order {ord_id} -> ❌ DELAYED ({decision['engine_a_ml_prediction']['delay_probability']:.1%}) | "
+                                f"Penalty: ${risk:.2f} | Action: {decision['emergency_mitigation']['approval_status']}"
+                            )
+                        total_financial_risk += risk
+                        total_carrier_chargebacks += cb
+
+                        chunk_preds_to_record.append(pred_with_decision)
+
+                        # Retain detailed decision dossiers for the report (all delayed up to 250, plus 50 on-time samples)
+                        if is_del and len(retained_decisions) < 250:
+                            retained_decisions.append(decision)
+                        elif not is_del and len(retained_decisions) < 300:
+                            retained_decisions.append(decision)
+
+                        if idx <= 5 or idx % 25 == 0 or idx == total_orders:
+                            pct, speed, eta_str = _write_progress("RUNNING", total_analyzed)
+                            print(f"   📊 [{total_analyzed:,}/{total_orders:,} | {pct:.1%}] ⚡ {speed:.1f} ord/s | ⏳ ETA: {eta_str} | "
+                                  f"❌ Delayed: {total_delayed:,} | 💸 Risk: ${total_financial_risk:,.2f}")
+
+                    # Commit chunk to SQLite immediately under write lock to free RAM
+                    saved_in_chunk = self.ml_db.record_predictions_batch(chunk_preds_to_record)
+                    total_saved_predictions += saved_in_chunk
+                    _write_progress("RUNNING", total_analyzed)
+                    logger.info(f"Chunk committed {saved_in_chunk:,} records to SQLite. Cumulative: {total_analyzed:,}/{total_orders:,}.")
+                    del chunk_results
+                    del chunk_preds_to_record
+
+                _write_progress("COMPLETED", total_analyzed)
+                logger.info(f"Synthesis complete: {total_analyzed:,} evaluated, {total_delayed:,} delayed, ${total_financial_risk:,.2f} risk.")
+                print(f"\n   💾 Committed {total_saved_predictions:,} prediction records to SQLite across {total_orders:,} evaluated orders.")
 
             # ── STEP 6: EXPORT DAILY REPORT & SUMMARY ──────────────────────
             print("\n[Step 5/6] 📊 GENERATING DAILY AGENTIC DECISION REPORT")
@@ -446,11 +736,13 @@ class AgenticOrchestrator:
                 json.dump({
                     "date": today_str,
                     "generated_at": datetime.now().isoformat(),
-                    "total_orders_analyzed": len(synthesized_decisions),
-                    "delayed_orders_count": sum(1 for d in synthesized_decisions if d['engine_a_ml_prediction']['is_delayed']),
-                    "total_financial_risk_usd": sum(d['legal_and_sla_adjudication']['sla_delay_penalty_usd'] for d in synthesized_decisions),
-                    "total_carrier_chargebacks_usd": sum(d['legal_and_sla_adjudication']['total_carrier_chargeback_usd'] for d in synthesized_decisions),
-                    "decisions": synthesized_decisions
+                    "total_orders_analyzed": total_analyzed,
+                    "delayed_orders_count": total_delayed,
+                    "on_time_orders_count": total_analyzed - total_delayed,
+                    "total_financial_risk_usd": total_financial_risk,
+                    "total_carrier_chargebacks_usd": total_carrier_chargebacks,
+                    "detailed_dossiers_retained": len(retained_decisions),
+                    "decisions": retained_decisions
                 }, f, indent=2, ensure_ascii=False)
 
             print(f"   💾 Saved daily report: {report_file.name}")
@@ -470,7 +762,7 @@ class AgenticOrchestrator:
                 "status": "success",
                 "date": today_str,
                 "report_file": str(report_file),
-                "decisions": synthesized_decisions
+                "decisions": retained_decisions
             }
 
         except Exception as e:
@@ -481,13 +773,16 @@ class AgenticOrchestrator:
             raise
 
     def _export_csvs(self, target_date: str):
-        """Export daily CSV summaries"""
-        w_df = self.db.read_weather(date=target_date)
-        if not w_df.empty:
-            w_df.to_csv(CSV_DIR / f"weather_{target_date}.csv", index=False)
-        s_df = self.db.read_strikes(date=target_date)
-        if not s_df.empty:
-            s_df.to_csv(CSV_DIR / f"strikes_{target_date}.csv", index=False)
+        """Export daily CSV summaries with graceful degradation"""
+        try:
+            w_df = self.db.read_weather(date=target_date)
+            if not w_df.empty:
+                w_df.to_csv(CSV_DIR / f"weather_{target_date}.csv", index=False)
+            s_df = self.db.read_strikes(date=target_date)
+            if not s_df.empty:
+                s_df.to_csv(CSV_DIR / f"strikes_{target_date}.csv", index=False)
+        except Exception as e:
+            logger.debug(f"CSV export note: {e}")
 
 
 def main():

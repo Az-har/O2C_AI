@@ -60,7 +60,8 @@ def main():
     parser.add_argument("--repredict", "--force-repredict", action="store_true", default=False, help="Force re-prediction of already processed orders (default: skip already predicted)")
     parser.add_argument("--rebuild-rag", action="store_true", default=False, help="Force rebuild RAG vector store")
     parser.add_argument("--enable-teams", action="store_true", default=False, help="Enable live Microsoft Teams webhook dispatching")
-    parser.add_argument("--agent-graph", action="store_true", default=False, help="Execute autonomous LangGraph multi-agent orchestration state machine")
+    parser.add_argument("--agent-graph", dest="agent_graph", action="store_true", default=True, help="Execute autonomous LangGraph multi-agent orchestration state machine (Default: True)")
+    parser.add_argument("--no-graph", dest="agent_graph", action="store_false", help="Bypass LangGraph and use legacy procedural fast-track")
     args = parser.parse_args()
 
     orchestrator = AgenticOrchestrator()

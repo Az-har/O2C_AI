@@ -25,8 +25,23 @@ from .action_execution_engine import SAPActionExecutor, MSTeamsDispatcher, Clini
 from .agentic_orchestrator import AgenticOrchestrator
 from .incident_memory import EpisodicMemoryStore, get_incident_memory_store
 from .agentic_graph import run_order_graph, compiled_o2c_graph, pre_execution_guardrail_node
+from .order_audit_reporter import OrderAuditReporter, SemanticInvariantVerifier
+from .dynamic_sensory_service import (
+    CorridorExtractionOutput,
+    OrderCorridorExtractor,
+    GlobalDynamicWeatherService,
+    DynamicDisruptionKeywordGenerator,
+    enrich_order_with_dynamic_sensory
+)
 
 __all__ = [
+    "OrderAuditReporter",
+    "SemanticInvariantVerifier",
+    "CorridorExtractionOutput",
+    "OrderCorridorExtractor",
+    "GlobalDynamicWeatherService",
+    "DynamicDisruptionKeywordGenerator",
+    "enrich_order_with_dynamic_sensory",
     "DatabaseManager",
     "WeatherService",
     "NewsService",

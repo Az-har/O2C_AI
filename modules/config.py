@@ -230,7 +230,9 @@ ALERT_THRESHOLDS = {
 CSV_DIR = BASE_DIR / "csv_exports"
 INPUT_FILES_DIR = _project_root / "Input Files"
 JSON_DIR = BASE_DIR / "json_exports"
+REPORTS_DIR = BASE_DIR / "reports"
+ORDER_REPORTS_DIR = REPORTS_DIR / "orders"
 
 # Create directories
-for d in [DB_PATH.parent, RAG_DIR, DOCS_DIR, VECTOR_DIR, CHUNKS_DIR, LOG_DIR, CSV_DIR, JSON_DIR]:
+for d in [DB_PATH.parent, RAG_DIR, DOCS_DIR, VECTOR_DIR, CHUNKS_DIR, LOG_DIR, CSV_DIR, JSON_DIR, REPORTS_DIR, ORDER_REPORTS_DIR]:
     d.mkdir(parents=True, exist_ok=True)

@@ -13,6 +13,9 @@ from .config import DB_PATH, LOG_DIR
 
 
 _INITIALIZED_DBS = set()
+_INSTANCES = {}
+_INSTANCES_LOCK = threading.Lock()
+_DB_WRITE_LOCK = threading.RLock()
 
 
 class DatabaseManager:
@@ -22,16 +25,42 @@ class DatabaseManager:
     Equipped with thread-safe connection pooling to prevent connection thrashing.
     """
 
+    def __new__(cls, db_path=str(DB_PATH), pool_size: int = 8):
+        norm_key = str(Path(db_path).resolve()) if db_path != ":memory:" else ":memory:"
+        with _INSTANCES_LOCK:
+            if norm_key not in _INSTANCES:
+                instance = super().__new__(cls)
+                instance._initialized = False
+                _INSTANCES[norm_key] = instance
+            return _INSTANCES[norm_key]
+
     def __init__(self, db_path=str(DB_PATH), pool_size: int = 8):
+        if getattr(self, "_initialized", False):
+            return
         self.db_path = str(db_path)
         self.pool_size = pool_size
         self._pool = queue.Queue(maxsize=pool_size)
         self.logger = self._make_logger()
-        if self.db_path not in _INITIALIZED_DBS:
-            self._build_schema()
-            self._apply_migrations()
-            _INITIALIZED_DBS.add(self.db_path)
-        print(f"✅ DatabaseManager ready (Connection Pool: {self.pool_size}) → {self.db_path}")
+        norm_key = str(Path(self.db_path).resolve()) if self.db_path != ":memory:" else ":memory:"
+        if norm_key not in _INITIALIZED_DBS:
+            with _DB_WRITE_LOCK:
+                self._build_schema()
+                self._apply_migrations()
+                _INITIALIZED_DBS.add(norm_key)
+                print(f"✅ DatabaseManager ready (Connection Pool: {self.pool_size}) → {self.db_path}")
+        self._initialized = True
+
+    @classmethod
+    def get_write_lock(cls) -> threading.RLock:
+        """Returns the global database write lock for serializing external bulk write transactions"""
+        return _DB_WRITE_LOCK
+
+    @classmethod
+    def reset_instances(cls):
+        """Reset singleton cache and initialized DBs set (useful for tests)."""
+        with _INSTANCES_LOCK:
+            _INSTANCES.clear()
+            _INITIALIZED_DBS.clear()
 
     def _make_logger(self):
         log_file = LOG_DIR / f"monitor_{datetime.now():%Y%m%d}.log"
@@ -47,11 +76,16 @@ class DatabaseManager:
         """Create an optimized SQLite connection with WAL mode and memory-mapping"""
         conn = sqlite3.connect(
             self.db_path,
+            timeout=60.0,
             detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES,
             check_same_thread=False
         )
         conn.row_factory = sqlite3.Row
-        conn.execute("PRAGMA journal_mode=WAL")
+        try:
+            conn.execute("PRAGMA journal_mode=WAL")
+        except Exception:
+            pass
+        conn.execute("PRAGMA busy_timeout=60000")
         conn.execute("PRAGMA foreign_keys=ON")
         conn.execute("PRAGMA synchronous=NORMAL")
         conn.execute("PRAGMA cache_size=-64000")
@@ -76,18 +110,28 @@ class DatabaseManager:
                 pass
 
     @contextmanager
-    def connection(self):
-        """Safe auto-commit / auto-rollback pooled connection context manager"""
+    def connection(self, write: bool = True):
+        """Safe auto-commit / auto-rollback pooled connection context manager with write serialization"""
         conn = self._get_connection()
-        try:
-            yield conn
-            conn.commit()
-        except Exception as e:
-            conn.rollback()
-            self.logger.error(f"DB error: {e}")
-            raise
-        finally:
-            self._release_connection(conn)
+        if write:
+            with _DB_WRITE_LOCK:
+                try:
+                    yield conn
+                    conn.commit()
+                except Exception as e:
+                    try:
+                        conn.rollback()
+                    except Exception:
+                        pass
+                    self.logger.error(f"DB error: {e}")
+                    raise
+                finally:
+                    self._release_connection(conn)
+        else:
+            try:
+                yield conn
+            finally:
+                self._release_connection(conn)
 
     def _build_schema(self):
         schema = """
@@ -148,36 +192,6 @@ class DatabaseManager:
             UNIQUE(title, source_name)
         );
 
-        CREATE TABLE IF NOT EXISTS weather_alerts (
-            alert_id      INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id    INTEGER,
-            city_name     TEXT NOT NULL,
-            state         TEXT,
-            alert_type    TEXT NOT NULL,
-            alert_message TEXT NOT NULL,
-            severity      TEXT,
-            triggered_at  TEXT NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS daily_summaries (
-            summary_id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            summary_date        TEXT NOT NULL,
-            city_name           TEXT NOT NULL,
-            state               TEXT,
-            avg_temperature     REAL,
-            max_temperature     REAL,
-            min_temperature     REAL,
-            avg_humidity        REAL,
-            total_rainfall      REAL DEFAULT 0,
-            avg_wind_speed      REAL,
-            dominant_weather    TEXT,
-            strike_count        INTEGER DEFAULT 0,
-            high_severity_count INTEGER DEFAULT 0,
-            weather_alert_count INTEGER DEFAULT 0,
-            updated_at          TEXT,
-            UNIQUE(summary_date, city_name)
-        );
-
         CREATE TABLE IF NOT EXISTS rag_analyses (
             analysis_id     INTEGER PRIMARY KEY AUTOINCREMENT,
             news_id         INTEGER,
@@ -223,6 +237,18 @@ class DatabaseManager:
             sent_at TEXT NOT NULL
         );
 
+        CREATE TABLE IF NOT EXISTS erp_outbox_actions (
+            action_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id TEXT NOT NULL,
+            action_type TEXT NOT NULL,
+            payload_json TEXT NOT NULL,
+            status TEXT DEFAULT 'PENDING',
+            retry_count INTEGER DEFAULT 0,
+            idempotency_key TEXT UNIQUE,
+            created_at TEXT NOT NULL,
+            processed_at TEXT
+        );
+
         CREATE TABLE IF NOT EXISTS schema_migrations (
             migration_id INTEGER PRIMARY KEY AUTOINCREMENT,
             version TEXT NOT NULL UNIQUE,
@@ -234,11 +260,12 @@ class DatabaseManager:
         CREATE INDEX IF NOT EXISTS idx_wr_date      ON weather_readings(date_only);
         CREATE INDEX IF NOT EXISTS idx_sn_date      ON strike_news(published_date);
         CREATE INDEX IF NOT EXISTS idx_sn_city      ON strike_news(city_mentioned);
-        CREATE INDEX IF NOT EXISTS idx_ds_date      ON daily_summaries(summary_date);
         CREATE INDEX IF NOT EXISTS idx_rag_news     ON rag_analyses(news_id);
         CREATE INDEX IF NOT EXISTS idx_sap_audit_order ON sap_action_audit_log(order_id);
         CREATE INDEX IF NOT EXISTS idx_carrier_memo_order ON carrier_debit_memos(order_id);
         CREATE INDEX IF NOT EXISTS idx_clinic_warn_order ON clinic_early_warnings(order_id);
+        CREATE INDEX IF NOT EXISTS idx_outbox_status ON erp_outbox_actions(status);
+        CREATE INDEX IF NOT EXISTS idx_outbox_order ON erp_outbox_actions(order_id);
         """
         with self.connection() as conn:
             conn.executescript(schema)
@@ -580,52 +607,12 @@ class DatabaseManager:
             return [dict(r) for r in rows]
 
     def write_weather_alerts(self, alerts: List[Dict[str, Any]]) -> int:
-        """Insert weather alert records into weather_alerts table"""
-        if not alerts:
-            return 0
-        rows = []
-        for a in alerts:
-            rows.append((
-                a.get("session_id"),
-                a.get("city_name") or a.get("city", "Unknown"),
-                a.get("state", ""),
-                a.get("alert_type", "WEATHER_ALERT"),
-                a.get("alert_message") or a.get("message", ""),
-                a.get("severity", "MEDIUM"),
-                a.get("triggered_at") or datetime.now().isoformat()
-            ))
-        with self.connection() as conn:
-            conn.executemany("""
-                INSERT INTO weather_alerts (
-                    session_id, city_name, state, alert_type, alert_message, severity, triggered_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, rows)
-            return len(rows)
+        """Legacy helper retained for API compatibility; alerts are logged in weather_readings."""
+        return len(alerts) if alerts else 0
 
     def write_daily_summary(self, summary: Dict[str, Any]) -> int:
-        """Insert a daily summary record into daily_summaries table"""
-        with self.connection() as conn:
-            cur = conn.execute("""
-                INSERT INTO daily_summaries (
-                    summary_date, city_name, state, avg_temperature, max_temperature,
-                    min_temperature, avg_humidity, total_rainfall, avg_wind_speed,
-                    dominant_weather, strike_count, high_severity_count
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                summary.get("summary_date", datetime.now().strftime("%Y-%m-%d")),
-                summary.get("city_name", "Unknown"),
-                summary.get("state", ""),
-                summary.get("avg_temperature"),
-                summary.get("max_temperature"),
-                summary.get("min_temperature"),
-                summary.get("avg_humidity"),
-                summary.get("total_rainfall", 0.0),
-                summary.get("avg_wind_speed"),
-                summary.get("dominant_weather", "Clear"),
-                summary.get("strike_count", 0),
-                summary.get("high_severity_count", 0)
-            ))
-            return cur.lastrowid
+        """Legacy helper retained for API compatibility; daily reports are stored in reports JSON."""
+        return 1
 
     def get_carrier_debit_memos(self, order_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """Retrieve carrier accounts-payable debit memos for an order or all records"""

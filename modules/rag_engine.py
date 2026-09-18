@@ -80,16 +80,23 @@ class DocumentLoader:
         self.docs_dir = docs_dir
 
     def load_all(self) -> List[Dict]:
-        """Load all supported documents recursively from all subdirectories"""
-        # Recursively find all files
-        all_files = []
+        """Load all supported documents recursively from all subdirectories, prioritizing .md over .docx duplicates"""
+        files_by_stem = {}
         for root, dirs, files in os.walk(self.docs_dir):
             for file in files:
                 file_path = Path(root) / file
-                if file_path.suffix.lower() in self.SUPPORTED:
-                    all_files.append(file_path)
-        
-        print(f"📂 Loading {len(all_files)} documents in parallel across worker threads...")
+                ext = file_path.suffix.lower()
+                if ext in self.SUPPORTED:
+                    key = (str(root), file_path.stem)
+                    if key not in files_by_stem:
+                        files_by_stem[key] = file_path
+                    else:
+                        existing = files_by_stem[key]
+                        if existing.suffix.lower() == ".docx" and ext == ".md":
+                            files_by_stem[key] = file_path
+
+        all_files = list(files_by_stem.values())
+        print(f"📂 Loading {len(all_files)} documents in parallel across worker threads (native .md prioritized)...")
         from concurrent.futures import ThreadPoolExecutor
         workers = min(16, (os.cpu_count() or 4) * 2)
         
@@ -635,11 +642,13 @@ class RAGEngine:
     def query(self, question: str, category: str = None, verbose: bool = True) -> Dict:
         """Query the RAG system (verbose output)"""
         if self.query_engine is None:
-            return {"error": "RAG not initialized. Call initialize() first."}
+            if not self.initialize(force_rebuild=False):
+                return {"error": "RAG not initialized and index could not be loaded."}
         return self.query_engine.query(question, category=category, verbose=verbose)
     
     def ask(self, question: str, category: str = None) -> Dict:
         """Ask a question (returns dict only, no printing)"""
         if self.query_engine is None:
-            return {"error": "RAG not initialized. Call initialize() first."}
+            if not self.initialize(force_rebuild=False):
+                return {"error": "RAG not initialized and index could not be loaded."}
         return self.query_engine.ask(question, category=category)

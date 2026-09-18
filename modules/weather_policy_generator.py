@@ -68,12 +68,16 @@ class WeatherPolicyGenerator:
         for city, city_alerts in policies_by_city.items():
             doc_path = self._create_city_weather_policy(city, city_alerts)
             generated_files.append(doc_path)
-            print(f"   ✅ {doc_path.name}")
+            md_path = self._create_city_weather_policy_md(city, city_alerts)
+            generated_files.append(md_path)
+            print(f"   ✅ {doc_path.name} | {md_path.name}")
         
         # Create master weather protocol document
         master_doc = self._create_master_weather_protocol(alerts)
         generated_files.append(master_doc)
-        print(f"   ✅ {master_doc.name}")
+        master_md = self._create_master_weather_protocol_md(alerts)
+        generated_files.append(master_md)
+        print(f"   ✅ {master_doc.name} | {master_md.name}")
         
         print(f"\n✅ Generated {len(generated_files)} weather policy documents")
         print(f"📁 Saved to: {self.output_dir}")
@@ -323,6 +327,68 @@ class WeatherPolicyGenerator:
         doc.save(str(doc_path))
         
         return doc_path
+
+    def _create_city_weather_policy_md(self, city: str, alerts: List[Dict]) -> Path:
+        """Create structured Markdown weather policy document for zero-churn RAG indexing (Improvement 5.3)"""
+        peak_temp = max([a['temp_c'] for a in alerts]) if alerts else 30.0
+        peak_wind = max([a['wind_ms'] for a in alerts]) if alerts else 5.0
+        peak_rain = max([a['rain_mm'] for a in alerts]) if alerts else 0.0
+        min_vis = min([a['visibility_km'] for a in alerts]) if alerts else 10.0
+
+        city_code = city[:3].upper()
+        primary_hazard = f"Extreme Heatwave ({peak_temp:.1f}°C)" if peak_temp > 40 else (f"Gale Force Crosswinds ({peak_wind:.1f} m/s)" if peak_wind > 15 else f"Heavy Rain ({peak_rain:.1f} mm/h)")
+
+        lines = [
+            f"# {city.upper()} SEVERE WEATHER PROTOCOL & FREIGHT ADJUDICATION MATRIX",
+            f"**Monitored Logistics Hub:** {city} Commercial Logistics Corridor",
+            f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | **Total Telemetry Events Analyzed:** {len(alerts)}",
+            f"**Observed Telemetry Extremes:** Peak Temp: {peak_temp:.1f}°C | Peak Wind: {peak_wind:.1f} m/s | Peak Rain: {peak_rain:.1f} mm/h | Min Visibility: {min_vis:.2f} km\n",
+            "## 1. EXTRACTED METEOROLOGICAL INSIGHTS & EXPOSURE PROFILE",
+            f"- **Primary Hazard Vector:** {primary_hazard} recorded in {city} logistics cluster.",
+            f"- **Secondary Hazard Vector:** Ambient atmospheric stress causing transit velocity degradation and cargo vulnerability.",
+            f"- **Critical Risk Window:** Elevated highway exposure, linehaul velocity reduction (-25% to -40%), and thermal/moisture packaging stress.\n",
+            "## 2. BINDING OPERATIONAL & QUALITY ASSURANCE (QA) DIRECTIVES",
+            f"### [RULE-W-{city_code}-01] TRAILER EQUIPMENT & FLEET RESTRICTION",
+            f"Wind speed >= 15.0 m/s or heavy rain >= 20.0 mm/h mandates immediate suspension of high-cube curtain-sided trailers (>3.0m height). Dispatch must substitute low-profile rigid trucks.\n",
+            f"### [RULE-W-{city_code}-02] FORCE MAJEURE & SLA ADJUDICATION (CLAUSE 4.2)",
+            f"Weather conditions exceeding official alert thresholds qualify as IMD-recognized Severe Meteorological Events. Carrier delay penalties ($500/day -> $0.00) are waived upon submission of verified telematics logs.\n",
+            f"### [RULE-W-{city_code}-03] COLD-CHAIN & MOISTURE INTEGRITY PROTOCOL",
+            f"Ambient temperature >40.0°C exceeding 4.0 hours without active reefer logging mandates HPLC stability assay and 20% shelf-life reduction (QA Policy 2024-03). Carton moisture >12% mandates 100% rejection.\n",
+            f"### [RULE-W-{city_code}-04] DYNAMIC ETA BUFFER & REDELIVERY FEE WAIVER",
+            f"Automatically inject a +4.0h to +8.0h dynamic safety buffer into predicted arrival time (PDD). If delay pushes arrival past clinic closing time (17:00), reschedule to 09:00 next business day with $150 redelivery fee waiver.\n",
+            "## 3. COPILOT DETERMINISTIC ACTION CHECKLIST",
+            f"- [x] Step 1: Query live weather telemetry in {city} against alert thresholds (Temp >40°C, Wind >15m/s, Rain >20mm/h).",
+            f"- [x] Step 2: Cross-reference active SAP linehauls (sap_vttk) entering {city} and check carrier equipment profile.",
+            f"- [x] Step 3: Apply [RULE-W-{city_code}-02] Force Majeure relief to waive SLA penalties if alert conditions verified.",
+            f"- [x] Step 4: Dispatch automated Actionable Adaptive Card to Regional Logistics Director for approvals exceeding $500."
+        ]
+
+        md_path = self.output_dir / f"{city}_Weather_Protocol.md"
+        md_path.write_text("\n".join(lines), encoding="utf-8")
+        return md_path
+
+    def _create_master_weather_protocol_md(self, all_alerts: List[Dict]) -> Path:
+        """Create structured Markdown master weather protocol document (Improvement 5.3)"""
+        cities = set(a['city'] for a in all_alerts)
+        lines = [
+            "# MASTER SEVERE WEATHER PROTOCOL & REGIONAL FORCE MAJEURE MATRIX",
+            f"**Cities Monitored:** {len(cities)} | **Total Weather Events Analyzed:** {len(all_alerts)}\n",
+            "## Purpose",
+            "This master protocol provides cross-regional guidance for the O2C Delivery Risk Copilot when severe weather threatens delivery operations across India.\n",
+            "## Force Majeure Eligibility Criteria",
+            "- Temperature exceeds 42°C (Level 5 Heat Alert)",
+            "- Wind speed exceeds 20 m/s (Level 4+ Storm)",
+            "- Rainfall exceeds 50mm/hr (Level 5 Monsoon Alert)",
+            "- Visibility drops below 0.5km (Level 5 Fog Alert)",
+            "- Government-issued transport advisory is active\n",
+            "## Regional Rerouting Matrix",
+            "- **Mumbai → Delhi:** If Mumbai flooded, route via Pune → Ahmedabad → Delhi",
+            "- **Chennai → Bangalore:** If heavy rain, use NH-44 southern corridor",
+            "- **Kolkata → Eastern deliveries:** Cyclone season (May-Oct) requires 48hr buffer"
+        ]
+        md_path = self.output_dir / "Master_Weather_Protocol.md"
+        md_path.write_text("\n".join(lines), encoding="utf-8")
+        return md_path
 
 
 if __name__ == "__main__":

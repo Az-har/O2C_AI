@@ -8,19 +8,21 @@
 - [SECTION I: SYSTEM ARCHITECTURE & UNIFIED 3-TIER TOPOLOGY](#section-i-system-architecture--unified-3-tier-topology)
   - [1.1 Executive System Overview](#11-executive-system-overview)
   - [1.2 Unified 3-Tier End-to-End System Topology (Mermaid Diagram)](#12-unified-3-tier-end-to-end-system-topology)
-  - [1.3 Master Module Inventory (All 17 Modules & 135+ Functions)](#13-master-module-inventory-all-17-modules--135-functions)
-- [SECTION II: TIER 1 — REAL-TIME SENSORY INGESTION & DOCUMENT SYNTHESIS](#section-ii-tier-1--real-time-sensory-ingestion--document-synthesis)
+  - [1.3 Master Module Inventory (All 22 Modules & 180+ Functions)](#13-master-module-inventory-all-20-modules--155-functions)
+- [SECTION II: TIER 1 — REAL-TIME SENSORY INGESTION, DUCKDB OLAP & DOCUMENT SYNTHESIS](#section-ii-tier-1--real-time-sensory-ingestion-duckdb-olap--document-synthesis)
   - [2.1 Data Topography: Where Data Lives](#1-🗺️-data-topography-where-data-lives)
   - [2.2 Data Flow: What Happens to the Data in Tier 1](#2-🔄-data-flow-what-happens-to-the-data-in-part-1)
-  - [2.3 Detailed Function Breakdown: Ingestion Modules (Modules 1–6)](#3-📄-python-module-deep-dive-ingestion-layer)
+  - [2.3 Detailed Function Breakdown: Ingestion & OLAP Modules (Modules 1–6, 18 & 22)](#3-📄-python-module-deep-dive-ingestion-layer)
     - [Module 1: `modules/config.py`](#module-1-modulesconfigpy)
     - [Module 2: `modules/database_manager.py`](#module-2-modulesdatabasemanagerpy)
     - [Module 3: `modules/weather_service.py`](#module-3-modulesweatherservicepy)
     - [Module 4: `modules/news_service.py`](#module-4-modulesnewsservicepy)
     - [Module 5: `modules/weather_policy_generator.py`](#module-5-modulesweatherpolicygeneratorpy)
     - [Module 6: `modules/strike_intelligence_generator.py`](#module-6-modulesstrikeintelligencegeneratorpy)
+    - [Module 18: `modules/analytical_feature_store.py`](#module-18-modulesanalyticalfeaturestorepy)
+    - [Module 22: `modules/dynamic_sensory_service.py`](#module-22-modulesdynamicsensoryservicepy)
   - [2.4 Tier 1 Data Summary Matrix](#4-📊-data-summary-matrix-for-part-1)
-  - [2.5 Architectural Rationale: Hybrid Rule + AI Document Generation](#5-🧠-architectural-rationale-why-operational--legal-rules-are-embedded-in-generated-knowledge-documents)
+  - [2.5 Architectural Rationale: Hybrid Rule + AI Document Generation & Direct Markdown](#5-🧠-architectural-rationale-why-operational--legal-rules-are-embedded-in-generated-knowledge-documents)
 - [SECTION III: TIER 2 — SAP FEATURE STORE, TWO-STAGE PREDICTIVE ML & HYBRID RAG](#section-iii-tier-2--sap-feature-store-two-stage-predictive-ml--hybrid-rag)
   - [3.1 Relational ERP Schema & Data Mapping Architecture (10 SAP Tables)](#2-📁-storage-architecture--artifact-locations-for-part-2)
   - [3.2 Machine Learning Feature Store & High-Speed Vectorization (19 Features)](#3-🔬-complete-feature-engineering--machine-learning-training-data-points)
@@ -36,7 +38,7 @@
 - [SECTION IV: TIER 3 — MULTI-AGENT SPECIALIST REASONING, ERP ACTIONS & ORCHESTRATION](#section-iv-tier-3--multi-agent-specialist-reasoning-erp-actions--orchestration)
   - [4.1 LangGraph Multi-Agent Architecture & Decision State Machine (9 Nodes)](#2-🤖-multi-agent-specialist-persona--decision-matrices)
   - [4.2 Centralized Agent Tool Registry (9 Production Tools)](#42-centralized-agent-tool-registry-7-production-tools)
-  - [4.3 Detailed Function Breakdown: Multi-Agent & Execution Modules (Modules 11–17)](#3-🧩-detailed-function-by-function-code-breakdown)
+  - [4.3 Detailed Function Breakdown: Multi-Agent, Memory, Tracing & Execution Modules (Modules 11–17, 19–21)](#3-🧩-detailed-function-by-function-code-breakdown)
     - [Module 11: `modules/agent_tools.py`](#module-11-modulesagenttoolspy)
     - [Module 12: `modules/agent_specialists.py`](#module-12-modulesagentspecialistspy)
     - [Module 13: `modules/agentic_graph.py`](#module-13-modulesagenticgraphpy)
@@ -44,11 +46,15 @@
     - [Module 15: `modules/agentic_orchestrator.py`](#module-15-modulesagenticorchestratorpy)
     - [Module 16: `modules/incident_memory.py`](#module-16-modulesincidentmemorypy)
     - [Module 17: `modules/agent_daemon.py`](#module-17-modulesagentdaemonpy)
+    - [Module 19: `modules/blackboard_memory.py`](#module-19-modulesblackboardmemorypy)
+    - [Module 20: `modules/telemetry.py`](#module-20-modulestelemetrypy)
+    - [Module 21: `modules/order_audit_reporter.py`](#module-21-modulesorderauditreporterpy)
   - [4.4 Tier 3 Data Summary Matrix](#4-📊-data-summary-matrix-for-part-3)
 - [SECTION V: COMPLETE END-TO-END SYSTEM INTEGRATION & VERIFICATION](#section-v-complete-end-to-end-system-integration)
   - [5.1 The Complete End-to-End Trace: How an Order Travels Through the LangGraph Engine](#5-🔬-the-complete-end-to-end-trace-how-an-order-travels-through-parts-1-2-and-3)
-  - [5.2 Master System Audit Matrix (All 17 Modules, 135+ Validated Functions)](#6-🏆-summary-of-master-3-part-technical-series)
-  - [5.3 Hardware Optimization Profile & 31-Suite Verification (AMD Ryzen 3 3200G + Radeon RX 6600)](#53-hardware-optimization-profile-amd-ryzen-3-3200g--radeon-rx-6600)
+  - [5.2 Master System Audit Matrix (All 22 Modules, 180+ Validated Functions)](#6-🏆-summary-of-master-3-part-technical-series)
+  - [5.3 Hardware Optimization Profile, Deadlock RCA & 44-Suite Verification (AMD Ryzen 3 3200G + Radeon RX 6600)](#53-hardware-optimization-profile-amd-ryzen-3-3200g--radeon-rx-6600)
+  - [5.4 Deterministic Semantic Reconciliation & The 11 Constitutional Invariant Axioms](#54-deterministic-semantic-reconciliation--the-11-constitutional-invariant-axioms)
 
 ---
 
@@ -65,9 +71,9 @@ In modern global logistics operations, delayed shipments trigger severe operatio
 - **Carrier Chargeback Disputes:** Without verifiable telematics audits and meteorological evidence, claims against third-party logistics (3PL) carriers collapse during contract arbitration.
 
 The O2C Copilot resolves these enterprise challenges by fusing:
-1. **Tier 1 (Real-Time Ingestion):** Continuous concurrent Open-Meteo weather telemetry ($<300$ms) and global multimodal disruption scraping (maritime, canal chokepoints, air cargo, freight rail, trucking, customs, and natural disasters), transformed into 23 high-density Word regulatory policy protocols with discrete rule IDs (`[RULE-W-*]`, `[RULE-S-*]`).
+1. **Tier 1 (Real-Time Ingestion, DuckDB OLAP & Document Synthesis):** Continuous concurrent Open-Meteo weather telemetry ($<300$ms) and global multimodal disruption scraping (maritime, canal chokepoints, air cargo, freight rail, trucking, customs, and natural disasters). Integrates a high-performance **Polystore Architecture** using embedded **DuckDB (v1.5.5)** (`modules/analytical_feature_store.py`) to join 10 raw SAP CSV tables (62,299 rows) in **0.831s** ($<1.1$s total load) with $O(1)$ order lookups. Synthesizes 23 high-density Word and direct Markdown policy protocols with discrete rule IDs (`[RULE-W-*]`, `[RULE-S-*]`). Includes the **Dynamic Global Sensory Ingestion Pipeline** (`modules/dynamic_sensory_service.py`) for order-first LLM corridor extraction and zero-key Open-Meteo geocoding/telemetry across global trade lanes.
 2. **Tier 2 (Predictive ML, RAG Core & Episodic Memory):** A 10-table SAP relational feature store with pure NumPy vectorized Haversine math (1.803s dataset load) feeding an enterprise **Two-Stage Hurdle ML Architecture (97.10% accuracy, 0.9958 ROC-AUC, 5.63h MAE)**, an interactive **Counterfactual Simulation Engine (Tool 9)**, a **Hybrid Dense/Sparse RAG Engine (82 documents, 909 chunks)** with FAISS Cosine Similarity and Okapi BM25 Reciprocal Rank Fusion, and a **ChromaDB Episodic Memory Store** indexing historical resolutions and formulating cognitive precedent reflections.
-3. **Tier 3 (LangGraph Autonomous Multi-Agent State Machine & Execution):** A 9-node collaborative state machine (`modules/agentic_graph.py`) orchestrated by LangGraph with Fast-Track conditional routing, model-driven ReAct investigation agents (`build_autonomous_investigation_agent`), a compiled inter-agent debate sub-graph (`create_inter_agent_debate_subgraph`) with generative LLM dialogue and semantic arbiter convergence ($\ge 0.85$), metacognitive pre-execution guardrails with self-correcting feedback loops, an abstract `ERPActionInterface` (`SQLiteSAPMockAdapter` and `SAPODataAdapter`), interactive Microsoft Teams Adaptive Cards (v1.4) with a 2-hour SLA, and an event-driven FastAPI microservice daemon (`modules/agent_daemon.py`) with bidirectional conversational HITL and a local GPU concurrency guard (`asyncio.Semaphore(2)`).
+3. **Tier 3 (LangGraph Autonomous Multi-Agent State Machine & Execution):** A 9-node collaborative state machine (`modules/agentic_graph.py`) orchestrated by LangGraph with Fast-Track conditional routing, model-driven ReAct investigation agents (`build_autonomous_investigation_agent`) alongside token-efficient **ReWOO execution topology** (`analyze_route_rewoo`), a compiled inter-agent debate sub-graph (`create_inter_agent_debate_subgraph`) with generative LLM dialogue and semantic arbiter convergence ($\ge 0.85$), metacognitive pre-execution guardrails with self-correcting feedback loops, an abstract `ERPActionInterface` with a **Transactional Outbox Pattern** (`erp_outbox_actions` and `TransactionalOutboxManager`) ensuring two-phase idempotent commits, a **Hierarchical Blackboard Working Memory** (`modules/blackboard_memory.py`) for cross-order risk sharing, **Local OpenTelemetry / OpenInference Distributed Tracing** (`modules/telemetry.py`), interactive Microsoft Teams Adaptive Cards (v1.4) with a 2-hour SLA, the **Per-Order Cognitive Audit & Debate Reporting Engine** with **Semantic Invariant Verifier** (`modules/order_audit_reporter.py`) enforcing the 11 Constitutional Invariant Axioms, and an event-driven FastAPI microservice daemon (`modules/agent_daemon.py`) with real-time IoT telematics ingestion and GPU concurrency throttling (`asyncio.Semaphore(2)`).
 
 ---
 
@@ -75,22 +81,27 @@ The O2C Copilot resolves these enterprise challenges by fusing:
 
 ```mermaid
 graph TD
-    subgraph "TIER 1: REAL-TIME SENSORY INGESTION & DOCUMENT SYNTHESIS"
+    subgraph "TIER 1: REAL-TIME SENSORY INGESTION, DUCKDB OLAP & DOCUMENT SYNTHESIS"
         A1["Open-Meteo & OWM Concurrent Radar<br/>(ThreadPoolExecutor, under 300ms)"] --> A2["WeatherService (fetch_current / fetch_historical)"]
         B1["Global Multimodal Disruption Stream<br/>(Maritime, Air, Rail, Road, Disasters)"] --> B2["NewsService (Pre-Compiled Regexes & Taxonomy)"]
-        A2 --> C1["DatabaseManager (ACID WAL Mode SQLite, Batch Inserts)"]
+        A3["Dynamic Global Sensory Pipeline<br/>(Order-First LLM Extraction & Global Open-Meteo)"] --> C1["DatabaseManager (ACID WAL Mode SQLite, Batch Inserts)"]
+        A2 --> C1
         B2 --> C1
         C1 --> D1["weather_readings & weather_alerts"]
         C1 --> D2["strike_news & daily_summaries"]
+        
+        G0["10 Raw SAP CSV Exports (62,299 rows)"] --> G0B["AnalyticalFeatureStore (DuckDB OLAP, 0.831s Join)"]
+        
         D1 --> E1["WeatherPolicyGenerator (Hybrid Rule + Qwen2.5)"]
         D2 --> E2["StrikeIntelligenceGenerator (Hybrid Rule + Qwen2.5)"]
-        E1 --> F1["6 Word Weather Protocols ([RULE-W-*])"]
-        E2 --> F2["17 Word Strike Briefs ([RULE-S-*])"]
+        E1 --> F1["6 Word & Markdown Weather Protocols ([RULE-W-*])"]
+        E2 --> F2["17 Word & Markdown Strike Briefs ([RULE-S-*])"]
     end
 
     subgraph "TIER 2: SAP FEATURE STORE, TWO-STAGE ML & HYBRID RAG & MEMORY"
-        G1["10 SAP ERP CSV Exports"] --> G2["MLDatabaseExtension (Vectorized Haversine Math, 1.803s Load)"]
+        G1["10 SAP ERP Relational Tables"] --> G2["MLDatabaseExtension (Vectorized Haversine Math, 1.803s Load)"]
         G2 --> G3["19-Feature Vector Space (Lightweight Integer Index Cache)"]
+        G0B -.->|"Zero-Copy OLAP Columnar Cache"| G3
         G3 --> H1["PredictiveEngine: Stage 1 RandomForest Gate (100 Trees, Depth 6)"]
         G3 --> H2["PredictiveEngine: Stage 2 Conditional Huber Regressor (Delayed Subset)"]
         H1 --> H3["Two-Stage Gated Delay Prediction (Acc: 97.10%, MAE: 5.63h)"]
@@ -113,11 +124,14 @@ graph TD
         M0B --> L1
     end
 
-    subgraph "TIER 3: LANGGRAPH MULTI-AGENT STATE MACHINE & ERP EXECUTION"
+    subgraph "TIER 3: LANGGRAPH MULTI-AGENT STATE MACHINE, MEMORY & ERP EXECUTION"
+        BB["Hierarchical Blackboard Working Memory<br/>(Corridor Hazards, Carrier Status, Regional Holds)"] <--> M1
+        TEL["Local OpenTelemetry / OpenInference Tracing<br/>(JSONL Trace Spans, Latency, Tool Execution)"] -.-> M1
+        
         L1 --> M1["1. supervisor_router<br/>(Dynamic Context & Risk Assessment)"]
         
-        M1 -->|"P(delay) < 0.35: Fast-Track"| Q1["8. action_execution_node<br/>(Instant Autonomous ERP Commit, under 5ms)"]
-        M1 -->|"P(delay) >= 0.35: Investigation"| N1["2. route_specialist<br/>(ReAct Autonomous Agent: Live Tools 1-9)"]
+        M1 -->|"P(delay) < 0.35: Fast-Track"| Q1["8. action_execution_node<br/>(Transactional Outbox Commit, under 5ms)"]
+        M1 -->|"P(delay) >= 0.35: Investigation"| N1["2. route_specialist<br/>(ReWOO / ReAct Autonomous Agent: Live Tools 1-9)"]
         
         N1 --> N2["3. contract_adjudicator<br/>(SLA Math, 12h Notice, FM Waiver, Precedent Citation)"]
         N2 --> N3["4. quality_mitigation<br/>($1,000 Air Pallet, QA Hold LIFSK='01', Shelf-Life)"]
@@ -129,39 +143,46 @@ graph TD
         P2 -->|"Guardrails Passed & Expense <= $500"| Q1
         P2 -->|"Guardrails Passed & Expense > $500 or QA Hold"| Q2["9. human_approval_checkpoint<br/>(MSTeamsDispatcher Adaptive Card v1.4, 2h SLA)"]
         
-        Q1 --> R1["Daily Executive Audit Report & SAP AP Debit Memos"]
+        Q1 --> OUT["Transactional Outbox Manager<br/>(erp_outbox_actions, Idempotent 2-Phase Commit)"]
+        OUT --> R1["Daily Executive Audit Report & SAP AP Debit Memos"]
         Q2 --> R1
+        R1 --> REP["OrderAuditReporter & Semantic Invariant Verifier<br/>(11 Invariant Axioms, Markdown & JSON Dossiers)"]
         
-        S0["FastAPI Agent Daemon"] -->|"Webhooks & Conversational HITL"| M1
+        S0["FastAPI Agent Daemon<br/>(Streaming IoT Telematics, Disruption & HITL)"] -->|"REST Webhooks"| M1
     end
 ```
 
 ---
 
-### 1.3 Master Module Inventory (All 17 Modules & 135+ Functions)
+### 1.3 Master Module Inventory (All 22 Modules & 180+ Functions)
 
-The unified platform comprises **17 dedicated Python modules** across 3 architectural tiers:
+The unified platform comprises **22 dedicated Python modules** across 3 architectural tiers:
 
 | Tier | Module # | File Location | Class Name / Component | Key Responsibility | Functions Validated |
 |---|---|---|---|---|---|
 | **Tier 1** | **Module 1** | `modules/config.py` | Configuration Core | Absolute root resolution, city coordinates, RAG constants | 1 |
-| **Tier 1** | **Module 2** | `modules/database_manager.py` | `DatabaseManager` | ACID transactions, WAL mode, batch `executemany`, schema migrations, debit memo APIs | 15 |
+| **Tier 1** | **Module 2** | `modules/database_manager.py` | `DatabaseManager` | ACID transactions, WAL mode, batch `executemany`, schema migrations, outbox tables | 26 |
 | **Tier 1** | **Module 3** | `modules/weather_service.py` | `WeatherService` | Concurrent `ThreadPoolExecutor(max_workers=5)` telemetry, persistent HTTP sessions, Open-Meteo fallback | 6 |
 | **Tier 1** | **Module 4** | `modules/news_service.py` | `NewsService` | Global multimodal disruption scraper (6 modes + natural disasters), pre-compiled regexes | 9 |
-| **Tier 1** | **Module 5** | `modules/weather_policy_generator.py` | `WeatherPolicyGenerator` | Generates 6 Word protocols with `[RULE-W-*]` IDs | 6 |
-| **Tier 1** | **Module 6** | `modules/strike_intelligence_generator.py` | `StrikeIntelligenceGenerator` | Generates 17 Word briefs with `[RULE-S-*]` IDs | 8 |
+| **Tier 1** | **Module 5** | `modules/weather_policy_generator.py` | `WeatherPolicyGenerator` | Generates 6 Word & direct Markdown protocols with `[RULE-W-*]` IDs | 7 |
+| **Tier 1** | **Module 6** | `modules/strike_intelligence_generator.py` | `StrikeIntelligenceGenerator` | Generates 17 Word & direct Markdown briefs with `[RULE-S-*]` IDs | 9 |
 | **Tier 2** | **Module 7** | `modules/ml_db_extension.py` | `MLDatabaseExtension` | Vectorized NumPy Haversine math (1.803s), integer index memory caching, 19 features | 9 |
 | **Tier 2** | **Module 8** | `modules/predictive_engine.py` | `PredictiveEngine` | Two-Stage Hurdle ML models, Huber regressor, XAI attributions, counterfactual route simulation | 11 |
 | **Tier 2** | **Module 9** | `modules/rag_engine.py` | `RAGEngine` (6 Classes) | Multi-format loading (`.docx`/`.pdf`/`.md`), chunking, FAISS + BM25 hybrid RRF retrieval, single pickle persistence | 27 |
 | **Tier 2** | **Module 10** | `modules/ollama_service.py` | `OllamaService` | Local Qwen2.5 daemon interface on AMD RX 6600 (8 GB VRAM Vulkan compute) with anti-hallucination prompt | 3 |
 | **Tier 3** | **Module 11** | `modules/agent_tools.py` | Centralized Tool Registry | 9 production LangChain `@tool` functions with Pydantic argument schemas (including Tool 8 & Tool 9) | 9 |
-| **Tier 3** | **Module 12** | `modules/agent_specialists.py` | 4 Specialist Agents & Debate Subgraph | Model-driven ReAct investigation agent (`build_autonomous_investigation_agent`), compiled debate subgraph (`create_inter_agent_debate_subgraph`), `CognitivePrecedentReflection` | 13 |
-| **Tier 3** | **Module 13** | `modules/agentic_graph.py` | LangGraph State Machine | 9-node collaborative state graph (`O2CAgentState`), Fast-Track routing, Pre-Execution Guardrails, `MemorySaver` checkpointer | 10 |
-| **Tier 3** | **Module 14** | `modules/action_execution_engine.py` | ERP Action Interface | Pluggable `ERPActionInterface`, `SQLiteSAPMockAdapter`, `SAPODataAdapter`, `MSTeamsDispatcher`, `ClinicNotificationDispatcher` | 11 |
-| **Tier 3** | **Module 15** | `modules/agentic_orchestrator.py` | `AgenticOrchestrator` | 6-stage autonomous daily lifecycle, graph synthesis, report publishing | 6 |
+| **Tier 3** | **Module 12** | `modules/agent_specialists.py` | 4 Specialist Agents & Debate Subgraph | Model-driven ReAct & ReWOO investigation agents, compiled debate subgraph, `CognitivePrecedentReflection` | 14 |
+| **Tier 3** | **Module 13** | `modules/agentic_graph.py` | LangGraph State Machine | 9-node collaborative state graph (`O2CAgentState`), Fast-Track routing, Pre-Execution Guardrails, `MemorySaver` checkpointer | 12 |
+| **Tier 3** | **Module 14** | `modules/action_execution_engine.py` | ERP Action Interface & Outbox | Pluggable `ERPActionInterface`, `TransactionalOutboxManager`, `SQLiteSAPMockAdapter`, `SAPODataAdapter`, `MSTeamsDispatcher`, `ClinicNotificationDispatcher` | 18 |
+| **Tier 3** | **Module 15** | `modules/agentic_orchestrator.py` | `AgenticOrchestrator` | 6-stage autonomous daily lifecycle, default graph-native synthesis, report publishing | 7 |
 | **Tier 3** | **Module 16** | `modules/incident_memory.py` | `EpisodicMemoryStore` | ChromaDB vector store, incident resolution archiving, active cognitive precedent reflection (`reflect_on_precedents`) | 6 |
-| **Tier 3** | **Module 17** | `modules/agent_daemon.py` | Event-Driven FastAPI Daemon | Microservice daemon, `/order-event`, `/approval`, `/collaborate` (Conversational HITL), `/audit`, GPU concurrency semaphore | 8 |
-| **TOTAL** | **17 Modules** | **Unified Core** | **Enterprise Copilot** | **Autonomous Order-to-Cash Logistics Governance** | **135+ / 135+ Validated** |
+| **Tier 3** | **Module 17** | `modules/agent_daemon.py` | Event-Driven FastAPI Daemon | Streaming microservice daemon, IoT telematics stall detector, `/events/disruption`, Conversational HITL, GPU semaphore | 11 |
+| **Tier 1** | **Module 18** | `modules/analytical_feature_store.py` | `AnalyticalFeatureStore` | Embedded DuckDB (v1.5.5) Polystore OLAP engine, 10-table join in 0.831s, O(1) order lookup | 6 |
+| **Tier 3** | **Module 19** | `modules/blackboard_memory.py` | `BlackboardMemory` | Thread-safe singleton working memory, TTL cache, cross-order corridor hazard, carrier status & regional hold propagation | 8 |
+| **Tier 3** | **Module 20** | `modules/telemetry.py` | `TelemetryManager` | Local OpenInference / OpenTelemetry distributed tracing, JSONL span sink (`agent_traces.jsonl`), agent/tool decorators | 5 |
+| **Tier 3** | **Module 21** | `modules/order_audit_reporter.py` | `OrderAuditReporter` & `SemanticInvariantVerifier` | Autonomous per-order 8-section cognitive audit report generator (`.md` & `.json`), Semantic Invariant Verifier enforcing 11 Constitutional Axioms | 7 |
+| **Tier 1** | **Module 22** | `modules/dynamic_sensory_service.py` | `DynamicSensoryService` (4 Classes) | Order-First LLM Corridor Extractor, zero-key Open-Meteo Geocoding, Forecast & Archive Radar, targeted disruption boolean query generator | 6 |
+| **TOTAL** | **22 Modules** | **Unified Core** | **Enterprise Copilot** | **Autonomous Order-to-Cash Logistics Governance** | **180+ / 180+ Validated** |
 
 *(Note: `modules/rag_evaluator.py` is preserved as a backward-compatible stub re-exporting from `evaluation/rag_evaluator.py`.)*
 
@@ -176,11 +197,13 @@ The unified platform comprises **17 dedicated Python modules** across 3 architec
 | Data Artifact | Physical File Path | Format | Description |
 |---|---|---|---|
 | **Raw ERP Exports** | `Input Files/*.csv` | CSV (UTF-8) | 10 SAP ECC/S4HANA enterprise tables (`VBAK`, `VBAP`, `LIKP`, `LIPS`, `VTTK`, `VTTP`, `KNA1`, `KNVV`, `LFA1`, `MARA`). |
-| **Relational Database** | `india_monitor_data/database/india_monitor.db` | SQLite (WAL Mode) | Master relational database containing 6 core operational tables (`scrape_sessions`, `weather_readings`, `strike_news`, `weather_alerts`, `daily_summaries`, `rag_analyses`) and 10 mirrored SAP tables. |
-| **Dynamic Weather Docs** | `india_monitor_data/rag/documents/Weather_Policies/` | DOCX | City-specific & master severe weather protocols generated from live sensor alerts. |
-| **Dynamic Strike Briefs**| `india_monitor_data/rag/documents/Strike_Intelligence/` | DOCX | Regional & modality-specific transport disruption briefs generated from scraped RSS news. |
+| **Relational Database** | `india_monitor_data/database/india_monitor.db` | SQLite (WAL Mode) | Master relational database containing 6 core operational tables (`scrape_sessions`, `weather_readings`, `strike_news`, `weather_alerts`, `daily_summaries`, `rag_analyses`), transactional outbox (`erp_outbox_actions`), and 10 mirrored SAP tables. |
+| **Analytical Feature Store** | `india_monitor_data/database/analytical_store.duckdb` | DuckDB (v1.5.5) | High-speed columnar OLAP storage for zero-copy 10-table joins (0.831s) and $O(1)$ order feature vectors. |
+| **Dynamic Weather Docs** | `india_monitor_data/rag/documents/Weather_Policies/` | DOCX / MD | City-specific & master severe weather protocols generated from live sensor alerts. |
+| **Dynamic Strike Briefs**| `india_monitor_data/rag/documents/Strike_Intelligence/` | DOCX / MD | Regional & modality-specific transport disruption briefs generated from scraped RSS news. |
 | **Daily Decision Reports** | `india_monitor_data/reports/daily_agent_report_YYYY-MM-DD.json` | JSON | Daily executive and multi-agent synthesized delay risk & SLA penalty decisions. |
 | **System Event Logs** | `india_monitor_data/logs/monitor_YYYYMMDD.log` | Text/Log | Timestamped audit log of all database transactions, API fetches, and ETL sessions. |
+| **Agent Execution Traces** | `india_monitor_data/logs/agent_traces.jsonl` | JSONL | Local OpenTelemetry / OpenInference distributed traces tracking execution spans, agent actions, and tool calls. |
 
 ---
 
@@ -348,6 +371,19 @@ CREATE TABLE IF NOT EXISTS clinic_early_warnings (
     sent_at                  TEXT NOT NULL
 );
 
+-- 10. ERP Transactional Outbox (Two-Phase Commit & Idempotency)
+CREATE TABLE IF NOT EXISTS erp_outbox_actions (
+    action_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id         TEXT    NOT NULL,
+    action_type      TEXT    NOT NULL,  -- 'SET_DELIVERY_BLOCK', 'UPDATE_PROMISED_DATE', 'POST_CARRIER_DEBIT_MEMO'
+    payload_json     TEXT    NOT NULL,
+    status           TEXT    DEFAULT 'PENDING', -- 'PENDING', 'COMMITTED_TO_ERP', 'FAILED'
+    retry_count      INTEGER DEFAULT 0,
+    idempotency_key  TEXT    UNIQUE,
+    created_at       TEXT    NOT NULL,
+    processed_at     TEXT
+);
+
 -- High-Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_weather_city_date ON weather_readings(city_name, date_only);
 CREATE INDEX IF NOT EXISTS idx_sn_mode ON strike_news(transport_mode);
@@ -356,6 +392,8 @@ CREATE INDEX IF NOT EXISTS idx_sn_country ON strike_news(country_mentioned);
 CREATE INDEX IF NOT EXISTS idx_sap_audit_order ON sap_action_audit_log(order_id);
 CREATE INDEX IF NOT EXISTS idx_carrier_memo_order ON carrier_debit_memos(order_id);
 CREATE INDEX IF NOT EXISTS idx_clinic_warn_order ON clinic_early_warnings(order_id);
+CREATE INDEX IF NOT EXISTS idx_outbox_status ON erp_outbox_actions(status);
+CREATE INDEX IF NOT EXISTS idx_outbox_order ON erp_outbox_actions(order_id);
 ```
 
 ---
@@ -642,6 +680,12 @@ graph TD
 - **Output Return Type:** `pathlib.Path` — Path to master protocol document.
 - **How it helps the data:** Synthesizes nationwide multi-corridor weather impacts into a single sovereign operational guide.
 
+#### 7. `_create_city_weather_policy_md(self, city: str, alerts: list[dict]) -> Path`
+- **Purpose:** Directly synthesizes and outputs high-density regulatory policies as native GitHub Flavored Markdown (`.md`) files directly into `india_monitor_data/rag/documents/Weather_Policies/{city}_Weather_Protocol.md`.
+- **Input Parameters:** `city (str)`, `alerts (list[dict])`.
+- **Output Return Type:** `pathlib.Path` — Path to generated Markdown policy document.
+- **How it helps the data:** Eliminates third-party Word format conversion churn, enables instant zero-overhead clause indexing in the RAG pipeline, and provides human-readable version control.
+
 ---
 
 ### Module 6: `modules/strike_intelligence_generator.py`
@@ -708,35 +752,142 @@ graph TD
 - **Output Return Type:** `pathlib.Path` — Path to master intelligence document.
 - **How it helps the data:** Synthesizes nationwide transport disruption patterns into an executive policy reference.
 
+#### 9. `_create_city_strike_brief_md(self, city: str, articles: list[dict]) -> Path`
+- **Purpose:** Directly generates and writes Markdown disruption briefs (`.md`) to `india_monitor_data/rag/documents/Strike_Intelligence/{city}_Strike_Brief.md` with native Markdown incident tables and discrete `[RULE-S-*]` directives.
+- **Input Parameters:** `city (str)`, `articles (list[dict])`.
+- **Output Return Type:** `pathlib.Path` — Path to generated Markdown brief.
+- **How it helps the data:** Bypasses Word formatting overhead and guarantees instant zero-conversion ingestion by `modules/rag_engine.py`.
+
+---
+
+### Module 18: `modules/analytical_feature_store.py`
+**File Location:** `d:\Progamming\O2C_AI\modules\analytical_feature_store.py`  
+**Class:** `AnalyticalFeatureStore`  
+**Purpose (DuckDB Polystore Embedded OLAP Engine):** Provides blazing-fast columnar analytical joins across 10 raw SAP CSV exports (62,299 records), executing complex multi-table relational queries in **0.831s** ($<1.1$s total load time). Implements sub-millisecond $O(1)$ order feature lookups, vector-friendly dataframe caching, and materializes an embedded DuckDB database file (`india_monitor_data/database/analytical_store.duckdb`).
+
+#### Key Features & Performance Characteristics:
+- **Zero-Copy Multi-Table OLAP Join:** Reads directly from raw CSV files (`VBAK.csv`, `VBAP.csv`, `LIKP.csv`, `LIPS.csv`, `VTTK.csv`, `VTTP.csv`, `KNA1.csv`, `KNVV.csv`, `LFA1.csv`, `MARA.csv`) using DuckDB's vectorized columnar engine with zero intermediate SQLite staging overhead.
+- **Dual Persistent/In-Memory Mode:** Can operate with an on-disk database (`db_path`) or an in-memory instance (`:memory:`), guaranteeing non-blocking reads during concurrent pipeline runs.
+- **Pure SQL Haversine Distance:** Uses DuckDB SQL trigonometric expressions (`sin`, `cos`, `atan2`, `radians`) to compute origin-to-destination transit distance at native C++ execution speeds.
+
+#### Functions in `AnalyticalFeatureStore`:
+
+#### 1. `__init__(self, db_path: Optional[Path] = None, csv_dir: Optional[Path] = None)`
+- **Purpose:** Initializes the DuckDB connection, configures thread settings (`threads=2` to respect Ryzen 3 3200G hardware limits), and sets up the CSV data directory.
+- **Input Parameters:** `db_path (Path | None)`, `csv_dir (Path | None)`.
+- **Output Return Type:** None.
+
+#### 2. `load_and_materialize(self, force_refresh: bool = False) -> Dict[str, Any]`
+- **Purpose:** Executes the 10-table join query and materializes the analytical view/table `sap_orders_features_olap` in DuckDB. Caches an in-memory Pandas dataframe and an order-to-index lookup map.
+- **Input Parameters:** `force_refresh (bool)`.
+- **Output Return Type:** `Dict[str, Any]` — Execution metrics (`{"status": "success", "row_count": int, "duration_s": float}`).
+- **How it helps the data:** Loads 62,299 records in **0.831s**, providing a 2.2x speedup over SQLite joins.
+
+#### 3. `get_order_features(self, order_id: str) -> Optional[Dict[str, Any]]`
+- **Purpose:** Performs an ultra-fast $O(1)$ memory-mapped lookup for a single order's 19-dimensional feature vector.
+- **Input Parameters:** `order_id (str)`.
+- **Output Return Type:** `Optional[Dict[str, Any]]`.
+- **How it helps the data:** Supplies sub-millisecond feature payloads to the LangGraph `supervisor_router` and predictive ML inference gates.
+
+#### 4. `get_feature_dataframe(self) -> pd.DataFrame`
+- **Purpose:** Returns the complete feature-engineered dataframe ready for scikit-learn model training or batch inference.
+- **Input Parameters:** None.
+- **Output Return Type:** `pd.DataFrame`.
+
+#### 5. `execute_query(self, query: str, params: Optional[List[Any]] = None) -> List[Dict[str, Any]]`
+- **Purpose:** General-purpose OLAP query execution endpoint returning list of dicts.
+- **Input Parameters:** `query (str)`, `params (List[Any] | None)`.
+- **Output Return Type:** `List[Dict[str, Any]]`.
+
+#### 6. `close(self) -> None`
+- **Purpose:** Safely closes DuckDB connection and releases memory allocations.
+- **Input Parameters:** None.
+- **Output Return Type:** None.
+
+---
+
+### Module 22: `modules/dynamic_sensory_service.py`
+**File Location:** `d:\Progamming\O2C_AI\modules\dynamic_sensory_service.py`  
+**Classes & Functions:** `CorridorExtractionOutput`, `OrderCorridorExtractor`, `GlobalDynamicWeatherService`, `DynamicDisruptionKeywordGenerator`, `enrich_order_with_dynamic_sensory`  
+**Purpose (Order-First Dynamic Global Sensory Ingestion Pipeline — Improvement 5.10 / Deliverable 8):** Replaces legacy static geographic scrapers with an order-first sensory architecture. First extracts transit corridor entities directly from SAP order payloads, then queries zero-key Open-Meteo global geocoding, live forecast, and historical archive endpoints, and generates hyper-targeted boolean disruption search queries for active corridor surveillance.
+
+#### Key Architectural Capabilities:
+- **Order-First Entity Extraction:** Rather than maintaining static city lists, the service inspects inbound sales orders (`VBAK`, `VBAP`, `KNA1`) to dynamically extract the actual origin distribution center, destination clinic/hospital, freight transit mode, and intermediate connection nodes.
+- **Parametric Global Weather (Zero API Key):** Connects to Open-Meteo endpoints (`api.open-meteo.com/v1/forecast`, `archive-api.open-meteo.com/v1/archive`, `geocoding-api.open-meteo.com/v1/search`), completely eliminating third-party API licensing costs and subscription throttling.
+- **Global Multi-Tier Coordinate Caching:** Thread-safe, in-process coordinate cache pre-seeded with strategic hubs across India (Mumbai, Delhi, Bangalore, Kolkata, Hyderabad, Pune, etc.), North America (Boston, Chicago, Denver, New York, Los Angeles, Dallas, Seattle, etc.), and Global Maritime/Air Chokepoints (Rotterdam, Antwerp, Singapore, Frankfurt, Shanghai, Dubai, London, Tokyo). Uncached global locations are dynamically geocoded on-the-fly.
+- **Zero-Crash Fail-Safe Probe (`_is_ollama_alive`):** Executes an ultra-fast socket probe ($<300$ms) before invoking local LLM structured extraction, falling back instantly to deterministic regex parsing if the local LLM daemon is offline or saturated.
+
+#### Classes & Functions in `modules/dynamic_sensory_service.py`:
+
+#### 1. `CorridorExtractionOutput(BaseModel)`
+- **Purpose:** Type-safe Pydantic schema enforcing structured transit entity contracts:
+  - `origin_city (str)`: Starting DC, warehouse, or plant.
+  - `origin_country (str)`: Country code (default: `"US"`).
+  - `destination_city (str)`: Consignee clinic or delivery terminal.
+  - `destination_country (str)`: Destination country code.
+  - `shipping_mode (str)`: Freight modality (`Road (FTL/LTL)`, `Air Freight`, `Ocean Container`, `Rail Intermodal`).
+  - `connection_nodes (List[str])`: Highway corridors (e.g. `I-90`, `NH-48`), intermediate rail ramps, or transshipment airports.
+  - `temporal_horizon (str)`: Evaluation window (`"past"` for historical audit, `"present"` for live transit, `"future"` for promised delivery forecast).
+  - `target_transit_date (str)`: Target transit date string `YYYY-MM-DD`.
+
+#### 2. `OrderCorridorExtractor`
+- **Purpose:** Zero-shot LLM extractor with deterministic fallback parsing geographic routing entities from raw SAP orders.
+- **Functions:**
+  - `__init__(self, model_name: str = "qwen2.5:7b", base_url: str = "http://127.0.0.1:11434")`: Binds model configuration and local daemon endpoint.
+  - `extract_corridor(self, order_payload: Dict[str, Any]) -> CorridorExtractionOutput`: Uses `ChatOllama.with_structured_output(CorridorExtractionOutput)` or high-fidelity regex fallback, caching results in `_GLOBAL_CORRIDOR_CACHE`.
+
+#### 3. `GlobalDynamicWeatherService`
+- **Purpose:** Fetches real-time and historical weather telemetry and detects thermal ($>40^\circ\text{C}$ / $<2^\circ\text{C}$) or precipitation ($>15$mm / severe storm) transit hazards worldwide.
+- **Functions:**
+  - `__init__(self)`: Configures Open-Meteo endpoint constants and persistent HTTP session.
+  - `resolve_coordinates(self, city: str, country: str = "") -> Optional[Dict[str, float]]`: Resolves latitude and longitude using pre-cached hub dictionary or Open-Meteo Geocoding API.
+  - `fetch_corridor_weather(self, corridor: CorridorExtractionOutput) -> Dict[str, Any]`: Queries Open-Meteo forecast or archive endpoints based on `temporal_horizon`, returning normalized telemetry (`temperature`, `precipitation`, `weather_code`, `hazard_detected`, `hazard_reasons`).
+
+#### 4. `DynamicDisruptionKeywordGenerator`
+- **Purpose:** Generates hyper-targeted boolean disruption search queries for active corridor surveillance.
+- **Functions:**
+  - `generate_search_queries(self, corridor: CorridorExtractionOutput) -> List[str]`: Produces precision query strings combining transport hubs, modality keywords, highway numbers, and disruption triggers (e.g. `("Boston" OR "I-90") AND ("truck" OR "freight" OR "strike")`).
+
+#### 5. `enrich_order_with_dynamic_sensory(order_data: Dict[str, Any], prediction_payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]`
+- **Purpose:** Unified pipeline orchestrator integrating corridor extraction, weather telemetry, and disruption queries into the order execution payload.
+
 ---
 
 ## 4. 📊 Data Summary Matrix for Part 1
 
 | Component / Module | Input Data | Transformation / Function | Output Data Artifact | Downstream Consumer |
 |---|---|---|---|---|
-| **`modules/config.py`** | Environment Variables & OS paths | Dynamic platform resolution (`_resolve_project_root`) | Standardized `Path` objects & RAG constants | All 12 project modules |
+| **`modules/config.py`** | Environment Variables & OS paths | Dynamic platform resolution (`_resolve_project_root`) | Standardized `Path` objects & RAG constants | All 22 project modules |
 | **`modules/weather_service.py`** | Open-Meteo & OWM APIs | JSON payload normalization & WMO decoding | List of weather dictionaries | `DatabaseManager.write_weather` |
 | **`modules/news_service.py`** | Google News RSS XML | NLP entity extraction, severity & modality classification | List of enriched news dictionaries | `DatabaseManager.write_strikes` |
-| **`modules/database_manager.py`** | Sensor & News Dictionaries | ACID SQLite transactions with WAL concurrency | `india_monitor.db` tables | `MLDatabaseExtension` & `RAG Engine` |
-| **`modules/weather_policy_generator.py`** | SQLite `weather_readings` | Threshold filtering, Qwen2.5 hazard extraction & Word tables | 6 `.docx` Weather Protocols | `modules/rag_engine.py` (Hybrid RAG) |
-| **`modules/strike_intelligence_generator.py`** | SQLite `strike_news` | Regional aggregation, Qwen2.5 trigger extraction & Word tables | 17 `.docx` Strike Briefs | `modules/rag_engine.py` (Hybrid RAG) |
+| **`modules/dynamic_sensory_service.py`** | Raw SAP order payloads & global route endpoints | Zero-shot LLM corridor extraction, Open-Meteo Geocoding/Archive API & targeted search queries | Enriched sensory context, temperature, rain & weather alerts | `fetch_corridor_weather`, `RouteSupervisorAgent`, LangGraph State |
+| **`modules/database_manager.py`** | Sensor & News Dictionaries | ACID SQLite transactions with WAL concurrency & Outbox | `india_monitor.db` tables & `erp_outbox_actions` | `MLDatabaseExtension`, Outbox & RAG |
+| **`modules/weather_policy_generator.py`** | SQLite `weather_readings` | Threshold filtering, Qwen2.5 hazard extraction, Word & Markdown generation | 6 `.docx` & `.md` Weather Protocols | `modules/rag_engine.py` (Hybrid RAG) |
+| **`modules/strike_intelligence_generator.py`** | SQLite `strike_news` | Regional aggregation, Qwen2.5 trigger extraction, Word & Markdown generation | 17 `.docx` & `.md` Strike Briefs | `modules/rag_engine.py` (Hybrid RAG) |
+| **`modules/analytical_feature_store.py`** | 10 Raw SAP CSV Exports | DuckDB Vectorized Columnar Join in 0.831s | `analytical_store.duckdb` & $O(1)$ Feature Cache | `PredictiveEngine` & Multi-Agent Graph |
 
 ---
 
 ## 5. 🧠 Architectural Rationale: Why Operational & Legal Rules are Embedded in Generated Knowledge Documents
 
 A common question in enterprise AI architecture is:  
-*“Why embed operational playbooks and contract rules inside generated `.docx` files instead of hardcoding everything in Python code?”*
+*“Why embed operational playbooks and contract rules inside generated `.docx` and `.md` files instead of hardcoding everything in Python code?”*
 
 ### 5.1 The Ground-Truth Legal Authority Principle
 In an enterprise Order-to-Cash environment, an autonomous AI model (or Large Language Model) cannot make financial decisions (e.g. waiving a \$500 SLA penalty, triggering a \$1,000 emergency replacement air freight, or locking \$25,000 of inventory in a QA quarantine hold) based purely on black-box heuristics or hallucinated prompt weights.
 
 By structuring regulatory, operational, and contract rules directly into the RAG corpus:
-1. **Zero Hallucination:** When an order is evaluated (e.g. in Mumbai during a 42°C heatwave), Engine B RAG retrieves the exact excerpt from `Mumbai_Weather_Protocol.docx` and `Platinum Tier Delivery Framework.docx`.
+1. **Zero Hallucination:** When an order is evaluated (e.g. in Mumbai during a 42°C heatwave), Engine B RAG retrieves the exact excerpt from `Mumbai_Weather_Protocol.docx` / `Mumbai_Weather_Protocol.md` and `Platinum Tier Delivery Framework.docx`.
 2. **Immutable Audit Trail:** Every daily decision exported to `daily_agent_report.json` contains explicit citations (`rag_sources`) that legal, financial, and logistics directors can inspect and verify.
 3. **Multi-Agent Dispute Resolution:** The 4 autonomous specialist agents (**Route Supervisor**, **Contract Adjudicator**, **Quality Mitigation**, and **ERP Action Executor**) use these retrieved clauses to resolve conflicting priorities (e.g. Contract Agent wants to fine the carrier, but the Policy Document proves the heatwave was a legally recognized *Act of God* under Section 4.2).
 
-### 5.2 The Hybrid Rule + AI Division of Labor
+### 5.2 The Direct Markdown Advancement
+In addition to Word documents, generating direct Markdown (`.md`) files (`_create_city_weather_policy_md` and `_create_city_strike_brief_md`) achieves:
+- **Elimination of Word Parsing Overhead:** Markdown files are read in sub-millisecond time via raw text streams without XML/ZIP unzipping.
+- **Token-Dense Chunking:** Clean Markdown headers (`#`, `##`, `###`) and tables map 1-to-1 to the `ClauseAwareChunker`, resulting in 100% semantic chunk boundaries with zero conversion distortion.
+- **Git-Friendly Audit Trails:** Regulatory compliance officers can view textual diffs across consecutive generation sessions directly in code review tools.
+
+### 5.3 The Hybrid Rule + AI Division of Labor
 
 To prevent narrative filler essays while eliminating manual document editing, the system divides responsibilities between deterministic rules and local AI (Qwen2.5):
 
@@ -1637,6 +1788,15 @@ class O2CAgentState(TypedDict):
 - **Output Return Type:** `Dict[str, Any]` compliant with `RouteAnalysisOutput`.
 - **How it helps the data:** Detects GPS compliance breaches and flags corridor transit hazards before contract adjudication.
 
+##### 3. `analyze_route_rewoo(self, prediction_payload: Dict[str, Any], order_data: Dict[str, Any]) -> Dict[str, Any]`
+- **Purpose:** Executes a token-efficient **ReWOO (Reasoning Without Observation)** execution topology:
+  1. **Planner:** Generates a structured multi-tool execution plan up-front without interleaving LLM calls.
+  2. **Worker:** Concurrently dispatches tools (`fetch_corridor_weather`, `fetch_strike_alerts`, `query_historical_incident_memory`) across worker threads.
+  3. **Solver:** Synthesizes tool observations into a final validated `RouteAnalysisOutput` payload in **0.327s** (vs 3-5s for multi-turn ReAct loops), drastically reducing LLM context tokens and VRAM pressure.
+- **Input Parameters:** `prediction_payload (Dict[str, Any])`, `order_data (Dict[str, Any])`.
+- **Output Return Type:** `Dict[str, Any]` compliant with `RouteAnalysisOutput`.
+- **How it helps the data:** Decreases specialist latency by ~85% and eliminates intermediate conversational reasoning tokens on the AMD RX 6600 GPU.
+
 ---
 
 #### Class 2: `ContractAdjudicatorAgent`
@@ -1809,16 +1969,16 @@ class O2CAgentState(TypedDict):
 **Purpose:** Extensible production adapter for SAP S/4HANA OData v2/v4 and BAPI web services, enabling zero-code transition from local test harnesses to live enterprise ERP instances.
 
 #### Class 4: `SAPActionExecutor`
-**Purpose:** Coordinates enterprise ERP write-backs via the configured `ERPActionInterface`. Supports Dependency Injection (`db_manager: Optional[DatabaseManager]`, `erp_adapter: Optional[ERPActionInterface]`).
+**Purpose:** Coordinates enterprise ERP write-backs via the configured `ERPActionInterface`. Supports Dependency Injection (`db_manager: Optional[DatabaseManager]`, `erp_adapter: Optional[ERPActionInterface]`). Equipped with `TransactionalOutboxManager` to guarantee two-phase commit idempotency for ERP updates.
 
 ##### Functions in `SAPActionExecutor`:
 ##### 1. `__init__(self, erp_adapter: Optional[ERPActionInterface] = None, db_manager: Optional[DatabaseManager] = None)`
-- **Purpose:** Prepares executor with pluggable ERP adapter and decoupled connection pool.
+- **Purpose:** Prepares executor with pluggable ERP adapter, decoupled connection pool, and `TransactionalOutboxManager`.
 - **Input Parameters:** `erp_adapter (ERPActionInterface | None)`, `db_manager (DatabaseManager | None)`.
 - **Output Return Type:** None.
-##### 2. `execute_sap_writebacks(self, order_id: str, predicted_eta: str, qa_hold_required: bool, qa_reasons: List[str], carrier_chargeback_usd: float, carrier_name: str, penalty_clauses: List[str]) -> List[Dict[str, Any]]`
-- **Purpose:** Executes delivery block (`VBAK-LIFSK = '01'`), promise date update (`VBAK-VDATU = ETA`), and AP debit memo creation (`carrier_debit_memos` / `SAP_BKPF`).
-- **Input Parameters:** Order ID, predicted ETA, QA hold flag, reasons, chargeback amount, carrier name, penalty clauses.
+##### 2. `execute_sap_writebacks(self, order_id: str, predicted_eta: str, qa_hold_required: bool, qa_reasons: List[str], carrier_chargeback_usd: float, carrier_name: str, penalty_clauses: List[str], use_outbox: bool = True) -> List[Dict[str, Any]]`
+- **Purpose:** Executes delivery block (`VBAK-LIFSK = '01'`), promise date update (`VBAK-VDATU = ETA`), and AP debit memo creation (`carrier_debit_memos` / `SAP_BKPF`) through the Transactional Outbox pattern with deterministic idempotency keys.
+- **Input Parameters:** Order ID, predicted ETA, QA hold flag, reasons, chargeback amount, carrier name, penalty clauses, `use_outbox (bool)`.
 - **Output Return Type:** `List[Dict[str, Any]]` — Executed action confirmations.
 ##### 3. `get_carrier_debit_memos(self, order_id: Optional[str] = None) -> List[Dict[str, Any]]`
 - **Purpose:** Retrieves posted carrier debit memos from the ledger for accounting reconciliation.
@@ -1866,6 +2026,37 @@ class O2CAgentState(TypedDict):
 - **Purpose:** Records and dispatches 12-hour proactive early warning letter, logging to `clinic_early_warnings` table via `DatabaseManager`.
 - **Input Parameters:** `order_id (str)`, `clinic_name (str)`, `dest_city (str)`, `predicted_eta (str)`, `delay_reasons (List[str])`.
 - **Output Return Type:** `Dict[str, Any]` — `{"notice_status", "force_majeure_compliant", "notice_message", "sent_at"}`.
+
+---
+
+#### Class 7: `TransactionalOutboxManager`
+**Purpose:** Implements the Transactional Outbox Pattern to guarantee two-phase commit idempotency for ERP write-backs. Actions are first atomically committed to SQLite table `erp_outbox_actions`, then dispatched to SAP S/4HANA OData/BAPI, preventing partial financial/logistics failure states.
+
+##### Functions in `TransactionalOutboxManager`:
+##### 1. `__init__(self, db_manager: Optional[DatabaseManager] = None)`
+- **Purpose:** Binds to the centralized connection pool.
+- **Input Parameters:** `db_manager (DatabaseManager | None)`.
+- **Output Return Type:** None.
+##### 2. `enqueue_action(self, order_id: str, action_type: str, payload: Dict[str, Any], idempotency_key: Optional[str] = None) -> int`
+- **Purpose:** Atomically enqueues an ERP action with a deterministic SHA256/string idempotency key into `erp_outbox_actions` using `INSERT OR IGNORE`.
+- **Input Parameters:** `order_id (str)`, `action_type (str)`, `payload (Dict)`, `idempotency_key (str | None)`.
+- **Output Return Type:** `int` — `action_id`.
+##### 3. `get_pending_actions(self, limit: int = 50) -> List[Dict[str, Any]]`
+- **Purpose:** Retrieves pending outbox entries awaiting ERP dispatch.
+- **Input Parameters:** `limit (int)`.
+- **Output Return Type:** `List[Dict[str, Any]]`.
+##### 4. `mark_completed(self, action_id: int) -> bool`
+- **Purpose:** Marks outbox entry as `COMMITTED_TO_ERP` with timestamp.
+- **Input Parameters:** `action_id (int)`.
+- **Output Return Type:** `bool`.
+##### 5. `mark_failed(self, action_id: int, error_msg: str) -> bool`
+- **Purpose:** Marks outbox entry as `FAILED` and increments retry counter.
+- **Input Parameters:** `action_id (int)`, `error_msg (str)`.
+- **Output Return Type:** `bool`.
+##### 6. `dispatch_pending_actions(self, erp_adapter: ERPActionInterface) -> Dict[str, Any]`
+- **Purpose:** Synchronously or asynchronously processes pending outbox actions through the provided ERP adapter with strict idempotency.
+- **Input Parameters:** `erp_adapter (ERPActionInterface)`.
+- **Output Return Type:** `Dict[str, Any]` — `{"dispatched", "successful", "failed", "results"}`.
 
 ---
 
@@ -1996,10 +2187,144 @@ class O2CAgentState(TypedDict):
 - **Input Parameters:** `order_id (str)`.
 - **Output Return Type:** `Dict[str, Any]` — Ordered list of timestamped audit events.
 
-##### 7. `run_daemon(host: str = "0.0.0.0", port: int = 8000) -> None`
+##### 7. `POST /api/v1/events/telematics -> Dict[str, Any]`
+- **Purpose:** Ingests live streaming IoT GPS, linehaul velocity, and cargo bay ambient temperature telemetry from in-transit commercial vehicles.
+- **Stall & Hazard Detection:** Automatically triggers if speed $< 5\text{ km/h}$ for $> 2\text{ hours}$ or temperature $> 40^\circ\text{C}$, updating `BlackboardMemory` and asynchronously dispatching the compiled LangGraph workflow in a background thread to prevent REST latency.
+- **Input Parameters:** `TelematicsEventPayload (order_id, carrier_name, current_lat, current_lon, speed_kmh, ambient_temp_c, last_ping_timestamp)`.
+- **Output Return Type:** `Dict[str, Any]` — Ingestion confirmation, stall status, and async investigation dispatch ID.
+
+##### 8. `POST /api/v1/events/disruption -> Dict[str, Any]`
+- **Purpose:** Event-driven webhook ingesting external live corridor disruption reports (e.g. flash highway blockades, port strikes, landslide closures) directly into `BlackboardMemory`.
+- **Input Parameters:** `DisruptionEventPayload (corridor, disruption_type, severity, description, expected_clearance_hours)`.
+- **Output Return Type:** `Dict[str, Any]` — Blackboard publication confirmation.
+
+##### 9. `GET /api/v1/blackboard -> Dict[str, Any]`
+- **Purpose:** Observability endpoint returning the active state of hierarchical blackboard working memory (active corridor hazards, carrier statuses, and regional quarantine holds).
+- **Input Parameters:** None.
+- **Output Return Type:** `Dict[str, Any]`.
+
+##### 10. `POST /api/v1/outbox/flush -> Dict[str, Any]`
+- **Purpose:** Explicit administrative trigger that executes the `TransactionalOutboxManager` to dispatch all pending idempotent ERP actions to SAP S/4HANA.
+- **Input Parameters:** None.
+- **Output Return Type:** `Dict[str, Any]` — Summary of dispatched, successful, and failed actions.
+
+##### 11. `run_daemon(host: str = "0.0.0.0", port: int = 8000) -> None`
 - **Purpose:** Starts the Uvicorn ASGI server hosting the FastAPI agent daemon.
 - **Input Parameters:** `host (str)`, `port (int)`.
 - **Output Return Type:** None.
+
+---
+
+### Module 19: `modules/blackboard_memory.py`
+**File Location:** `d:\Progamming\O2C_AI\modules\blackboard_memory.py`  
+**Class:** `BlackboardMemory`  
+**Purpose (Hierarchical Blackboard Working Memory):** High-speed, thread-safe in-memory singleton implementing the **Blackboard Architectural Pattern**. Solves the inter-order isolation defect where consecutive shipments traversing the same blocked corridor or using the same disrupted carrier repeated redundant tool calls and RAG lookups.
+
+#### Key Architectural Capabilities:
+- **Thread-Safe Re-Entrant Mutex:** Protected by `threading.RLock()` across all reads and writes, preventing race conditions under concurrent worker threads.
+- **Automatic Time-To-Live (TTL) Eviction:** Entries default to a 4-hour TTL, after which expired corridor hazards or carrier status flags are automatically pruned.
+- **Cross-Order Risk Sharing:** When Order A discovers a severe highway blockade on `Mumbai-Pune NH-48`, it posts the hazard to the Blackboard. When Order B (evaluated 10ms later) routes through the same corridor, the `RouteSupervisorAgent` instantly detects the active hazard in working memory without repeating web scrapes.
+- **Regional QA Quarantine Propagation:** If a thermal shock event is posted for a distribution hub, all subsequent shipments leaving that hub inherit immediate QA quarantine flags.
+
+#### Functions in `BlackboardMemory`:
+
+#### 1. `__new__(cls)` & `__init__(self, default_ttl_hours: float = 4.0)`
+- **Purpose:** Enforces process-wide Singleton instance with dedicated re-entrant lock and partitioned memory storage dictionaries (`corridor_hazards`, `carrier_statuses`, `regional_holds`, `custom_observations`).
+
+#### 2. `post_corridor_hazard(self, corridor: str, hazard_type: str, severity: str, details: Dict[str, Any], ttl_hours: Optional[float] = None) -> None`
+- **Purpose:** Publishes a verified transit hazard to the shared blackboard with automatic timestamping and expiration.
+- **Input Parameters:** `corridor (str)`, `hazard_type (str)`, `severity (str)`, `details (Dict)`, `ttl_hours (float | None)`.
+
+#### 3. `get_corridor_hazards(self, corridor: str) -> List[Dict[str, Any]]`
+- **Purpose:** Retrieves all non-expired hazards affecting a specific transit corridor.
+- **Input Parameters:** `corridor (str)`.
+- **Output Return Type:** `List[Dict[str, Any]]`.
+
+#### 4. `post_carrier_status(self, carrier_name: str, status: str, notes: str, ttl_hours: Optional[float] = None) -> None`
+- **Purpose:** Records operational alerts for carriers (e.g. "BLIND_TRACKING", "FLEET_GROUNDED").
+- **Input Parameters:** `carrier_name (str)`, `status (str)`, `notes (str)`.
+
+#### 5. `get_carrier_status(self, carrier_name: str) -> Optional[Dict[str, Any]]`
+- **Purpose:** Queries active carrier status from working memory.
+- **Output Return Type:** `Optional[Dict[str, Any]]`.
+
+#### 6. `post_regional_hold(self, region_or_city: str, reason: str, ttl_hours: Optional[float] = None) -> None`
+- **Purpose:** Flags an entire metropolitan hub for QA holds or outbound shipping suspensions.
+
+#### 7. `get_all_state(self) -> Dict[str, Any]`
+- **Purpose:** Dumps complete non-expired working memory state for REST observability endpoints and audit logging.
+
+#### 8. `clear(self) -> None`
+- **Purpose:** Thread-safely resets all working memory partitions (primarily for unit tests).
+
+---
+
+### Module 20: `modules/telemetry.py`
+**File Location:** `d:\Progamming\O2C_AI\modules\telemetry.py`  
+**Classes & Functions:** `TelemetryManager`, `trace_span`, `trace_agent_action`, `trace_tool_call`  
+**Purpose (Local OpenInference & OpenTelemetry Distributed Tracing):** Implements zero-cost, privacy-compliant local telemetry adhering to OpenTelemetry / OpenInference standards. Captures parent-child execution spans, node latency, input/output token payloads, and tool call invocations, writing structured JSONL traces directly to `india_monitor_data/logs/agent_traces.jsonl`.
+
+#### Key Telemetry Capabilities:
+- **Zero Cloud Billing:** Operates completely on-premise without requiring expensive Datadog, Honeycomb, or LangSmith cloud subscriptions.
+- **Parent-Child Span Hierarchies:** Automatically links root agent workflow spans to child specialist actions and grandchild tool call invocations via UUID trace IDs.
+- **Structured JSONL Sink:** Every trace event records `trace_id`, `span_id`, `parent_span_id`, `span_name`, `span_type` (`AGENT`, `TOOL`, `CHAIN`, `LLM`), `start_time`, `end_time`, `duration_ms`, `inputs`, `outputs`, and `status`.
+- **High-Performance Non-Blocking Logging:** Append-only file writing with lightweight serialization ensuring $<0.1$ms overhead per traced operation.
+
+#### Functions & Decorators in `modules/telemetry.py`:
+
+#### 1. `TelemetryManager(log_path: Optional[Path] = None)`
+- **Purpose:** Thread-safe singleton managing the local trace sink file, span stacks, and active trace context.
+
+#### 2. `trace_span(span_name: str, span_type: str = "CHAIN")`
+- **Purpose:** Context manager wrapping arbitrary blocks of execution, recording execution duration and capturing exceptions cleanly into the trace log.
+- **Usage:**
+  ```python
+  with trace_span("predict_delay_stage1", span_type="MODEL") as span:
+      prob = clf.predict_proba(x)
+      span.set_attribute("prob", prob)
+  ```
+
+#### 3. `@trace_agent_action(agent_name: str)`
+- **Purpose:** Function decorator for specialist agent methods (`analyze_route`, `adjudicate_contract`), automatically capturing arguments, output dictionaries, and execution latency.
+
+---
+
+### Module 21: `modules/order_audit_reporter.py`
+**File Location:** `d:\Progamming\O2C_AI\modules\order_audit_reporter.py`  
+**Classes & Functions:** `SemanticInvariantVerifier`, `OrderAuditReporter`, `_safe_float`  
+**Purpose (Per-Order Cognitive Audit & Debate Reporting Engine — Section 3 Meta-Prompt & Improvements 5.8/5.9):** Compiles and exports exhaustive, zero-data-loss per-order cognitive audit reports capturing predictive ML hurdle diagnostics, specialist ReAct tool traces, verbatim multi-turn adversarial debate transcripts, Arbiter mathematical convergence, counterfactual "what-if" simulations, metacognitive guardrail checks, and real-world ERP/Teams executions. Integrates the `SemanticInvariantVerifier` to enforce the 11 Constitutional Invariant Axioms before publishing.
+
+#### Key Architectural Capabilities:
+- **Zero-Truncation Production Guarantee:** Strictly mandates that no specialist utterances, debate turns, or reasoning observations contain ellipsis placeholders (`"..."`, `"[truncated]"`, or `"etc."`). Every turn is preserved verbatim.
+- **Deterministic Semantic Invariant Verification:** Evaluates rendered markdown text against the 11 Constitutional Invariant Axioms, guaranteeing absolute alignment across executive briefs, escalation triggers, sign polarity, and execution receipts.
+- **Dual Persistent Artifacts:** Every order evaluated by `run_order_graph()` exports:
+  1. `india_monitor_data/reports/orders/ORDER_{order_id}_AUDIT_REPORT.md` (Human-readable GitHub-Flavored Markdown).
+  2. `india_monitor_data/reports/orders/ORDER_{order_id}_AUDIT_REPORT.json` (Machine-readable zero-data-loss dossier).
+- **Executive MS Teams Card Integration:** Embeds the complete JSON payload of the generated Microsoft Teams Adaptive Card (v1.4) directly into Section 8, including actionable submit button schemas (`AUTHORIZE_QUARANTINE_DISPOSITION`, `REJECT_MITIGATION`).
+
+#### Classes & Functions in `modules/order_audit_reporter.py`:
+
+#### 1. `SemanticInvariantVerifier`
+- **Purpose:** Pre-publication compliance engine evaluating report text and state against the 11 Constitutional Invariant Axioms.
+- **Functions:**
+  - `verify_and_reconcile(cls, state: Dict[str, Any], report_md: str) -> List[str]`: Audits Markdown text against state attributes. Returns a list of detected invariant violations (if any) and logs warnings.
+
+#### 2. `OrderAuditReporter`
+- **Purpose:** Compiles and exports dual Markdown and JSON audit dossiers for individual orders.
+- **Functions:**
+  - `__init__(self, output_dir: Optional[Path] = None)`: Initializes the reporter and ensures the `india_monitor_data/reports/orders/` directory exists.
+  - `generate_markdown(self, state: Dict[str, Any]) -> str`: Renders the full 8-section audit report:
+    - **Section 1: Executive Summary & Governance Verdict:** Final verdict (`AUTONOMOUSLY_EXECUTED_TO_SAP`, `ESCALATED_FOR_DIRECTOR_APPROVAL`, `REJECTED_BY_GUARDRAIL`), approved spend, escalation reason, mitigated delay hours, risk rating, and synthesized brief.
+    - **Section 2: Order Context & Physical Transit Profile:** Consignee clinic, tier, material description, perishable status, invoice net value, assigned carrier, corridor distance, and cargo constraints.
+    - **Section 3: Two-Stage Predictive ML Engine Diagnostic:** Hurdle classifier probability, regressor delay hours, predicted ETA, disruption drivers, and consulted RAG documents.
+    - **Section 4: Autonomous Specialist ReAct Investigation & Tool Traces:** Findings from Route Supervisor, Contract Adjudicator, and Quality Mitigation agents, including telematics status, route hazards, SLA penalties, and QA hold reasons.
+    - **Section 5: Verbatim Multi-Turn Adversarial Debate Transcript:** Complete markdown table documenting every turn, speaker, proposed cost, proposed SLA penalty, and verbatim arguments.
+    - **Section 6: Cognitive Arbiter Mathematical Synthesis & Convergence:** Mathematical convergence score $S_{\text{consensus}} \ge 0.85$, equilibrium spend, compromise summary, and component weights ($w_{\text{budget}}=0.35, w_{\text{legal}}=0.35, w_{\text{quality}}=0.30$).
+    - **Section 7: Counterfactual 'What-If' Simulation Trace:** Pre vs. post-mitigation metrics table (delay hours, risk probability, SLA penalty, ROI) and operational quarantine notices.
+    - **Section 8: Metacognitive Guardrail Verification & ERP Execution:** Pre-execution guardrail status, constitutional policy matrix, reflection cycle count, ERP mutation records, MS Teams Adaptive Card payload, and timestamped execution trace log.
+  - `generate_json(self, state: Dict[str, Any]) -> Dict[str, Any]`: Builds an exhaustive, schema-normalized JSON dictionary containing all raw state variables, ML diagnostics, debate history, and execution receipts.
+  - `export_report(self, state: Dict[str, Any]) -> Tuple[Path, Path]`: Executes invariant reconciliation and atomically writes both the `.md` and `.json` report files to disk.
+  - `_render_teams_card(self, card_payload: Dict[str, Any], order_id: str, card_path: Optional[Path]) -> str`: Formats Adaptive Card v1.4 payloads into GitHub-flavored Markdown.
 
 ---
 
@@ -2008,7 +2333,7 @@ class O2CAgentState(TypedDict):
 | Module / Component | Primary Input Data | Core Transformation / Function | Output Artifact | Downstream Consumer |
 |---|---|---|---|---|
 | **`modules/agent_tools.py`** | 9 Function Calls with Pydantic Argument Schemas | Deterministic DB, Weather, Strike, RAG, SLA, ERP, Precedent, and Simulation Execution | Structured Dict payloads | ReAct Specialists & LangGraph Nodes |
-| **`modules/agent_specialists.py` (RouteSupervisor)** | Prediction payload & telematics status | Autonomous ReAct tool calling (`create_react_agent`) & GPS audit | `RouteAnalysisOutput` (\$200 penalty, corridor hazards, tools invoked) | `contract_adjudicator` & Graph State |
+| **`modules/agent_specialists.py` (RouteSupervisor)** | Prediction payload & telematics status | Autonomous ReAct & ReWOO tool calling (`create_react_agent` / `analyze_route_rewoo`) | `RouteAnalysisOutput` (\$200 penalty, corridor hazards, tools invoked) | `contract_adjudicator` & Graph State |
 | **`modules/agent_specialists.py` (ContractAdjudicator)** | Route analysis, clinic notice flag, SLA tier | Precedent citation, multi-tier penalty math & Force Majeure waiver | `ContractAdjudicationOutput` (SLA penalty, carrier chargeback) | `quality_mitigation` & `inter_agent_negotiation` |
 | **`modules/agent_specialists.py` (QualityMitigation)** | Specialty diet flag, delay hours, shelf-life | Authorizes \$1,000 Air Freight & QA holds; evaluates \$500 approval gate | `QualityMitigationOutput` (mitigation actions, approval status) | `inter_agent_negotiation` & Action Nodes |
 | **`modules/agent_specialists.py` (Debate Subgraph)** | Specialist proposals & conflicting constraints | Compiled LangGraph debate sub-graph with semantic arbiter convergence ($\ge 0.85$) | `NegotiationOutcome` (compromise package) | `consensus_debate` & Guardrails |
@@ -2016,10 +2341,13 @@ class O2CAgentState(TypedDict):
 | **`modules/agentic_graph.py`** | `O2CAgentState` & Prediction payload | 9-node collaborative state graph, Fast-Track routing, Pre-Execution Guardrails | Complete terminal state & execution path | `AgenticOrchestrator` & Audit Logs |
 | **`modules/incident_memory.py`** | Supply chain incident records & queries | ChromaDB vector storage, semantic search & active cognitive reflection | `CognitivePrecedentReflection` records | Specialist Agents & Legal Adjudication |
 | **`modules/agent_daemon.py`** | Streaming order events & natural language directives | FastAPI microservice, Webhooks, Conversational HITL re-planning, GPU Semaphore(2) | Real-time JSON responses & SQLite audit logs | Enterprise TMS/ERP & Logistics Managers |
-| **`modules/action_execution_engine.py` (ERP Interface)** | ERP write-back requests | Pluggable abstraction (`SQLiteSAPMockAdapter` / `SAPODataAdapter`) | `sap_action_audit_log` & `carrier_debit_memos` | SAP ERP System & Financial Ledgers |
+| **`modules/action_execution_engine.py` (ERP Interface & Outbox)** | ERP write-back requests | Pluggable abstraction (`SQLiteSAPMockAdapter` / `SAPODataAdapter`) & `TransactionalOutboxManager` | `erp_outbox_actions`, `sap_action_audit_log` & `carrier_debit_memos` | SAP ERP System & Financial Ledgers |
 | **`modules/action_execution_engine.py` (TeamsDispatcher)** | High-value escalation data (> \$500 expense or QA hold) | Schema-compliant Adaptive Card JSON generation (v1.4) | `reports/ms_teams_cards/teams_card_order_*.json` | Regional Logistics Director (MS Teams) |
 | **`modules/action_execution_engine.py` (ClinicNotifier)** | Order ID, Clinic name, City, ETA, Root causes | Generates early warning & logs timestamped record | `clinic_early_warnings` table & Force Majeure compliance | `ContractAdjudicatorAgent` |
-| **`modules/agentic_orchestrator.py` (Orchestrator)** | CLI arguments & daily schedules | 6-stage autonomous operational cycle coordination | `daily_agent_report_YYYY-MM-DD.json` & BI CSVs | Executive Leadership & Operations Desks |
+| **`modules/agentic_orchestrator.py` (Orchestrator)** | CLI arguments & daily schedules | 6-stage autonomous operational cycle coordination (default graph-native) | `daily_agent_report_YYYY-MM-DD.json` & BI CSVs | Executive Leadership & Operations Desks |
+| **`modules/blackboard_memory.py`** | Multi-order corridor hazards & carrier alerts | In-memory singleton with TTL caching & thread-safe RLock | Shared working memory state | Specialist Agents & REST Daemon |
+| **`modules/telemetry.py`** | Agent executions, tool invocations & spans | OpenInference / OpenTelemetry structured tracing | `india_monitor_data/logs/agent_traces.jsonl` | SRE Observability & Performance Auditing |
+| **`modules/order_audit_reporter.py`** | Terminal `O2CAgentState` dictionary | Compiles rich 8-section cognitive audit report and zero-data-loss JSON payload | `reports/orders/ORDER_{order_id}_AUDIT_REPORT.md` & `.json` | Enterprise Compliance, SRE & Operations Leadership |
 
 ---
 
@@ -2068,45 +2396,85 @@ sequenceDiagram
 
 ---
 
-### 5.2 Master System Audit Matrix (All 17 Modules, 135+ Validated Functions)
+### 5.2 Master System Audit Matrix (All 22 Modules, 180+ Validated Functions)
 
 | Module Index | Module Name & File Location | Primary Classes & Schemas | Function Count | Operational Role | Verified Test Status |
 |:---:|---|---|:---:|---|:---:|
 | **1** | [`modules/config.py`](file:///d:/Progamming/O2C_AI/modules/config.py) | Module Constants | 6 paths/configs | Master filesystem paths, coordinates, API thresholds | ✅ Passed (100%) |
-| **2** | [`modules/database_manager.py`](file:///d:/Progamming/O2C_AI/modules/database_manager.py) | `DatabaseManager` | 24 functions | ACID SQLite WAL engine, connection pool (size 8), migrations, batch inserts | ✅ Passed (100%) |
+| **2** | [`modules/database_manager.py`](file:///d:/Progamming/O2C_AI/modules/database_manager.py) | `DatabaseManager` | 26 functions | ACID SQLite WAL engine, connection pool (size 8), migrations, outbox tables | ✅ Passed (100%) |
 | **3** | [`modules/weather_service.py`](file:///d:/Progamming/O2C_AI/modules/weather_service.py) | `WeatherService` | 7 functions | Concurrent `ThreadPoolExecutor(max_workers=5)` radar ($<300$ms), Open-Meteo fallback | ✅ Passed (100%) |
 | **4** | [`modules/news_service.py`](file:///d:/Progamming/O2C_AI/modules/news_service.py) | `GlobalTransportDisruptionNewsService` | 6 functions | Multimodal transport disruption scraping (6 modes + natural disasters), pre-compiled regexes | ✅ Passed (100%) |
-| **5** | [`modules/weather_policy_generator.py`](file:///d:/Progamming/O2C_AI/modules/weather_policy_generator.py) | `WeatherPolicyGenerator` | 4 functions | Generates Word weather protocols with deterministic rule IDs (`[RULE-W-*]`) | ✅ Passed (100%) |
-| **6** | [`modules/strike_intelligence_generator.py`](file:///d:/Progamming/O2C_AI/modules/strike_intelligence_generator.py) | `StrikeIntelligenceGenerator` | 4 functions | Generates Word strike briefs with deterministic rule IDs (`[RULE-S-*]`) | ✅ Passed (100%) |
+| **5** | [`modules/weather_policy_generator.py`](file:///d:/Progamming/O2C_AI/modules/weather_policy_generator.py) | `WeatherPolicyGenerator` | 5 functions | Generates Word & Markdown weather protocols with deterministic rule IDs (`[RULE-W-*]`) | ✅ Passed (100%) |
+| **6** | [`modules/strike_intelligence_generator.py`](file:///d:/Progamming/O2C_AI/modules/strike_intelligence_generator.py) | `StrikeIntelligenceGenerator` | 5 functions | Generates Word & Markdown strike briefs with deterministic rule IDs (`[RULE-S-*]`) | ✅ Passed (100%) |
 | **7** | [`modules/ml_db_extension.py`](file:///d:/Progamming/O2C_AI/modules/ml_db_extension.py) | `MLDatabaseExtension` | 7 functions | NumPy vectorized Haversine math (1.803s load), integer index map (`_order_id_to_idx`) | ✅ Passed (100%) |
 | **8** | [`modules/predictive_engine.py`](file:///d:/Progamming/O2C_AI/modules/predictive_engine.py) | `PredictiveEngine` | 11 functions | Two-Stage Hurdle ML (97.10% acc, 0.9958 ROC-AUC, 5.63h MAE), XAI attribution, counterfactual simulation | ✅ Passed (100%) |
 | **9** | [`modules/rag_engine.py`](file:///d:/Progamming/O2C_AI/modules/rag_engine.py) | `DocumentLoader`, `ClauseAwareChunker`, `BM25Index`, `VectorStore`, `RAGQueryEngine`, `RAGEngine` | 23 functions | Hybrid FAISS + BM25 RRF search, `.md` format support, single `metadata.pkl` storage | ✅ Passed (100%) |
 | **10** | [`modules/ollama_service.py`](file:///d:/Progamming/O2C_AI/modules/ollama_service.py) | `OllamaService` | 3 functions | Local LLM inference (`qwen2.5:7b`), AMD Radeon RX 6600 Vulkan compute offload | ✅ Passed (100%) |
 | **11** | [`modules/agent_tools.py`](file:///d:/Progamming/O2C_AI/modules/agent_tools.py) | 9 Pydantic Schemas, Tool Functions | 9 `@tool` functions | Centralized LangChain agent tool registry (including episodic memory & route simulation) | ✅ Passed (100%) |
-| **12** | [`modules/agent_specialists.py`](file:///d:/Progamming/O2C_AI/modules/agent_specialists.py) | `RouteSupervisorAgent`, `ContractAdjudicatorAgent`, `QualityMitigationAgent`, `LLMReasoningEngine`, Debate Subgraph | 13 functions | Autonomous ReAct investigation agent, compiled debate subgraph, precedent reflection | ✅ Passed (100%) |
+| **12** | [`modules/agent_specialists.py`](file:///d:/Progamming/O2C_AI/modules/agent_specialists.py) | `RouteSupervisorAgent`, `ContractAdjudicatorAgent`, `QualityMitigationAgent`, `LLMReasoningEngine`, Debate Subgraph | 14 functions | Autonomous ReAct & ReWOO investigation agents, compiled debate subgraph, precedent reflection | ✅ Passed (100%) |
 | **13** | [`modules/agentic_graph.py`](file:///d:/Progamming/O2C_AI/modules/agentic_graph.py) | `O2CAgentState`, 9 Graph Nodes & Routers | 12 functions | LangGraph 9-Node Multi-Agent State Machine with Fast-Track, Guardrails & `MemorySaver` | ✅ Passed (100%) |
-| **14** | [`modules/action_execution_engine.py`](file:///d:/Progamming/O2C_AI/modules/action_execution_engine.py) | `ERPActionInterface`, `SQLiteSAPMockAdapter`, `SAPODataAdapter`, `SAPActionExecutor`, `MSTeamsDispatcher`, `ClinicNotificationDispatcher` | 17 functions | Enterprise ERP integration layer, SAP write-backs, MS Teams Adaptive Cards v1.4 | ✅ Passed (100%) |
-| **15** | [`modules/agentic_orchestrator.py`](file:///d:/Progamming/O2C_AI/modules/agentic_orchestrator.py) | `LLMSynthesizer`, `AgenticOrchestrator` | 7 functions | Autonomous 6-stage daily operational cycle conductor, graph synthesis, executive reporting | ✅ Passed (100%) |
+| **14** | [`modules/action_execution_engine.py`](file:///d:/Progamming/O2C_AI/modules/action_execution_engine.py) | `ERPActionInterface`, `TransactionalOutboxManager`, `SQLiteSAPMockAdapter`, `SAPODataAdapter`, `SAPActionExecutor`, `MSTeamsDispatcher`, `ClinicNotificationDispatcher` | 18 functions | Enterprise ERP integration layer, Transactional Outbox, SAP write-backs, MS Teams Adaptive Cards v1.4 | ✅ Passed (100%) |
+| **15** | [`modules/agentic_orchestrator.py`](file:///d:/Progamming/O2C_AI/modules/agentic_orchestrator.py) | `LLMSynthesizer`, `AgenticOrchestrator` | 7 functions | Autonomous 6-stage daily operational cycle conductor, default graph-native synthesis, reporting | ✅ Passed (100%) |
 | **16** | [`modules/incident_memory.py`](file:///d:/Progamming/O2C_AI/modules/incident_memory.py) | `EpisodicMemoryStore`, `IncidentResolutionRecord` | 6 functions | ChromaDB episodic memory store, incident archiving, cognitive precedent reflection | ✅ Passed (100%) |
-| **17** | [`modules/agent_daemon.py`](file:///d:/Progamming/O2C_AI/modules/agent_daemon.py) | `FastAPI Application`, Pydantic Request Models | 8 functions | Event-driven microservice daemon, Conversational HITL (`/collaborate`), GPU Semaphore(2) | ✅ Passed (100%) |
-| **TOTAL** | **17 Modules** | **Unified Core** | **135+ Functions** | **Enterprise Order-to-Cash Logistics Governance** | 🏆 **Passed (100%)** |
+| **17** | [`modules/agent_daemon.py`](file:///d:/Progamming/O2C_AI/modules/agent_daemon.py) | `FastAPI Application`, Pydantic Request Models | 11 functions | Event-driven microservice daemon, streaming telematics stall detector, Conversational HITL, GPU Semaphore(2) | ✅ Passed (100%) |
+| **18** | [`modules/analytical_feature_store.py`](file:///d:/Progamming/O2C_AI/modules/analytical_feature_store.py) | `AnalyticalFeatureStore` | 6 functions | DuckDB (v1.5.5) Polystore OLAP engine, 10-table join in 0.831s, O(1) order feature vectors | ✅ Passed (100%) |
+| **19** | [`modules/blackboard_memory.py`](file:///d:/Progamming/O2C_AI/modules/blackboard_memory.py) | `BlackboardMemory` | 8 functions | Hierarchical in-memory working memory, cross-order corridor hazard, carrier status & regional hold sharing | ✅ Passed (100%) |
+| **20** | [`modules/telemetry.py`](file:///d:/Progamming/O2C_AI/modules/telemetry.py) | `TelemetryManager`, Tracing Decorators | 5 functions | Local OpenInference / OpenTelemetry distributed tracing, JSONL span sink (`agent_traces.jsonl`) | ✅ Passed (100%) |
+| **21** | [`modules/order_audit_reporter.py`](file:///d:/Progamming/O2C_AI/modules/order_audit_reporter.py) | `OrderAuditReporter`, `SemanticInvariantVerifier` | 7 functions | Autonomous per-order 8-section cognitive audit report generator (`.md` & `.json`), Semantic Invariant Verifier (11 Axioms) | ✅ Passed (100%) |
+| **22** | [`modules/dynamic_sensory_service.py`](file:///d:/Progamming/O2C_AI/modules/dynamic_sensory_service.py) | `OrderCorridorExtractor`, `GlobalDynamicWeatherService`, `DynamicDisruptionKeywordGenerator`, `enrich_order_with_dynamic_sensory` | 6 functions | Order-First LLM Corridor Extractor, zero-key Open-Meteo Geocoding, Forecast & Archive Radar, disruption query generator | ✅ Passed (100%) |
+| **TOTAL** | **22 Modules** | **Unified Core** | **180+ Functions** | **Autonomous Order-to-Cash Logistics Governance** | 🏆 **Passed (100%)** |
 
 ---
 
-### 5.3 Hardware Optimization Profile & Master Verification (AMD Ryzen 3 3200G + Radeon RX 6600)
+### 5.3 Hardware Optimization Profile, Deadlock RCA & 44-Suite Verification (AMD Ryzen 3 3200G + Radeon RX 6600)
 
 The entire platform is hardware-profiled and optimized for energy-efficient, edge-capable execution on consumer enterprise hardware:
 
 - **Host Processor:** AMD Ryzen 3 3200G (4 Physical Cores @ 3.6 GHz base / 4.0 GHz boost, Zen+ architecture).
 - **Dedicated Graphics / Compute Accelerator:** AMD Radeon RX 6600 (8 GB GDDR6 VRAM, RDNA 2 architecture, 128-bit memory bus @ 224 GB/s bandwidth).
 - **Compute Backend & Concurrency Protection:** Ollama daemon configured with Vulkan compute offload backend, enabling full GPU layer acceleration for `qwen2.5:7b` (4.7 GB Q4_K_M GGUF) with zero cloud token egress cost. Protected by `_gpu_llm_semaphore = asyncio.Semaphore(2)` in `modules/agent_daemon.py` maintaining active VRAM strictly $<7.2$ GB.
-- **System Memory Footprint:** Optimized from 850 MB down to **$<350$ MB RAM** via lightweight integer index mapping (`self._order_id_to_idx`), vectorized NumPy array slicing, and single-pickle RAG serialization.
+- **System Memory Footprint:** Optimized from 850 MB down to **$<350$ MB RAM** via lightweight integer index mapping (`self._order_id_to_idx`), DuckDB columnar caching, and single-pickle RAG serialization.
 - **Concurrent Ingestion Latency:** Weather radar fetches across 6 major logistics hubs complete concurrently in **$<300$ milliseconds** via `ThreadPoolExecutor(max_workers=5)`.
-- **Feature Store Load Latency:** 62,299 historical ERP records processed with pure NumPy trigonometric Haversine math in **1.803 seconds** (down from 15.2 seconds).
-- **Master 31-Suite Verification Status:** All 5 enterprise test suites pass with 100% zero-error reliability:
-  - `python validate_modules.py`: **7/7 Passed**
-  - `python evaluation/verify_phase1_phase2.py`: **5/5 Passed**
-  - `python evaluation/verify_agent_first_pipeline.py`: **6/6 Passed**
-  - `python evaluation/verify_phase6_agent_first.py`: **6/6 Passed**
-  - `python evaluation/verify_true_autonomy.py`: **7/7 Passed**
-  - **Total Automated Test Suites:** 🏆 **31/31 Passed (100% Zero-Error Reliability)**
+- **Feature Store Load Latency:** 62,299 historical ERP records processed with DuckDB OLAP joins in **0.831s** (a 2.2x speedup over SQLite joins and an 18.3x speedup over un-vectorized Pandas).
+
+#### 🛡️ Root Cause Analysis (RCA) & System Freeze Safeguards:
+During high-throughput batch evaluation (234+ orders), an edge-case concurrency lock was identified where un-synchronized DDL migrations across worker threads and unconstrained PyTorch CPU usage saturated all 4 cores of the Ryzen 3 3200G, starving the Windows OS message loop and HID input driver stack.
+
+Four non-negotiable architectural safeguards were engineered:
+1. **Thread-Safe Re-Entrant Write Mutex (`_DB_WRITE_LOCK`):** All SQLite write operations (`INSERT`, `UPDATE`, DDL) across connection pool checkouts are serialized through a global process-wide `threading.RLock()`. Multiple threads read concurrently in WAL mode, but only one thread commits a write at any instant, completely preventing `sqlite3.OperationalError: database is locked`.
+2. **Startup-Only Schema Initialization Guard:** Schema tables and DDL migrations execute strictly once per process lifecycle, guarded by `_INITIALIZED_DBS` set membership. Eliminates redundant DDL table scans during per-order loop iterations.
+3. **Non-Blocking Ollama Health Check:** Health checks utilize an instant socket-level ping (`socket.create_connection(("127.0.0.1", 11434), timeout=1.0)`), preventing HTTP connection pool hangs if the Ollama daemon is restarting.
+4. **Cooperative CPU Yielding & Hardware Throttling:** Worker pools are restricted to `max_workers=2`, PyTorch threads are constrained to 1 (`torch.set_num_threads(1)`), and batch loops execute cooperative micro-yields (`time.sleep(0.01)`), guaranteeing that the Windows OS message loop and keyboard/mouse HID interrupts are never starved.
+
+#### 🏆 Master 44-Suite Verification Status:
+All 7 enterprise test suites pass with 100% zero-error reliability across all 22 modules:
+
+| Test Script | Suites Tested | Passing Score | Verification Scope |
+|---|:---:|:---:|---|
+| `validate_modules.py` | 7 | **7/7 (100%)** | Core data structures, config paths, and model boundaries |
+| `evaluation/verify_phase1_phase2.py` | 5 | **5/5 (100%)** | Open-Meteo radar, news scraper, SQLite WAL, Hurdle ML models |
+| `evaluation/verify_agent_first_pipeline.py` | 6 | **6/6 (100%)** | Hybrid RAG Hit@5, FAISS index, Okapi BM25, Ollama Qwen2.5 |
+| `evaluation/verify_phase6_agent_first.py` | 6 | **6/6 (100%)** | 9-node LangGraph state machine, guardrails, Fast-Track routing |
+| `evaluation/verify_true_autonomy.py` | 7 | **7/7 (100%)** | Level 4/5 autonomy, ReAct tools, debate subgraph, episodic memory |
+| `evaluation/verify_architecture_improvements.py` | 10 | **10/10 (100%)** | All 10 strategic improvements: Graph orchestration, DuckDB OLAP, Direct Markdown, Blackboard, Telemetry, Outbox, Streaming, ReWOO, Invariant Verifier, Dynamic Sensory |
+| `evaluation/verify_per_order_audit_reporter.py` | 3 | **3/3 (100%)** | Per-order cognitive audit reports: Dialogue completeness, Arbiter math ($S \ge 0.85$), Counterfactual delta, Zero-truncation policy, SAP/Teams execution receipts |
+| **TOTAL VERIFIED SUITES** | **44 Suites** | 🏆 **44/44 Passed (100%)** | **Zero-Error Enterprise Autonomous Logistics Operations** |
+
+---
+
+### 5.4 Deterministic Semantic Reconciliation & The 11 Constitutional Invariant Axioms
+
+To eliminate subtle cognitive and semantic contradictions across autonomous agent handoffs, the `SemanticInvariantVerifier` in `modules/order_audit_reporter.py` mathematically audits generated reports against **11 Constitutional Invariant Axioms** prior to artifact publication:
+
+1. **Axiom 1 (Escalation Direct Alignment):** If an order is escalated for clinical quarantine hold (`qa_hold_required = True`), the MS Teams card and executive summary must explicitly mandate quarantine disposition (`AUTHORIZE_QUARANTINE_DISPOSITION`), never generating "$0 expense approval" or generic expedited freight requests.
+2. **Axiom 2 (Tactical Physical Synchronization):** Under clinical quarantine hold, route detour recommendations across Section 1 and Section 4 must mandate `"INTERCEPT & DIVERT"`, never advising carriers to `"maintain designated route"`.
+3. **Axiom 3 (Strict Monetary Non-Negativity):** All financial penalty, carrier chargeback, and authorized mitigation spend fields must satisfy $V \ge \$0.00$.
+4. **Axiom 4 (Sign & Polarity Invariant):** Zero-delta reductions must never render with a negative sign (normalizing `-0.0h`, `-0.0%`, or `$-0.00` to `0.0` or `N/A`).
+5. **Axiom 5 (Normalized Schema Ingestion):** The reporting pipeline must seamlessly ingest both flattened (`order_value_usd`) and nested/legacy (`order_value`) schemas, ensuring invoice net value never silently defaults to `$0.00 USD` when valid sales data exists.
+6. **Axiom 6 (Mathematical Ceiling Transparency):** Section 8 guardrails must render explicit mathematical comparisons (e.g., `Chargeback ($300.00) <= 150% invoice value ($95,316.88)`), guaranteeing full audit visibility.
+7. **Axiom 7 (Deterministic Hazard Extraction):** Disruption drivers and route hazard descriptions are sanitized, stripping markdown asterisks and normalizing spacing across engines.
+8. **Axiom 8 (Dialogue Turn Parity):** The count of debate dialogue rows rendered in Section 5 must match the length of `negotiation_history` in the LangGraph state verbatim:
+   $$\text{TurnCount}_{\text{report}} \equiv \text{TurnCount}_{\text{state}}$$
+9. **Axiom 9 (Observation Array Hygiene):** Trailing double periods and malformed empty array representations (e.g., `"[]"` or `"[None]"`) are programmatically scrubbed before rendering.
+10. **Axiom 10 (Arbiter Convergence Traceability):** Cognitive Arbiter evaluation must explicitly log the mathematical convergence formula, component weights ($w_{\text{budget}}=0.35, w_{\text{legal}}=0.35, w_{\text{quality}}=0.30$), and assert $S_{\text{consensus}} \ge 0.85$.
+11. **Axiom 11 (Zero Silent Defaulting):** Prevents silent defaulting to `"Order #UNKNOWN"` or generic fallback tiers without explicit audit disclosure in the execution log.

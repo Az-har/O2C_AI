@@ -7,6 +7,7 @@ for autonomous LLM function calling across the multi-agent graph.
 from typing import Dict, List, Any, Optional
 import json
 import logging
+import threading
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -18,6 +19,27 @@ from modules.database_manager import DatabaseManager
 from modules.action_execution_engine import SAPActionExecutor, MSTeamsDispatcher, SQLiteSAPMockAdapter
 
 logger = logging.getLogger("AgentTools")
+
+_SHARED_PREDICTIVE_ENGINE: Optional[Any] = None
+_ENGINE_LOCK = threading.Lock()
+
+def set_shared_predictive_engine(engine: Any):
+    """Register the active, trained PredictiveEngine singleton across agent tools"""
+    global _SHARED_PREDICTIVE_ENGINE
+    with _ENGINE_LOCK:
+        _SHARED_PREDICTIVE_ENGINE = engine
+
+def get_shared_predictive_engine() -> Any:
+    """Retrieve or lazily initialize the shared PredictiveEngine singleton"""
+    global _SHARED_PREDICTIVE_ENGINE
+    if _SHARED_PREDICTIVE_ENGINE is None:
+        with _ENGINE_LOCK:
+            if _SHARED_PREDICTIVE_ENGINE is None:
+                from modules.predictive_engine import PredictiveEngine
+                from modules.ml_db_extension import MLDatabaseExtension
+                ml_db = MLDatabaseExtension()
+                _SHARED_PREDICTIVE_ENGINE = PredictiveEngine(ml_db_extension=ml_db)
+    return _SHARED_PREDICTIVE_ENGINE
 
 
 # ============================================================================
@@ -36,8 +58,11 @@ def query_sap_order(order_id: str) -> Dict[str, Any]:
     minimum product shelf-life requirements, and order line items.
     """
     try:
-        from modules.ml_db_extension import MLDatabaseExtension
-        ext = MLDatabaseExtension()
+        engine = get_shared_predictive_engine()
+        ext = engine.ml_db if (engine and engine.ml_db) else None
+        if ext is None:
+            from modules.ml_db_extension import MLDatabaseExtension
+            ext = MLDatabaseExtension()
         ctx = ext.get_order_context(order_id)
         if not ctx:
             # Fallback to direct DatabaseManager query
@@ -106,6 +131,40 @@ def fetch_corridor_weather(city: str) -> Dict[str, Any]:
             df = db.read_weather(city=city)
             if not df.empty:
                 reading = df.iloc[0].to_dict()
+
+        if not reading:
+            try:
+                from modules.dynamic_sensory_service import GlobalDynamicWeatherService, CorridorExtractionOutput
+                gw = GlobalDynamicWeatherService()
+                gw_res = gw.fetch_corridor_weather(CorridorExtractionOutput(
+                    origin_city="Chicago",
+                    destination_city=city,
+                    shipping_mode="Road (FTL)",
+                    temporal_horizon="present",
+                    target_transit_date=datetime.now().strftime("%Y-%m-%d")
+                ))
+                if gw_res.get("status") in ("SUCCESS", "FALLBACK"):
+                    raw = gw_res.get("raw_weather", {}).get("current", {})
+                    temp = float(raw.get("temperature_2m", 22.0))
+                    rain = float(raw.get("precipitation", 0.0))
+                    desc = "Clear / Nominal" if rain == 0 else f"Precipitation {rain}mm"
+                    reading = {
+                        "temperature": temp,
+                        "rain_1h": rain,
+                        "weather_description": desc
+                    }
+                    try:
+                        db.write_weather([{
+                            "city_name": city,
+                            "temperature": temp,
+                            "rain_1h": rain,
+                            "weather_description": desc,
+                            "data_source": "Open-Meteo Dynamic"
+                        }], 1)
+                    except Exception:
+                        pass
+            except Exception as e:
+                logger.debug(f"Dynamic weather fallback failed for {city}: {e}")
 
         if not reading:
             return {
@@ -177,6 +236,33 @@ def fetch_strike_alerts(city_or_corridor: str) -> Dict[str, Any]:
                 LIMIT 5
             """, (pattern, pattern, pattern))
             rows = [dict(r) for r in c.fetchall()]
+
+        # On-Demand Dynamic Ingestion Fallback (Improvement 5.10): If DB has no local records,
+        # query live global disruption RSS using multimodal and local vernacular keywords
+        if not rows:
+            try:
+                from modules.news_service import GlobalTransportDisruptionNewsService
+                news_svc = GlobalTransportDisruptionNewsService()
+                live_articles = news_svc.fetch(city=city_or_corridor, max_articles_per_query=2)
+                if live_articles:
+                    try:
+                        db.write_strikes(live_articles, 1)
+                    except Exception:
+                        pass
+                    rows = [
+                        {
+                            "title": a.get("title"),
+                            "mode": a.get("transport_mode", "Multimodal"),
+                            "category": a.get("disruption_category", "Disruption"),
+                            "country": a.get("country_mentioned", "Global"),
+                            "hub": a.get("city_mentioned", city_or_corridor),
+                            "severity": a.get("severity", "MEDIUM"),
+                            "published_date": a.get("published_date", a.get("scraped_at", ""))
+                        }
+                        for a in live_articles[:5]
+                    ]
+            except Exception as e:
+                logger.debug(f"Dynamic strike RSS fallback failed for {city_or_corridor}: {e}")
 
         hazard_detected = any("HIGH" in str(r.get("severity", "")).upper() for r in rows) or len(rows) >= 2
 
@@ -457,6 +543,7 @@ class SimulateAlternativeRouteInput(BaseModel):
     proposed_shipping_mode: Optional[str] = Field(default=None, description="Alternative transport mode (e.g. 'Air Freight', 'Road (FTL)', 'Rail Intermodal')")
     shipping_type: Optional[str] = Field(default=None, description="Alias for proposed_shipping_mode")
     departure_offset_hours: float = Field(default=0.0, description="Departure schedule shift in hours (negative for early departure, positive for delay)")
+    order_data: Optional[Dict[str, Any]] = Field(default=None, description="Optional in-memory order details dictionary")
 
 @tool(args_schema=SimulateAlternativeRouteInput)
 def simulate_alternative_route_risk(
@@ -465,7 +552,8 @@ def simulate_alternative_route_risk(
     carrier_name: Optional[str] = None,
     proposed_shipping_mode: Optional[str] = None,
     shipping_type: Optional[str] = None,
-    departure_offset_hours: float = 0.0
+    departure_offset_hours: float = 0.0,
+    order_data: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Run interactive counterfactual what-if simulation on an SAP Sales Order using Engine A's Two-Stage Hurdle ML model.
@@ -474,18 +562,23 @@ def simulate_alternative_route_risk(
     and net risk reduction relative to the baseline route.
     """
     try:
-        from modules.predictive_engine import PredictiveEngine
-        from modules.ml_db_extension import MLDatabaseExtension
-        ml_db = MLDatabaseExtension()
-        engine = PredictiveEngine(ml_db_extension=ml_db)
+        engine = get_shared_predictive_engine()
         target_carrier = proposed_carrier or carrier_name
         target_mode = proposed_shipping_mode or shipping_type
         sim_res = engine.run_counterfactual_inference(
             order_id=order_id,
             carrier_name=target_carrier,
             shipping_type=target_mode,
-            departure_offset_hours=departure_offset_hours
+            departure_offset_hours=departure_offset_hours,
+            order_data=order_data
         )
+        if "error" in sim_res:
+            return {
+                "status": "ERROR",
+                "order_id": order_id,
+                "message": sim_res["error"],
+                "recommendation": "NOT_RECOMMENDED"
+            }
         sim_res["status"] = "SUCCESS"
         cf = sim_res.get("counterfactual", {})
         delta = sim_res.get("delta", {})

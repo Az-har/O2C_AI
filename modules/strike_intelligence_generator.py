@@ -79,7 +79,9 @@ class StrikeIntelligenceGenerator:
             if len(city_articles) >= 3 and city != "Global":
                 doc_path = self._create_city_strike_brief(city, city_articles)
                 generated_files.append(doc_path)
-                print(f"   ✅ [Hub] {doc_path.name}")
+                md_path = self._create_city_strike_brief_md(city, city_articles)
+                generated_files.append(md_path)
+                print(f"   ✅ [Hub] {doc_path.name} | {md_path.name}")
         
         # 3. Disruption Category Briefs
         for category, cat_articles in intel_by_category.items():
@@ -90,7 +92,9 @@ class StrikeIntelligenceGenerator:
         
         master_doc = self._create_master_disruption_intelligence(articles)
         generated_files.append(master_doc)
-        print(f"   ✅ [Master] {master_doc.name}")
+        master_md = self._create_master_disruption_intelligence_md(articles)
+        generated_files.append(master_md)
+        print(f"   ✅ [Master] {master_doc.name} | {master_md.name}")
         
         print(f"\n✅ Generated {len(generated_files)} intelligence documents")
         print(f"📁 Saved to: {self.output_dir}")
@@ -452,6 +456,63 @@ class StrikeIntelligenceGenerator:
         doc_path = self.output_dir / "Master_Disruption_Intelligence.docx"
         doc.save(str(doc_path))
         return doc_path
+
+    def _create_city_strike_brief_md(self, city: str, articles: List[Dict]) -> Path:
+        """Create structured Markdown strike intelligence brief for zero-churn RAG indexing (Improvement 5.3)"""
+        city_code = city[:3].upper()
+        safe_city = city.replace('/', '-').replace('\\', '-')
+        lines = [
+            f"# {city.upper()} FREIGHT DISRUPTION INTELLIGENCE & CORRIDOR DIRECTIVES",
+            f"**Monitored Logistics Hub:** {city} Commercial Logistics Corridor",
+            f"**Report Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | **Total Incidents Analyzed:** {len(articles)}\n",
+            "## 1. ACTIVE DISRUPTION CHRONOLOGY & RADAR",
+        ]
+        for a in articles[:10]:
+            lines.append(f"- **[{a.get('published', 'N/A')}] {a.get('title', 'Disruption')}** (Mode: {a.get('transport_mode', 'Road')}, Severity: {a.get('severity', 'LOW')})")
+
+        lines.extend([
+            "\n## 2. AUTONOMOUS COPILOT ADJUDICATION & LEGAL RULES",
+            f"### [RULE-S-{city_code}-01] CARRIER 72-HOUR FORCE MAJEURE BURDEN",
+            f"Carrier claiming strike-induced Force Majeure relief within {city} must submit formal strike notice within 72 hours of delay event, supported by telematics timestamp proving vehicle immobilization.\n",
+            f"### [RULE-S-{city_code}-02] CLINICAL EMERGENCY AIR REPLACEMENT ($1,000 CAP)",
+            f"For veterinary biologic therapeutics, insulin, and clinical nutrition diets (MARA-SPECIALTY_DIET_FLAG = TRUE), delays exceeding 24.0 hours through {city} trigger automatic authorization of Emergency Air Courier (up to $1,000 per order).\n",
+            f"### [RULE-S-{city_code}-03] RECEIVING WINDOW OVERTIME & REDELIVERY WAIVER",
+            f"Shipments arriving after clinic receiving dock hours (KNVV-CLOSE_TIME) due to verified {city} transit blockages are exempt from standard $150 redelivery penalty.\n",
+            f"### [RULE-S-{city_code}-04] DYNAMIC TRANSIT TIME ADJUSTMENT",
+            f"Inject a dynamic safety buffer (+12.0h to +24.0h) into the Predicted Delivery Date (PDD) for all linehauls transiting {city}.\n",
+            "## 3. COPILOT DETERMINISTIC ACTION CHECKLIST",
+            f"- [x] Step 1: Scan active SAP linehauls (sap_vttk) scheduled to pass through {city} disruption zone.",
+            f"- [x] Step 2: Calculate revised ETA with [RULE-S-{city_code}-04] dynamic buffer (+12h to +24h).",
+            f"- [x] Step 3: If delay >24h for specialty diets, trigger [RULE-S-{city_code}-02] $1,000 Air Freight replacement.",
+            f"- [x] Step 4: Dispatch automated Actionable Adaptive Card to Regional Logistics Director for financial risk >$500."
+        ])
+
+        md_path = self.output_dir / f"{safe_city}_Strike_Intelligence.md"
+        md_path.write_text("\n".join(lines), encoding="utf-8")
+        return md_path
+
+    def _create_master_disruption_intelligence_md(self, all_articles: List[Dict]) -> Path:
+        """Create structured Markdown master disruption intelligence brief (Improvement 5.3)"""
+        high_sev = [a for a in all_articles if 'HIGH' in str(a.get('severity', '')).upper()]
+        lines = [
+            "# MASTER SUPPLY CHAIN DISRUPTION INTELLIGENCE & MULTI-MODAL RADAR",
+            f"**Total Disruption Incidents:** {len(all_articles)} | **High Severity Incidents:** {len(high_sev)}\n",
+            "## 1. Critical National Disruptions (High Severity)"
+        ]
+        for art in high_sev[:10]:
+            lines.append(f"- **[{art.get('published', 'N/A')}] {art.get('title', 'Unknown')}** (Mode: {art.get('transport_mode', 'Road')}, Region: {art.get('matched_cities', ['National'])[0]})")
+
+        lines.extend([
+            "\n## 2. Autonomous AI Orchestration Decision Matrix",
+            "- **Phase 1 Ingestion Integration:** Automatically query live weather and strike news on daily schedule; populate SQLite and update vector knowledge base.",
+            "- **Phase 2 RAG Retrieval:** Retrieve matching city and modality intelligence to adjudicate Force Majeure eligibility and transit delay buffers.",
+            "- **Phase 3 ML Synergy:** Combine strike severity alerts with historical transit velocity to adjust predicted delay hours and probability.",
+            "- **Phase 4 Multi-Agent Adjudication:** Route Supervisor verifies alternative corridors; Contract Adjudicator calculates carrier chargebacks and SLA penalties; Quality Mitigation agent enforces cold-chain holds.",
+            "- **Phase 5 ERP & Teams Action:** Update SAP ERP delivery block / date (VDATU); dispatch Actionable Adaptive Card to Regional Logistics Director for approvals exceeding $500."
+        ])
+        md_path = self.output_dir / "Master_Disruption_Intelligence.md"
+        md_path.write_text("\n".join(lines), encoding="utf-8")
+        return md_path
 
 
 if __name__ == "__main__":

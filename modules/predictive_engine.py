@@ -108,26 +108,42 @@ class PredictiveEngine:
         self._strike_cache.clear()
 
     def get_city_weather(self, city_name: str, force_fresh_lookup: bool = False) -> Optional[Dict[str, Any]]:
-        """Stateless / indexed query for latest city weather reading"""
+        """Stateless / indexed query for latest city weather reading with thread-safe pooling & dynamic fallback"""
         city_clean = city_name.lower().strip()
         if not force_fresh_lookup and city_clean in self._weather_cache:
             return self._weather_cache[city_clean]
-        if self.ml_db is not None:
-            try:
-                conn = self.ml_db.conn
-                w_row = conn.execute("""
-                    SELECT temperature, rain_1h, wind_speed, visibility_km, weather_description
-                    FROM weather_readings
-                    WHERE LOWER(city_name) = ?
-                    ORDER BY recorded_at DESC LIMIT 1
-                """, (city_clean,)).fetchone()
-                if w_row:
-                    res = dict(w_row)
-                    if not force_fresh_lookup:
-                        self._weather_cache[city_clean] = res
-                    return res
-            except Exception:
-                pass
+        
+        # 1. Query local database using connection pool
+        try:
+            from modules.database_manager import DatabaseManager
+            db = DatabaseManager()
+            w_row = db.get_city_weather(city_clean)
+            if w_row:
+                res = dict(w_row)
+                if not force_fresh_lookup:
+                    self._weather_cache[city_clean] = res
+                return res
+        except Exception:
+            pass
+
+        # 2. Dynamic Sensory Fallback (Improvement 5.10): For non-cached / global corridors
+        try:
+            from modules.agent_tools import fetch_corridor_weather
+            w_res = fetch_corridor_weather.invoke({"city": city_name})
+            if w_res.get("status") == "SUCCESS":
+                res = {
+                    "temperature": float(w_res.get("temperature_celsius", 22.0)),
+                    "rain_1h": float(w_res.get("rain_mm_1h", 0.0)),
+                    "wind_speed": 10.0,
+                    "visibility_km": 10.0,
+                    "weather_description": str(w_res.get("weather_description", "Clear / Nominal"))
+                }
+                if not force_fresh_lookup:
+                    self._weather_cache[city_clean] = res
+                return res
+        except Exception:
+            pass
+
         return None
 
     def save_models(self, model_dir: Path = None) -> bool:
@@ -537,6 +553,7 @@ class PredictiveEngine:
             "delay_hours": float(delay_hours),
             "predicted_eta": predicted_eta,
             "root_cause": root_cause_str,
+            "root_causes": root_causes,
             "feature_attributions": feature_attributions,
             "financial_risk_usd": float(financial_risk),
             "applied_clauses": applied_clauses,

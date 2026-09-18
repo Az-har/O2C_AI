@@ -10,6 +10,7 @@ Handles:
 import os
 import sqlite3
 import logging
+import threading
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Any
@@ -20,6 +21,9 @@ try:
     from .config import DB_PATH, BASE_DIR
 except ImportError:
     from config import DB_PATH, BASE_DIR
+
+_INITIALIZED_SAP_DBS = set()
+_SAP_INIT_LOCK = threading.Lock()
 
 def vectorized_haversine(lat1: Any, lon1: Any, lat2: Any, lon2: Any) -> np.ndarray:
     """
@@ -61,8 +65,21 @@ class MLDatabaseExtension:
         # Reuse thread-safe connection from DatabaseManager pool
         self.conn = self.db_manager._get_connection()
         self._cached_ml_df = None
+        self._order_id_to_idx = {}
+        self._numeric_order_to_idx = {}
         self._order_lookup_dict = {}
-        self._build_sap_schema()
+        
+        norm_key = str(Path(self.db_path).resolve()) if str(self.db_path) != ":memory:" else ":memory:"
+        with _SAP_INIT_LOCK:
+            if norm_key not in _INITIALIZED_SAP_DBS:
+                self._build_sap_schema()
+                _INITIALIZED_SAP_DBS.add(norm_key)
+
+    @classmethod
+    def reset_instances(cls):
+        """Reset initialized SAP DBs cache (useful for isolated tests)"""
+        with _SAP_INIT_LOCK:
+            _INITIALIZED_SAP_DBS.clear()
 
     def _build_sap_schema(self):
         """Create normalized relational tables for SAP ERP data"""
@@ -461,6 +478,7 @@ class MLDatabaseExtension:
         # Cache dataset and index map for O(1) instantaneous lookups without duplicate memory dictionary
         self._cached_ml_df = df
         self._order_id_to_idx = {str(val): idx for idx, val in enumerate(df['order_id'])}
+        self._numeric_order_to_idx = {str(val).lstrip("0"): idx for idx, val in enumerate(df['order_id'])}
         self._order_lookup_dict = {}
 
         return df
@@ -471,14 +489,13 @@ class MLDatabaseExtension:
             self.get_ml_ready_dataset()
 
         ord_key = str(order_id).strip()
-        if ord_key in self._order_id_to_idx:
-            idx = self._order_id_to_idx[ord_key]
-            return self._cached_ml_df.iloc[idx].to_dict()
+        idx = self._order_id_to_idx.get(ord_key)
+        if idx is None:
+            stripped = ord_key.lstrip("0")
+            idx = self._numeric_order_to_idx.get(stripped)
 
-        # Suffix matching fallback if short ID passed
-        for k, idx in self._order_id_to_idx.items():
-            if k.endswith(ord_key):
-                return self._cached_ml_df.iloc[idx].to_dict()
+        if idx is not None and self._cached_ml_df is not None:
+            return self._cached_ml_df.iloc[idx].to_dict()
 
         return None
 
@@ -487,64 +504,66 @@ class MLDatabaseExtension:
 
     def record_prediction(self, prediction: Dict[str, Any]) -> int:
         """Store an Engine A prediction in ml_predictions table"""
-        cursor = self.conn.cursor()
-        cursor.execute("""
-            INSERT INTO ml_predictions (
-                order_id, delivery_id, shipment_id, customer_name, carrier_name,
-                predicted_eta, delay_probability, delay_hours, will_be_delayed,
-                root_cause, financial_risk_usd, predicted_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            str(prediction.get("order_id")),
-            str(prediction.get("delivery_id", "")),
-            str(prediction.get("shipment_id", "")),
-            str(prediction.get("customer_name", "")),
-            str(prediction.get("carrier_name", "")),
-            str(prediction.get("predicted_eta", "")),
-            float(prediction.get("delay_probability", 0.0)),
-            float(prediction.get("delay_hours", 0.0)),
-            1 if prediction.get("will_be_delayed") else 0,
-            str(prediction.get("root_cause", "")),
-            float(prediction.get("financial_risk_usd", 0.0)),
-            datetime.now().isoformat(),
-            prediction.get("decision_json")
-        ))
-        self.conn.commit()
-        return cursor.lastrowid
+        with self.db_manager.get_write_lock():
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                INSERT INTO ml_predictions (
+                    order_id, delivery_id, shipment_id, customer_name, carrier_name,
+                    predicted_eta, delay_probability, delay_hours, will_be_delayed,
+                    root_cause, financial_risk_usd, predicted_at, decision_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                str(prediction.get("order_id")),
+                str(prediction.get("delivery_id", "")),
+                str(prediction.get("shipment_id", "")),
+                str(prediction.get("customer_name", "")),
+                str(prediction.get("carrier_name", "")),
+                str(prediction.get("predicted_eta", "")),
+                float(prediction.get("delay_probability", 0.0)),
+                float(prediction.get("delay_hours", 0.0)),
+                1 if prediction.get("will_be_delayed") else 0,
+                str(prediction.get("root_cause", "")),
+                float(prediction.get("financial_risk_usd", 0.0)),
+                datetime.now().isoformat(),
+                prediction.get("decision_json")
+            ))
+            self.conn.commit()
+            return cursor.lastrowid
 
     def record_predictions_batch(self, predictions: List[Dict[str, Any]]) -> int:
         """Store multiple Engine A predictions in a single high-performance SQLite transaction"""
         if not predictions:
             return 0
-        cursor = self.conn.cursor()
-        now_str = datetime.now().isoformat()
-        rows = [
-            (
-                str(p.get("order_id")),
-                str(p.get("delivery_id", "")),
-                str(p.get("shipment_id", "")),
-                str(p.get("customer_name", "")),
-                str(p.get("carrier_name", "")),
-                str(p.get("predicted_eta", "")),
-                float(p.get("delay_probability", 0.0)),
-                float(p.get("delay_hours", 0.0)),
-                1 if p.get("will_be_delayed") else 0,
-                str(p.get("root_cause", "")),
-                float(p.get("financial_risk_usd", 0.0)),
-                now_str,
-                p.get("decision_json")
-            )
-            for p in predictions
-        ]
-        cursor.executemany("""
-            INSERT INTO ml_predictions (
-                order_id, delivery_id, shipment_id, customer_name, carrier_name,
-                predicted_eta, delay_probability, delay_hours, will_be_delayed,
-                root_cause, financial_risk_usd, predicted_at, decision_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, rows)
-        self.conn.commit()
-        return len(rows)
+        with self.db_manager.get_write_lock():
+            cursor = self.conn.cursor()
+            now_str = datetime.now().isoformat()
+            rows = [
+                (
+                    str(p.get("order_id")),
+                    str(p.get("delivery_id", "")),
+                    str(p.get("shipment_id", "")),
+                    str(p.get("customer_name", "")),
+                    str(p.get("carrier_name", "")),
+                    str(p.get("predicted_eta", "")),
+                    float(p.get("delay_probability", 0.0)),
+                    float(p.get("delay_hours", 0.0)),
+                    1 if p.get("will_be_delayed") else 0,
+                    str(p.get("root_cause", "")),
+                    float(p.get("financial_risk_usd", 0.0)),
+                    now_str,
+                    p.get("decision_json")
+                )
+                for p in predictions
+            ]
+            cursor.executemany("""
+                INSERT INTO ml_predictions (
+                    order_id, delivery_id, shipment_id, customer_name, carrier_name,
+                    predicted_eta, delay_probability, delay_hours, will_be_delayed,
+                    root_cause, financial_risk_usd, predicted_at, decision_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, rows)
+            self.conn.commit()
+            return len(rows)
 
     def get_predicted_order_ids(self) -> set:
         """Return a set of order_id strings that have already been predicted in ml_predictions"""
