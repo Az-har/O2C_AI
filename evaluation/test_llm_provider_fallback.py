@@ -20,7 +20,9 @@ from modules.llm_provider import (
     LLMProvider,
     LLMProviderConfig,
     LLMResponse,
-    FallbackStepTrace
+    FallbackStepTrace,
+    SLM_PRESETS,
+    DEFAULT_SLM_MODEL
 )
 from modules.agent_specialists import (
     LLMReasoningEngine,
@@ -222,6 +224,32 @@ class TestLLMProviderFallback(unittest.TestCase):
         )
         self.assertIsInstance(content, str)
         self.assertTrue(len(content) > 20)
+
+    def test_slm_presets_and_default_model(self):
+        """Verify SLM model defaults to qwen2.5:1.5b and presets conform to < 1.5GB size limits"""
+        config = LLMProviderConfig()
+        self.assertEqual(config.ollama_model, "qwen2.5:1.5b")
+        self.assertEqual(DEFAULT_SLM_MODEL, "qwen2.5:1.5b")
+        
+        # Verify presets exist and fit within the 5GB disk budget
+        self.assertIn("qwen2.5:1.5b", SLM_PRESETS)
+        self.assertIn("qwen2.5:0.5b", SLM_PRESETS)
+        self.assertIn("llama3.2:1b", SLM_PRESETS)
+        
+        # Recommended model must be < 1000 MB
+        self.assertLess(SLM_PRESETS["qwen2.5:1.5b"]["download_size_mb"], 1000)
+        # Ultra-compact model must be < 450 MB
+        self.assertLess(SLM_PRESETS["qwen2.5:0.5b"]["download_size_mb"], 450)
+        # RAM budget must be <= 1500 MB (fits inside 5 GB RAM)
+        self.assertLessEqual(SLM_PRESETS["qwen2.5:1.5b"]["ram_footprint_mb"], 1500)
+
+    def test_slm_cpu_benchmark_structure(self):
+        """Verify benchmark_ollama_cpu handles offline daemon cleanly"""
+        provider = LLMProvider(config=LLMProviderConfig(ollama_host="http://127.0.0.1:99999"))
+        res = provider.benchmark_ollama_cpu("Short test prompt")
+        self.assertIsInstance(res, dict)
+        self.assertFalse(res.get("success"))
+        self.assertIn("error", res)
 
 
 if __name__ == "__main__":

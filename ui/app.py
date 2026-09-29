@@ -27,7 +27,9 @@ from modules.llm_provider import (
     LLMProvider,
     LLMProviderConfig,
     LLMResponse,
-    FallbackStepTrace
+    FallbackStepTrace,
+    SLM_PRESETS,
+    DEFAULT_SLM_MODEL
 )
 from modules.agent_specialists import (
     RouteSupervisorAgent,
@@ -142,98 +144,113 @@ def fetch_sample_orders() -> List[Dict[str, Any]]:
 
 
 # -----------------------------------------------------------------------------
-# Sidebar: Provider Configuration & Explicit Switch
+# Sidebar: Primary SLM Engine & Model Presets
 # -----------------------------------------------------------------------------
-st.sidebar.title("⚙️ LLM Routing Engine")
-st.sidebar.caption("Deterministic-First & Multi-Tier Fallback Architecture")
+st.sidebar.title("🦙 Primary: Local SLM Engine")
+st.sidebar.caption("On-Device Small Language Model (Pure CPU / Zero Cloud Cost)")
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("🔒 Explicit Cloud LLM Switch")
+st.sidebar.subheader("📦 Ultralight Model Presets")
+
+slm_preset_keys = list(SLM_PRESETS.keys())
+slm_display_names = [f"{k} ({SLM_PRESETS[k]['download_size_mb']} MB)" for k in slm_preset_keys]
+
+default_idx = 0
+for idx, k in enumerate(slm_preset_keys):
+    if k == DEFAULT_SLM_MODEL:
+        default_idx = idx
+        break
+
+selected_preset_idx = st.sidebar.selectbox(
+    "Select Local Model Profile",
+    options=range(len(slm_preset_keys)),
+    format_func=lambda i: slm_display_names[i],
+    index=default_idx,
+    help="Ultra-compact models tailored to run on 2 CPU cores and < 5 GB RAM."
+)
+chosen_slm_tag = slm_preset_keys[selected_preset_idx]
+chosen_preset_info = SLM_PRESETS[chosen_slm_tag]
+
+st.sidebar.markdown(f"""
+- 💾 **Download Size:** `{chosen_preset_info['download_size_mb']} MB`
+- 🧠 **RAM Footprint:** `~{chosen_preset_info['ram_footprint_mb']} MB`
+- ⚡ **CPU Speed:** `{chosen_preset_info['tokens_per_sec_cpu']} tokens/sec`
+- ℹ️ *{chosen_preset_info['description']}*
+""")
+
+ollama_host = st.sidebar.text_input(
+    "Ollama Daemon URL",
+    value="http://127.0.0.1:11434",
+    help="Local endpoint for Ollama engine."
+)
+
+col_slm_a, col_slm_b = st.sidebar.columns(2)
+with col_slm_a:
+    if st.button("📥 Pull Model", use_container_width=True, help="Download selected SLM to local Ollama"):
+        with st.spinner(f"Pulling '{chosen_slm_tag}' via Ollama..."):
+            temp_prov = LLMProvider(LLMProviderConfig(ollama_host=ollama_host, ollama_model=chosen_slm_tag))
+            pull_res = temp_prov.pull_ollama_model(chosen_slm_tag)
+            if pull_res.get("success"):
+                st.sidebar.success(f"✓ {chosen_slm_tag} ready!")
+            else:
+                st.sidebar.error(f"Failed: {pull_res.get('message')}")
+
+with col_slm_b:
+    btn_cpu_benchmark = st.button("⚡ Speed Test", use_container_width=True, help="Benchmark CPU inference throughput")
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("🔒 Optional Cloud API Gateway")
 
 # CRITICAL: Switch MUST BE strictly OFF by default (value=False)
 use_cloud_api = st.sidebar.toggle(
     "Enable External Cloud LLM API",
     value=False,
-    help="CRITICAL: Default is OFF. When OFF, external cloud calls are completely bypassed, routing directly to local Ollama or deterministic expert rules."
+    help="CRITICAL: Default is OFF. When OFF, all inference is 100% on-device (Local SLM or Deterministic Engine)."
 )
 
 if use_cloud_api:
-    st.sidebar.success("⚡ External Cloud API is ENABLED")
+    st.sidebar.success("⚡ Cloud API Gateway is ENABLED")
 else:
-    st.sidebar.info("🛡️ Cloud API is DISABLED (Default: Deterministic / Local Only)")
+    st.sidebar.info("🛡️ Cloud API is DISABLED (Running 100% On-Device)")
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("☁️ Tier 1: Cloud API Config")
-
-provider_choice = st.sidebar.selectbox(
-    "Provider Protocol",
-    options=["gemini", "groq", "openai", "custom"],
-    index=0,
-    help="Supports Google Gemini REST API, Groq Cloud, OpenAI, or Custom OpenAI-compatible REST endpoints."
-)
-
-# Auto-detect defaults
-default_env_keys = {
-    "gemini": os.getenv("GEMINI_API_KEY", os.getenv("GOOGLE_API_KEY", "")),
-    "groq": os.getenv("GROQ_API_KEY", ""),
-    "openai": os.getenv("OPENAI_API_KEY", ""),
-    "custom": os.getenv("CUSTOM_API_KEY", "")
-}
-
-model_options = {
-    "gemini": ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"],
-    "groq": ["llama-3.3-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"],
-    "openai": ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"],
-    "custom": ["custom-model"]
-}
-
-env_key_present = bool(default_env_keys.get(provider_choice))
-api_key_input = st.sidebar.text_input(
-    f"{provider_choice.title()} API Key",
-    value=default_env_keys.get(provider_choice, ""),
-    type="password",
-    help="Enter API key or set via environment variable. Input is kept securely in session memory."
-)
-
-selected_model = st.sidebar.selectbox(
-    "Model Name",
-    options=model_options.get(provider_choice, ["default-model"]),
-    index=0
-)
-
+provider_choice = "gemini"
+selected_model = "gemini-1.5-flash"
+api_key_input = ""
 custom_endpoint = ""
-if provider_choice == "custom":
-    custom_endpoint = st.sidebar.text_input(
-        "Custom Endpoint URL",
-        value="http://localhost:8000/v1",
-        help="Base URL for OpenAI-compatible REST API (e.g. vLLM, LM-Studio, LocalAI)"
+timeout_secs = 12.0
+
+if use_cloud_api:
+    provider_choice = st.sidebar.selectbox(
+        "Cloud Provider",
+        options=["gemini", "groq", "openai", "custom"],
+        index=0
     )
+    default_env_keys = {
+        "gemini": os.getenv("GEMINI_API_KEY", os.getenv("GOOGLE_API_KEY", "")),
+        "groq": os.getenv("GROQ_API_KEY", ""),
+        "openai": os.getenv("OPENAI_API_KEY", ""),
+        "custom": os.getenv("CUSTOM_API_KEY", "")
+    }
+    model_options = {
+        "gemini": ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"],
+        "groq": ["llama-3.3-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"],
+        "openai": ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"],
+        "custom": ["custom-model"]
+    }
+    api_key_input = st.sidebar.text_input(
+        f"{provider_choice.title()} API Key",
+        value=default_env_keys.get(provider_choice, ""),
+        type="password"
+    )
+    selected_model = st.sidebar.selectbox(
+        "Model Name",
+        options=model_options.get(provider_choice, ["default-model"]),
+        index=0
+    )
+    if provider_choice == "custom":
+        custom_endpoint = st.sidebar.text_input("Custom Endpoint URL", value="http://localhost:8000/v1")
 
-timeout_secs = st.sidebar.slider(
-    "API Timeout (seconds)",
-    min_value=1.0,
-    max_value=30.0,
-    value=8.0,
-    step=0.5,
-    help="Fast timeout ensures rapid fallback cascading without hanging the user session."
-)
-
-st.sidebar.markdown("---")
-st.sidebar.subheader("🦙 Tier 2: Local Ollama Config")
-
-ollama_host = st.sidebar.text_input(
-    "Ollama Daemon URL",
-    value="http://127.0.0.1:11434",
-    help="Probed with lightweight /api/tags ping before attempting inference."
-)
-
-ollama_model = st.sidebar.text_input(
-    "Ollama Model Tag",
-    value="qwen2.5:7b",
-    help="Local model name (e.g. qwen2.5:7b, llama3:8b)"
-)
-
-# Instantiate the active LLMProvider with current UI settings
+# Instantiate active LLMProvider with current UI settings
 current_config = LLMProviderConfig(
     use_cloud_api=use_cloud_api,
     provider=provider_choice,
@@ -241,7 +258,7 @@ current_config = LLMProviderConfig(
     model_name=selected_model,
     custom_endpoint=custom_endpoint,
     ollama_host=ollama_host,
-    ollama_model=ollama_model,
+    ollama_model=chosen_slm_tag,
     timeout_seconds=timeout_secs
 )
 active_provider = LLMProvider(config=current_config)
@@ -250,29 +267,25 @@ active_provider = LLMProvider(config=current_config)
 # -----------------------------------------------------------------------------
 # Main Header & Architectural Fallback Diagram
 # -----------------------------------------------------------------------------
-st.title("⚡ O2C AI - LLM Provider & Dynamic Fallback Workbench")
+st.title("⚡ O2C AI - Ultralight SLM & Fallback Workbench")
 st.markdown("""
-This testing page verifies the **resilient multi-tier LLM fallback hierarchy** designed for the **Order-to-Cash (O2C) AI Disruption Monitor**.
-By default, the external Cloud API is **explicitly disabled** to guarantee 0-dependency, zero-cost, and deterministic execution.
+This workbench demonstrates the **on-device Small Language Model (SLM)** architecture designed for **constrained edge hardware** (2 CPU Cores, No GPU, 5 GB RAM, 5 GB disk).
+By default, execution runs **100% locally with zero cloud API dependencies**. If local SLM is offline, the system safely executes the deterministic specialist model with 0 ms latency.
 """)
 
 # Architecture Pipeline Banner
 st.markdown("""
 ```text
-  ┌─────────────────────────────────┐
-  │  1. External Cloud LLM API      │ ──[ Switch OFF ]───────────────┐
-  │  (Google Gemini / Groq / OpenAI)│ ──[ Switch ON / Run Failed ]───┼──┐
-  └─────────────────────────────────┘                                │  │
-                                                                     │  │
-  ┌─────────────────────────────────┐                                │  │
-  │  2. Local Ollama SLM/LLM        │ ◄──────────────────────────────┘  │
-  │  (127.0.0.1:11434 / Qwen2.5)    │ ──[ Daemon Offline / Failed ]─────┼──┐
-  └─────────────────────────────────┘                                   │  │
-                                                                        │  │
-  ┌─────────────────────────────────────────────────────────────┐       │  │
-  │  3. Deterministic Specialist Model                          │ ◄─────┴──┘
-  │  (Guaranteed Rule Engine, Zero Latency, 100% Reliable)      │
+  ┌─────────────────────────────────────────────────────────────┐
+  │  Primary Local Engine: Ultralight SLM (Qwen 2.5 1.5B/0.5B)  │ ──[ Daemon Offline / Model Missing ]──┐
+  │  (Pure CPU, < 1 GB Download, < 1.4 GB RAM, Zero Cloud Cost) │                                       │
+  └─────────────────────────────────────────────────────────────┘                                       │
+                                                                                                        │
+  ┌─────────────────────────────────────────────────────────────┐                                       │
+  │  Guaranteed Fallback: Deterministic Specialist Model        │ ◄─────────────────────────────────────┘
+  │  (In-Memory Rule Engine, Zero Latency, 100% Uptime)         │
   └─────────────────────────────────────────────────────────────┘
+  * Optional: External Cloud API Gateway (Gated by Explicit Toggle, OFF by default)
 ```
 """)
 
@@ -284,54 +297,61 @@ st.subheader("🩺 Live Health Diagnostics")
 col_diag1, col_diag2, col_diag3 = st.columns(3)
 
 with col_diag1:
+    h_ollama = active_provider.check_ollama()
+    preset = SLM_PRESETS.get(chosen_slm_tag, {})
+    if h_ollama.get("available") and h_ollama.get("has_target_model"):
+        st.markdown(f"""
+        **Primary: Local SLM Engine**  
+        <span class="tier-badge badge-success">🟢 ONLINE ({chosen_slm_tag})</span>  
+        *Download: {preset.get('download_size_mb', 'N/A')} MB | RAM: ~{preset.get('ram_footprint_mb', 'N/A')} MB*
+        """, unsafe_allow_html=True)
+    elif h_ollama.get("available"):
+        st.markdown(f"""
+        **Primary: Local SLM Engine**  
+        <span class="tier-badge badge-off">⚠️ MODEL NOT PULLED</span>  
+        *Ollama online, but '{chosen_slm_tag}' not installed.*
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+        **Primary: Local SLM Engine**  
+        <span class="tier-badge badge-skipped">⚪ OFFLINE / STANDBY</span>  
+        *{h_ollama.get('message', 'Daemon not active')}*
+        """, unsafe_allow_html=True)
+
+with col_diag2:
+    h_det = active_provider.check_deterministic()
+    st.markdown("""
+    **Guaranteed: Deterministic Model**  
+    <span class="tier-badge badge-success">🟢 ACTIVE & READY (100% Guaranteed)</span>  
+    *In-memory rule engine; zero latency, zero RAM bloat.*
+    """, unsafe_allow_html=True)
+
+with col_diag3:
     h_cloud = active_provider.check_cloud_api()
     if not use_cloud_api:
         st.markdown("""
-        **Tier 1: External Cloud API**  
+        **Optional: Cloud API Gateway**  
         <span class="tier-badge badge-off">🔒 DISABLED (Switch OFF)</span>  
         *Explicit switch is OFF. Cloud calls are bypassed.*
         """, unsafe_allow_html=True)
     elif h_cloud.get("available"):
         st.markdown(f"""
-        **Tier 1: External Cloud API**  
+        **Optional: Cloud API Gateway**  
         <span class="tier-badge badge-success">🟢 ONLINE ({h_cloud.get('latency_ms', 0):.0f} ms)</span>  
         *Provider: {provider_choice.upper()} ({selected_model})*
         """, unsafe_allow_html=True)
     elif h_cloud.get("status") == "CONFIG_ERROR":
         st.markdown(f"""
-        **Tier 1: External Cloud API**  
+        **Optional: Cloud API Gateway**  
         <span class="tier-badge badge-failed">⚠️ KEY MISSING</span>  
         *{h_cloud.get('message')}*
         """, unsafe_allow_html=True)
     else:
         st.markdown(f"""
-        **Tier 1: External Cloud API**  
+        **Optional: Cloud API Gateway**  
         <span class="tier-badge badge-failed">🔴 ERROR / UNREACHABLE</span>  
         *{h_cloud.get('message', 'Failed')}*
         """, unsafe_allow_html=True)
-
-with col_diag2:
-    h_ollama = active_provider.check_ollama()
-    if h_ollama.get("available"):
-        st.markdown(f"""
-        **Tier 2: Local Ollama (SLM)**  
-        <span class="tier-badge badge-success">🟢 ONLINE ({h_ollama.get('latency_ms', 0):.0f} ms)</span>  
-        *Host: {ollama_host} (Model: {ollama_model})*
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown(f"""
-        **Tier 2: Local Ollama (SLM)**  
-        <span class="tier-badge badge-skipped">⚪ OFFLINE / STANDBY</span>  
-        *{h_ollama.get('message', 'Daemon not active')}*
-        """, unsafe_allow_html=True)
-
-with col_diag3:
-    h_det = active_provider.check_deterministic()
-    st.markdown("""
-    **Tier 3: Deterministic Model**  
-    <span class="tier-badge badge-success">🟢 ACTIVE & READY (100% Guaranteed)</span>  
-    *In-memory rule engine; zero latency, zero RAM bloat.*
-    """, unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -399,15 +419,25 @@ tab1, tab2 = st.tabs([
 # TAB 1: Quick Fallback Stress Tests
 # =============================================================================
 with tab1:
-    st.markdown("### 🧪 One-Click Fallback Stress Tests")
-    st.caption("Verify behavior of switch and fallback cascades under various conditions instantly.")
+    st.markdown("### 🧪 Ultralight SLM Fallback & Stress Tests")
+    st.caption("Verify behavior of local SLM execution, CPU token throughput, and graceful fallback cascades.")
+
+    if 'btn_cpu_benchmark' in locals() and btn_cpu_benchmark:
+        with st.spinner(f"Benchmarking '{chosen_slm_tag}' on CPU..."):
+            b_res = active_provider.benchmark_ollama_cpu()
+            if b_res.get("success"):
+                st.success(f"🚀 **CPU Benchmark Passed:** `{b_res.get('tokens_per_sec')} tokens/sec` (Latency: `{b_res.get('latency_sec')}s` for `{b_res.get('approx_tokens')} tokens`)")
+                st.markdown(f"**Sample reasoning:** *\"{b_res.get('output_sample')}\"*")
+            else:
+                st.error(f"Benchmark failed: {b_res.get('error')}. Is Ollama daemon running with '{chosen_slm_tag}' pulled?")
+        st.markdown("---")
 
     col_btn1, col_btn2, col_btn3 = st.columns(3)
 
     run_scenario = None
 
     with col_btn1:
-        if st.button("🧪 Test 1: Switch OFF (Default)\nVerify Cloud Bypassed -> Deterministic", use_container_width=True):
+        if st.button("🧪 Test 1: Switch OFF (Default)\nVerify Cloud Bypassed -> Local SLM/Deterministic", use_container_width=True):
             run_scenario = "SWITCH_OFF"
 
     with col_btn2:
@@ -437,8 +467,8 @@ with tab1:
             )
 
         if run_scenario == "SWITCH_OFF":
-            st.info("Executing Scenario 1: Switch is set to OFF. Cloud API should be skipped, local Ollama probed, and Deterministic model executed.")
-            test_provider = LLMProvider(LLMProviderConfig(use_cloud_api=False, ollama_host=ollama_host, ollama_model=ollama_model))
+            st.info(f"Executing Scenario 1: Switch is set to OFF. Cloud API should be skipped, local SLM ({chosen_slm_tag}) probed, and Deterministic model executed as fallback.")
+            test_provider = LLMProvider(LLMProviderConfig(use_cloud_api=False, ollama_host=ollama_host, ollama_model=chosen_slm_tag))
             resp = test_provider.invoke_with_fallback(
                 prompt=test_prompt,
                 system_prompt="You are an enterprise logistics dispute synthesizer.",
@@ -451,7 +481,7 @@ with tab1:
                 provider="gemini",
                 api_key="SIMULATED_INVALID_KEY_9999_FORCE_FAIL",
                 ollama_host=ollama_host,
-                ollama_model=ollama_model,
+                ollama_model=chosen_slm_tag,
                 timeout_seconds=3.0
             ))
             resp = test_provider.invoke_with_fallback(

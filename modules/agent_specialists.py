@@ -212,8 +212,10 @@ class NegotiationOutcome(BaseModel):
 # Specialist Agent 1: Route & Telematics Supervisor (ReAct Capable)
 # ============================================================================
 
+DEFAULT_SLM_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:1.5b")
+
 def build_autonomous_investigation_agent(
-    model_name: str = "qwen2.5:7b",
+    model_name: str = DEFAULT_SLM_MODEL,
     base_url: str = "http://127.0.0.1:11434"
 ) -> Any:
     """
@@ -234,7 +236,7 @@ def build_autonomous_investigation_agent(
         model=model_name,
         temperature=0.1,
         base_url=base_url,
-        timeout=2.0
+        timeout=15.0
     )
     
     system_prompt = """You are the Senior Transit & Route Investigation Specialist.
@@ -274,7 +276,7 @@ class RouteSupervisorAgent:
     tools to inspect environmental corridor hazards, transit velocity, and telematics integrity.
     """
 
-    def __init__(self, autonomous_mode: bool = False, model_name: str = "qwen2.5:7b", base_url: str = "http://127.0.0.1:11434"):
+    def __init__(self, autonomous_mode: bool = False, model_name: str = DEFAULT_SLM_MODEL, base_url: str = "http://127.0.0.1:11434"):
         self.autonomous_mode = autonomous_mode
         self.model_name = model_name
         self.base_url = base_url
@@ -599,7 +601,7 @@ class ContractAdjudicatorAgent:
     customer tier penalties, proactive notice credits, and Force Majeure conditions.
     """
 
-    def __init__(self, autonomous_mode: bool = False, model_name: str = "qwen2.5:7b"):
+    def __init__(self, autonomous_mode: bool = False, model_name: str = DEFAULT_SLM_MODEL):
         self.autonomous_mode = autonomous_mode
         self.model_name = model_name
 
@@ -747,7 +749,7 @@ class QualityMitigationAgent:
     diet stock-out vulnerabilities, emergency air freight mitigations, and QA holds.
     """
 
-    def __init__(self, autonomous_mode: bool = False, model_name: str = "qwen2.5:7b"):
+    def __init__(self, autonomous_mode: bool = False, model_name: str = DEFAULT_SLM_MODEL):
         self.autonomous_mode = autonomous_mode
         self.model_name = model_name
 
@@ -899,7 +901,7 @@ class LLMReasoningEngine:
 
     def __init__(self, llm_provider: Optional[LLMProvider] = None):
         self.provider = "multi_tier_fallback"
-        self.model_name = "qwen2.5:7b"
+        self.model_name = DEFAULT_SLM_MODEL
         self.endpoint_name = os.getenv("DATABRICKS_LLM_ENDPOINT", "databricks-meta-llama-3-70b-instruct")
         self.llm_provider = llm_provider or LLMProvider()
 
@@ -1052,7 +1054,7 @@ def contract_agent_node(state: DebateState) -> Dict[str, Any]:
     try:
         from langchain_ollama import ChatOllama
         from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-        llm = ChatOllama(model="qwen2.5:7b", temperature=0.3, base_url="http://127.0.0.1:11434", timeout=2.0)
+        llm = ChatOllama(model=DEFAULT_SLM_MODEL, temperature=0.3, base_url="http://127.0.0.1:11434", timeout=15.0)
         prompt = [
             SystemMessage(content=CONTRACT_ADJUDICATOR_SYSTEM_PROMPT),
             HumanMessage(content=f"Disruption Context: {json.dumps(state['disruption_context'])}")
@@ -1072,7 +1074,7 @@ def quality_agent_node(state: DebateState) -> Dict[str, Any]:
     try:
         from langchain_ollama import ChatOllama
         from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-        llm = ChatOllama(model="qwen2.5:7b", temperature=0.3, base_url="http://127.0.0.1:11434", timeout=2.0)
+        llm = ChatOllama(model=DEFAULT_SLM_MODEL, temperature=0.3, base_url="http://127.0.0.1:11434", timeout=15.0)
         prompt = [
             SystemMessage(content=QUALITY_MITIGATION_SYSTEM_PROMPT),
             HumanMessage(content=f"Disruption Context: {json.dumps(state['disruption_context'])}")
@@ -1094,7 +1096,7 @@ def arbiter_evaluation_node(state: DebateState) -> Dict[str, Any]:
     try:
         from langchain_ollama import ChatOllama
         from langchain_core.messages import SystemMessage, HumanMessage
-        llm = ChatOllama(model="qwen2.5:7b", temperature=0.1, base_url="http://127.0.0.1:11434", timeout=2.0)
+        llm = ChatOllama(model=DEFAULT_SLM_MODEL, temperature=0.1, base_url="http://127.0.0.1:11434", timeout=15.0)
         prompt = [
             SystemMessage(content=ARBITER_SYSTEM_PROMPT),
             HumanMessage(content="Evaluate dialogue turns:\n" + "\n".join([m.content if hasattr(m, "content") else str(m) for m in state.get("messages", [])]))

@@ -13,7 +13,7 @@ class OllamaService:
     """Local LLM client interfacing with Ollama REST API"""
 
     DEFAULT_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-    DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+    DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:1.5b")
 
     def __init__(self, host: str = DEFAULT_HOST, model: str = DEFAULT_MODEL, timeout: int = 45):
         self.host = host.rstrip("/")
@@ -30,7 +30,7 @@ class OllamaService:
             r = requests.get(f"{self.host}/api/tags", timeout=2)
             if r.status_code == 200:
                 models = [m.get("name") for m in r.json().get("models", [])]
-                # Match exact or prefix (e.g. 'qwen2.5:7b' or 'qwen2.5')
+                # Match exact or prefix (e.g. 'qwen2.5:1.5b' or 'qwen2.5')
                 has_model = any(self.model in m or m.startswith(self.model.split(":")[0]) for m in models)
                 if has_model:
                     self._is_available = True
@@ -74,7 +74,8 @@ class OllamaService:
                 "temperature": 0.1,  # Low temperature to suppress creative hallucination
                 "top_p": 0.85,
                 "repeat_penalty": 1.15,
-                "num_predict": 1024
+                "num_predict": 512,
+                "num_thread": int(os.getenv("OLLAMA_NUM_THREADS", "2"))
             }
         }
 

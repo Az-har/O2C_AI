@@ -17,6 +17,49 @@ import requests
 logger = logging.getLogger("LLMProvider")
 
 
+# Ultralight Small Language Model (SLM) Profiles tailored for 2-Core / 5GB RAM / 5GB Disk
+SLM_PRESETS = {
+    "qwen2.5:1.5b": {
+        "name": "Qwen 2.5 1.5B (Recommended)",
+        "download_size_mb": 986,
+        "ram_footprint_mb": 1400,
+        "params": "1.54B",
+        "description": "High-accuracy legal reasoning, contractual liability, structured briefs",
+        "tokens_per_sec_cpu": "~12-18",
+        "recommended": True
+    },
+    "qwen2.5:0.5b": {
+        "name": "Qwen 2.5 0.5B (Ultra-Compact)",
+        "download_size_mb": 397,
+        "ram_footprint_mb": 700,
+        "params": "490M",
+        "description": "Minimal package size; fast execution on low-spec 2-core CPU",
+        "tokens_per_sec_cpu": "~25-35",
+        "recommended": False
+    },
+    "llama3.2:1b": {
+        "name": "Llama 3.2 1B (Meta)",
+        "download_size_mb": 1310,
+        "ram_footprint_mb": 1450,
+        "params": "1.23B",
+        "description": "Compact edge model from Meta; strong general instruction following",
+        "tokens_per_sec_cpu": "~12-16",
+        "recommended": False
+    },
+    "smollm2:1.7b": {
+        "name": "SmolLM2 1.7B",
+        "download_size_mb": 1050,
+        "ram_footprint_mb": 1500,
+        "params": "1.71B",
+        "description": "Lightweight edge model by HuggingFace",
+        "tokens_per_sec_cpu": "~10-15",
+        "recommended": False
+    }
+}
+
+DEFAULT_SLM_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:1.5b")
+
+
 @dataclass
 class LLMProviderConfig:
     """Configuration for LLM routing and fallback behavior"""
@@ -29,14 +72,14 @@ class LLMProviderConfig:
     model_name: str = "gemini-1.5-flash"
     custom_endpoint: str = ""
 
-    # Local Ollama Settings
+    # Local Ollama Settings (Default: Ultralight 1.5B SLM)
     ollama_host: str = "http://127.0.0.1:11434"
-    ollama_model: str = "qwen2.5:7b"
+    ollama_model: str = DEFAULT_SLM_MODEL
 
     # Execution Parameters
-    timeout_seconds: float = 10.0
+    timeout_seconds: float = 12.0
     temperature: float = 0.2
-    max_tokens: int = 1024
+    max_tokens: int = 512
 
     def __post_init__(self):
         # Auto-detect API key from environment if not explicitly provided
@@ -159,17 +202,25 @@ class LLMProvider:
             r = requests.get(url, timeout=1.5)
             latency_ms = (time.time() - start) * 1000
             if r.status_code == 200:
-                models = [m.get("name") for m in r.json().get("models", [])]
-                has_target = any(self.config.ollama_model in m for m in models)
+                raw_models = r.json().get("models", [])
+                models = [m.get("name") for m in raw_models]
+                target_base = self.config.ollama_model.split(":")[0]
+                has_target = any(
+                    self.config.ollama_model == m or 
+                    self.config.ollama_model in m or 
+                    m.startswith(target_base) 
+                    for m in models
+                )
                 return {
                     "available": True,
                     "status": "ONLINE",
                     "host": self.config.ollama_host,
                     "models_loaded": models,
+                    "raw_models": raw_models,
                     "has_target_model": has_target,
                     "target_model": self.config.ollama_model,
                     "latency_ms": round(latency_ms, 1),
-                    "message": f"Ollama online at {self.config.ollama_host} ({len(models)} models available)."
+                    "message": f"Ollama online at {self.config.ollama_host} ({len(models)} models found)."
                 }
             return {
                 "available": False,
@@ -181,6 +232,64 @@ class LLMProvider:
                 "available": False,
                 "status": "OFFLINE",
                 "message": f"Ollama daemon not responding at {self.config.ollama_host}."
+            }
+
+    def list_installed_ollama_models(self) -> List[Dict[str, Any]]:
+        """List all models installed in local Ollama with their size in MB"""
+        try:
+            url = f"{self.config.ollama_host.rstrip('/')}/api/tags"
+            r = requests.get(url, timeout=2.0)
+            if r.status_code == 200:
+                res = []
+                for m in r.json().get("models", []):
+                    name = m.get("name", "")
+                    size_bytes = m.get("size", 0)
+                    size_mb = round(size_bytes / (1024 * 1024), 1)
+                    res.append({
+                        "name": name,
+                        "size_mb": size_mb,
+                        "modified_at": m.get("modified_at", "")
+                    })
+                return res
+            return []
+        except Exception:
+            return []
+
+    def pull_ollama_model(self, model_name: str, timeout: int = 600) -> Dict[str, Any]:
+        """Pull an SLM model via Ollama REST API (POST /api/pull)"""
+        url = f"{self.config.ollama_host.rstrip('/')}/api/pull"
+        payload = {"name": model_name, "stream": False}
+        try:
+            r = requests.post(url, json=payload, timeout=timeout)
+            if r.status_code == 200:
+                data = r.json()
+                return {"success": True, "status": data.get("status", "success"), "message": f"Model '{model_name}' successfully pulled."}
+            return {"success": False, "status": "ERROR", "message": f"Pull failed with HTTP {r.status_code}: {r.text}"}
+        except Exception as e:
+            return {"success": False, "status": "EXCEPTION", "message": str(e)}
+
+    def benchmark_ollama_cpu(self, prompt: str = "Analyze this shipment delay: order 800000000000001 delayed 14 hrs. Suggest action.") -> Dict[str, Any]:
+        """Benchmark token throughput and latency of the local SLM on CPU"""
+        start = time.time()
+        try:
+            res = self._call_ollama_raw(prompt, system_prompt="You are an enterprise logistics copilot.")
+            duration = time.time() - start
+            words = len(res.split())
+            approx_tokens = int(words * 1.3)
+            tokens_per_sec = round(approx_tokens / duration, 1) if duration > 0 else 0
+            return {
+                "success": True,
+                "model": self.config.ollama_model,
+                "latency_sec": round(duration, 2),
+                "approx_tokens": approx_tokens,
+                "tokens_per_sec": tokens_per_sec,
+                "output_sample": res[:180] + "..." if len(res) > 180 else res
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "model": self.config.ollama_model,
+                "error": str(e)
             }
 
     def check_deterministic(self) -> Dict[str, Any]:
@@ -293,7 +402,7 @@ class LLMProvider:
     # =========================================================================
 
     def _call_ollama_raw(self, prompt: str, system_prompt: Optional[str] = None) -> str:
-        """Call local Ollama REST endpoint via requests"""
+        """Call local Ollama REST endpoint via requests with CPU optimizations"""
         url = f"{self.config.ollama_host.rstrip('/')}/api/generate"
         payload = {
             "model": self.config.ollama_model,
@@ -302,7 +411,10 @@ class LLMProvider:
             "stream": False,
             "options": {
                 "temperature": self.config.temperature,
-                "num_predict": self.config.max_tokens
+                "num_predict": min(self.config.max_tokens, 512),
+                "num_thread": int(os.getenv("OLLAMA_NUM_THREADS", "2")),
+                "top_p": 0.85,
+                "repeat_penalty": 1.15
             }
         }
         resp = requests.post(url, json=payload, timeout=self.config.timeout_seconds)
