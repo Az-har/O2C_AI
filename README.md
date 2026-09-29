@@ -1,9 +1,9 @@
 # 🚀 O2C AI Monitor: Dual-Engine Order-to-Cash Process Intelligence
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![Databricks](https://img.shields.io/badge/Platform-Databricks-FF3621?style=flat-square&logo=databricks&logoColor=white)](https://databricks.com)
-[![Process Intelligence](https://img.shields.io/badge/Domain-Celonis%20%7C%20SAP%20O2C-2563EB?style=flat-square)](https://celonis.com)
-[![ML Framework](https://img.shields.io/badge/ML-XGBoost%20%7C%20Random%20Forest-orange?style=flat-square)](https://xgboost.readthedocs.io/)
+[![Process Intelligence](https://img.shields.io/badge/Process_Mining-Celonis%20%7C%20OCPM-2563EB?style=flat-square)](https://celonis.com)
+[![ERP Domain](https://img.shields.io/badge/ERP-SAP%20O2C-000000?style=flat-square)](https://sap.com)
+[![ML Framework](https://img.shields.io/badge/ML-Gradient_Boosting%20%7C%20Random_Forest-orange?style=flat-square)](https://scikit-learn.org)
 [![RAG Architecture](https://img.shields.io/badge/RAG-ChromaDB%20%7C%20Embeddings-00A4EF?style=flat-square)](https://docs.trychroma.com/)
 
 > **Enterprise Process Intelligence & Predictive Delivery Risk Platform**: Combines machine learning on SAP transactional data with semantic contract & policy retrieval to predict Order-to-Cash (O2C) delivery delays, quantify financial risk, and automate mitigation.
@@ -65,9 +65,9 @@
 - **Financial Penalty Calculation**: Synthesizes probability of delay from Engine A with contractual penalty clauses from Engine B to quantify exact dollar exposure ($).
 - **Automated Root-Cause Diagnosis**: Classifies bottlenecks into operational, transport, weather, or supply failure modes.
 
-### 4. ⚡ Databricks Enterprise Pipeline
-- **Master Batch Orchestration**: `O2C_AI_Databricks_Master.py` / `.ipynb` runs scalable daily scoring jobs with vectorized batch inference and environmental memory caching.
-- **Continuous Evaluation**: Multi-input RAG validation scripts (`validate_rag_three_inputs.py`, `check_ml_evaluation.py`) ensure production accuracy and prevent hallucination.
+### 4. ⚡ Production Batch Pipeline & Automated Validation
+- **Scalable Batch Execution**: Automated daily scoring runs with vectorized feature processing and in-memory caching.
+- **Continuous Validation**: Automated validation suite verifying relational schema integrity, ML model accuracy, and semantic retrieval.
 
 ---
 
@@ -75,21 +75,20 @@
 
 ```bash
 O2C_AI/
-├── Main.py                                             # Primary CLI orchestration entrypoint
-├── O2C_AI_Databricks_Master.py                         # Production Databricks pipeline script
-├── O2C_AI_Databricks_Master.ipynb                      # Databricks interactive notebook
-├── databricks_daily_job.py                             # Scheduled daily batch scoring job
-├── build_databricks_master.py                          # Build generator for Databricks artifacts
-├── check_ml_evaluation.py                              # ML performance evaluation suite
-├── validate_rag_three_inputs.py                        # RAG multi-vector retrieval verification
-├── engine_a_demo.py                                    # Standalone Engine A predictive demo
+├── main_pipeline.py                                    # Primary execution and batch orchestration entrypoint
+├── validate_modules.py                                 # End-to-end module validation and test suite
 ├── modules/                                            # Modular backend components
-│   ├── engine_a_predictor.py                           # ML feature extraction & scoring
-│   ├── engine_b_rag.py                                 # ChromaDB semantic retrieval engine
-│   ├── weather_fetcher.py                              # External route weather ingestion
-│   └── risk_scorer.py                                  # Financial SLA risk scoring
+│   ├── database_manager.py                             # SQLite WAL database & schema manager
+│   ├── ml_db_extension.py                              # SAP data ingestion & ML feature store
+│   ├── predictive_engine.py                            # ML models (Random Forest & Gradient Boosting)
+│   ├── rag_engine.py                                   # Hybrid BM25 & vector retrieval engine
+│   ├── agentic_orchestrator.py                         # Multi-agent orchestrator & decision logic
+│   ├── agent_specialists.py                            # Domain specialist agents
+│   ├── action_execution_engine.py                      # Action Engine ERP write-backs & dispatchers
+│   ├── weather_service.py                              # External route weather ingestion
+│   └── news_service.py                                 # Strike & logistics disruption news scraper
 ├── india_monitor_data/                                 # Datasets, models, and policy intelligence
-│   ├── models/                                         # Trained XGBoost & RF model artifacts
+│   ├── models/                                         # Trained Gradient Boosting & RF model artifacts
 │   └── rag/                                            # Knowledge documents & vector chunks
 ├── Input Files/                                        # Raw transactional SAP ERP extracts
 └── ENGINE_A_B_README.md                                # In-depth technical architecture specification
